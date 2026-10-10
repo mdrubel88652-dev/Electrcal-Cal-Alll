@@ -32,7 +32,7 @@ object PrintManagerHelper {
                 }
                 val info = PrintDocumentInfo.Builder(jobName)
                     .setContentType(PrintDocumentInfo.CONTENT_TYPE_DOCUMENT)
-                    .setPageCount(1)
+                    .setPageCount(PrintDocumentInfo.PAGE_COUNT_UNKNOWN)
                     .build()
                 callback?.onLayoutFinished(info, true)
             }

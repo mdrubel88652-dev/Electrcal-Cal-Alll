@@ -60,7 +60,7 @@ import kotlinx.coroutines.launch
 fun MaterialListScreen() {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    val app = ElectricalApp.instance
+    val app = ElectricalApp.getApp(context)
     val devSettings by app.settingsManager.developerSettingsFlow.collectAsState(initial = com.example.data.datastore.DeveloperReportSettings())
 
     val project = BuildingMaterialStateHolder.currentProject
@@ -76,6 +76,7 @@ fun MaterialListScreen() {
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color(0xFFF8FAFC))
             .padding(16.dp)
             .testTag("material_list_screen")
     ) {
@@ -83,7 +84,7 @@ fun MaterialListScreen() {
         item {
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(14.dp),
+                shape = RoundedCornerShape(6.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
@@ -243,7 +244,7 @@ fun MaterialListScreen() {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 16.dp),
-                shape = RoundedCornerShape(12.dp),
+                shape = RoundedCornerShape(6.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
                 Column(modifier = Modifier.padding(14.dp)) {

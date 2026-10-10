@@ -10,7 +10,12 @@ import org.junit.Test
  */
 class ExampleUnitTest {
   @Test
-  fun addition_isCorrect() {
-    assertEquals(4, 2 + 2)
+  fun printAllCalculators() {
+    val all = com.example.data.calculator.CalculatorRegistry.allCalculators
+    println("=== ALL 167 CALCULATORS ===")
+    all.forEach { calc ->
+      val inputNames = calc.inputs.map { it.id }.joinToString(", ")
+      println("ID=${calc.id} | NAME=${calc.name} | CAT=${calc.category} | FORMULA=${calc.formula} | INPUTS=[$inputNames]")
+    }
   }
 }

@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -17,7 +18,10 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ElectricBolt
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.Check
@@ -68,6 +72,10 @@ import androidx.compose.ui.unit.sp
 import com.example.ElectricalApp
 import com.example.data.calculator.CalculatorRegistry
 import com.example.data.database.HistoryEntity
+import com.example.ui.screens.calculators.FactoryLoadCalculatorView
+import com.example.ui.screens.calculators.HouseWiringCalculatorView
+import com.example.ui.screens.calculators.PfiCalculatorView
+import com.example.ui.screens.calculators.SolarSystemCalculatorView
 import com.example.data.model.CalculationResult
 import com.example.pdf.PdfReportGenerator
 import com.example.print.PrintManagerHelper
@@ -93,10 +101,11 @@ fun CalculatorScreen(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    val app = ElectricalApp.instance
+    val app = ElectricalApp.getApp(context)
 
     val devSettings by app.settingsManager.developerSettingsFlow.collectAsState(initial = com.example.data.datastore.DeveloperReportSettings())
     val pdfSettings by app.settingsManager.pdfPrintSettingsFlow.collectAsState(initial = com.example.data.datastore.PdfPrintSettings())
+    val techProfile by app.settingsManager.technicianProfileFlow.collectAsState(initial = com.example.data.datastore.TechnicianReportProfile())
 
     val calculator = remember(calcId) {
         CalculatorRegistry.getById(calcId)
@@ -107,6 +116,54 @@ fun CalculatorScreen(
             Text("Calculator #$calcId not found")
         }
         return
+    }
+
+    // Specialized views for upgraded calculators
+    when (calcId) {
+        1 -> {
+            FactoryLoadCalculatorView(
+                calculator = calculator,
+                onNavigateBack = onNavigateBack,
+                app = app,
+                devSettings = devSettings,
+                pdfSettings = pdfSettings,
+                techProfile = techProfile
+            )
+            return
+        }
+        3 -> {
+            HouseWiringCalculatorView(
+                calculator = calculator,
+                onNavigateBack = onNavigateBack,
+                app = app,
+                devSettings = devSettings,
+                pdfSettings = pdfSettings,
+                techProfile = techProfile
+            )
+            return
+        }
+        4 -> {
+            SolarSystemCalculatorView(
+                calculator = calculator,
+                onNavigateBack = onNavigateBack,
+                app = app,
+                devSettings = devSettings,
+                pdfSettings = pdfSettings,
+                techProfile = techProfile
+            )
+            return
+        }
+        5 -> {
+            PfiCalculatorView(
+                calculator = calculator,
+                onNavigateBack = onNavigateBack,
+                app = app,
+                devSettings = devSettings,
+                pdfSettings = pdfSettings,
+                techProfile = techProfile
+            )
+            return
+        }
     }
 
     // Input States
@@ -128,17 +185,40 @@ fun CalculatorScreen(
         }
     }
 
+    var selectedPhase by remember(calculator) {
+        mutableStateOf(
+            if (calculator.isPhaseSelectable) {
+                calculator.defaultPhase
+            } else {
+                "3-Phase"
+            }
+        )
+    }
+
     var result by remember { mutableStateOf<CalculationResult?>(null) }
     var isSaved by remember { mutableStateOf(false) }
 
-    // Auto-calculate initial state
-    LaunchedEffect(calculator) {
+    fun runRecalculation(phaseToUse: String = selectedPhase) {
         try {
+            if (calculator.isPhaseSelectable) {
+                unitSelections["phase"] = phaseToUse
+                unitSelections["is3Phase"] = phaseToUse
+            }
             val numVals = inputValues.mapNotNull { (k, v) ->
                 v.toDoubleOrNull()?.let { k to it }
             }.toMap()
             result = calculator.calculate(numVals, unitSelections)
+            isSaved = false
         } catch (_: Exception) {}
+    }
+
+    // Auto-calculate initial state
+    LaunchedEffect(calculator, selectedPhase) {
+        if (calculator.isPhaseSelectable) {
+            unitSelections["phase"] = selectedPhase
+            unitSelections["is3Phase"] = selectedPhase
+        }
+        runRecalculation(selectedPhase)
     }
 
     val (levelColor, levelBg) = when (calculator.level) {
@@ -150,6 +230,7 @@ fun CalculatorScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color(0xFFF8FAFC))
             .verticalScroll(rememberScrollState())
             .padding(16.dp)
             .testTag("calculator_screen_container")
@@ -157,7 +238,7 @@ fun CalculatorScreen(
         // 1. Header Card
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(14.dp),
+            shape = RoundedCornerShape(6.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
@@ -201,7 +282,202 @@ fun CalculatorScreen(
             modifier = Modifier.padding(bottom = 8.dp)
         )
 
-        calculator.inputs.forEach { inputConfig ->
+        // Phase Selection Component (Only for Single Phase / Three Phase Calculators)
+        if (calculator.isPhaseSelectable) {
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp)
+                    .testTag("phase_selection_card"),
+                shape = RoundedCornerShape(10.dp),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ),
+                border = BorderStroke(1.dp, ElectricBluePrimary.copy(alpha = 0.35f))
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                Icons.Default.ElectricBolt,
+                                contentDescription = null,
+                                tint = ElectricBluePrimary,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "System Phase Selection / ফেজ নির্বাচন",
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                        }
+
+                        Surface(
+                            shape = RoundedCornerShape(4.dp),
+                            color = ElectricBluePrimary.copy(alpha = 0.12f)
+                        ) {
+                            Text(
+                                text = selectedPhase,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = ElectricBluePrimary,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // Phase Toggle Buttons
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                        horizontalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        // Single Phase Option
+                        val isSingleSelected = selectedPhase == "1-Phase"
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(if (isSingleSelected) ElectricBluePrimary else Color.Transparent)
+                                .clickable {
+                                    selectedPhase = "1-Phase"
+                                    unitSelections["phase"] = "1-Phase"
+                                    unitSelections["is3Phase"] = "1-Phase"
+                                    listOf("v", "voltage", "volts", "vlt", "sysV", "v2").forEach { vKey ->
+                                        if (inputValues[vKey] == "400" || inputValues[vKey] == "415") {
+                                            inputValues[vKey] = "230"
+                                        }
+                                    }
+                                    runRecalculation("1-Phase")
+                                }
+                                .testTag("phase_single"),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                if (isSingleSelected) {
+                                    Icon(
+                                        Icons.Default.Check,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                }
+                                Text(
+                                    text = "Single Phase (1φ • 230V)",
+                                    fontSize = 12.sp,
+                                    fontWeight = if (isSingleSelected) FontWeight.Bold else FontWeight.Medium,
+                                    color = if (isSingleSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+
+                        // Three Phase Option
+                        val isThreeSelected = selectedPhase == "3-Phase"
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(if (isThreeSelected) ElectricBluePrimary else Color.Transparent)
+                                .clickable {
+                                    selectedPhase = "3-Phase"
+                                    unitSelections["phase"] = "3-Phase"
+                                    unitSelections["is3Phase"] = "3-Phase"
+                                    listOf("v", "voltage", "volts", "vlt", "sysV", "v2").forEach { vKey ->
+                                        if (inputValues[vKey] == "230" || inputValues[vKey] == "220") {
+                                            inputValues[vKey] = "400"
+                                        }
+                                    }
+                                    runRecalculation("3-Phase")
+                                }
+                                .testTag("phase_three"),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                if (isThreeSelected) {
+                                    Icon(
+                                        Icons.Default.Check,
+                                        contentDescription = null,
+                                        tint = Color.White,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                }
+                                Text(
+                                    text = "Three Phase (3φ • 400V)",
+                                    fontSize = 12.sp,
+                                    fontWeight = if (isThreeSelected) FontWeight.Bold else FontWeight.Medium,
+                                    color = if (isThreeSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // Strict Separation Banner
+                    Surface(
+                        color = Color(0xFFFEF3C7),
+                        shape = RoundedCornerShape(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(10.dp),
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            Icon(
+                                Icons.Default.Info,
+                                contentDescription = null,
+                                tint = Color(0xFFB45309),
+                                modifier = Modifier
+                                    .size(18.dp)
+                                    .padding(top = 1.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Column {
+                                Text(
+                                    text = "গুরুত্বপূর্ণ শর্ত: Single Phase ও Three Phase লোড একই ক্যালকুলেশনে মিশিয়ে হিসাব করা যাবে না।",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF92400E)
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = if (selectedPhase == "1-Phase") {
+                                        "বর্তমানে Single Phase (1φ Line-to-Neutral 230V) সূত্রে সম্পূর্ণ হিসাব সম্পন্ন হচ্ছে। সূত্র: I = P / (V × PF), P = V × I × PF, ΔV = 2×L×I×R/1000"
+                                    } else {
+                                        "বর্তমানে Three Phase (3φ Line-to-Line 400V) সূত্রে সম্পূর্ণ হিসাব সম্পন্ন হচ্ছে। সূত্র: I = P / (√3 × V × PF), P = √3 × V × I × PF, ΔV = √3×L×I×R/1000"
+                                    },
+                                    fontSize = 10.sp,
+                                    color = Color(0xFFB45309)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        val visibleInputs = calculator.inputs.filter { it.id != "phase" && it.id != "is3Phase" }
+
+        visibleInputs.forEach { inputConfig ->
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -258,6 +534,10 @@ fun CalculatorScreen(
             Button(
                 onClick = {
                     try {
+                        if (calculator.isPhaseSelectable) {
+                            unitSelections["phase"] = selectedPhase
+                            unitSelections["is3Phase"] = selectedPhase
+                        }
                         val numVals = inputValues.mapNotNull { (k, v) ->
                             v.toDoubleOrNull()?.let { k to it }
                         }.toMap()
@@ -281,14 +561,15 @@ fun CalculatorScreen(
 
             OutlinedButton(
                 onClick = {
+                    if (calculator.isPhaseSelectable) {
+                        selectedPhase = calculator.defaultPhase
+                        unitSelections["phase"] = calculator.defaultPhase
+                        unitSelections["is3Phase"] = calculator.defaultPhase
+                    }
                     calculator.inputs.forEach { input ->
                         inputValues[input.id] = input.defaultValue
                     }
-                    val numVals = inputValues.mapNotNull { (k, v) ->
-                        v.toDoubleOrNull()?.let { k to it }
-                    }.toMap()
-                    result = calculator.calculate(numVals, unitSelections)
-                    isSaved = false
+                    runRecalculation()
                 },
                 modifier = Modifier
                     .weight(0.6f)
@@ -310,7 +591,7 @@ fun CalculatorScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .testTag("result_card"),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(6.dp),
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surface
                 ),
@@ -437,7 +718,7 @@ fun CalculatorScreen(
             // 4. Action Buttons Bar
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(14.dp),
+                shape = RoundedCornerShape(6.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
             ) {
                 Row(
@@ -509,7 +790,8 @@ fun CalculatorScreen(
                                     inputValues,
                                     res,
                                     devSettings,
-                                    pdfSettings
+                                    pdfSettings,
+                                    techProfile
                                 )
                                 ShareUtils.sharePdf(context, pdf, "${calculator.name} Report")
                             } catch (e: Exception) {
@@ -531,7 +813,8 @@ fun CalculatorScreen(
                                     inputValues,
                                     res,
                                     devSettings,
-                                    pdfSettings
+                                    pdfSettings,
+                                    techProfile
                                 )
                                 PrintManagerHelper.printPdfFile(context, pdf, calculator.name)
                             } catch (e: Exception) {

@@ -1,6 +1,9 @@
 package com.example.ui.navigation
 
 sealed class Screen(val route: String) {
+    // Startup Destination
+    object Splash : Screen("splash")
+
     // 4 Bottom Nav Destinations
     object Main : Screen("main")
     object Advance : Screen("advance")
@@ -19,4 +22,5 @@ sealed class Screen(val route: String) {
     object Developer : Screen("developer")
     object PrivacyPolicy : Screen("privacy_policy")
     object Notification : Screen("notification")
+    object TechnicianProfile : Screen("technician_profile")
 }

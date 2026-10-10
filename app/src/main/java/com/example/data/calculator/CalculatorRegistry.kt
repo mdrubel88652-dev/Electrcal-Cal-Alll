@@ -48,13 +48,23 @@ object CalculatorRegistry {
 
     fun search(query: String): List<CalculatorDefinition> {
         if (query.isBlank()) return allCalculators
-        val q = query.trim().lowercase()
+        val cleanQuery = query.trim().lowercase()
+        val tokens = cleanQuery.split("\\s+".toRegex()).filter { it.isNotBlank() }
         return allCalculators.filter { calc ->
-            calc.name.lowercase().contains(q) ||
-                calc.category.displayName.lowercase().contains(q) ||
-                calc.description.lowercase().contains(q) ||
-                calc.id.toString() == q ||
-                calc.keywords.any { it.lowercase().contains(q) }
+            val idStr = calc.id.toString()
+            val nameLower = calc.name.lowercase()
+            val catLower = calc.category.displayName.lowercase()
+            val descLower = calc.description.lowercase()
+            val keywordsLower = calc.keywords.map { it.lowercase() }
+
+            cleanQuery in nameLower ||
+                cleanQuery in catLower ||
+                cleanQuery in descLower ||
+                idStr.contains(cleanQuery) ||
+                keywordsLower.any { it.contains(cleanQuery) } ||
+                tokens.all { t ->
+                    t in nameLower || t in catLower || t in descLower || idStr.contains(t) || keywordsLower.any { it.contains(t) }
+                }
         }
     }
 

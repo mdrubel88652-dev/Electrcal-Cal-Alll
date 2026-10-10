@@ -3,8 +3,10 @@ package com.example
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNotNull
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.robolectric.Robolectric
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
@@ -16,6 +18,14 @@ class ExampleRobolectricTest {
   fun `read string from context`() {
     val context = ApplicationProvider.getApplicationContext<Context>()
     val appName = context.getString(R.string.app_name)
-    assertEquals("ELECTRICAL CALCULATION ALL", appName)
+    assertEquals("Electrical Cal/Pro", appName)
+  }
+
+  @Test
+  fun `launch MainActivity successfully`() {
+    val controller = Robolectric.buildActivity(MainActivity::class.java)
+    controller.create().start().resume()
+    val activity = controller.get()
+    assertNotNull(activity)
   }
 }

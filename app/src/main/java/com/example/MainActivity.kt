@@ -11,6 +11,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -34,6 +37,8 @@ import com.example.ui.screens.MaterialListScreen
 import com.example.ui.screens.NotificationScreen
 import com.example.ui.screens.PrivacyPolicyScreen
 import com.example.ui.screens.SettingsScreen
+import com.example.ui.screens.SplashScreen
+import com.example.ui.screens.TechnicianProfileScreen
 import com.example.ui.theme.ElectricalCalculationTheme
 
 class MainActivity : ComponentActivity() {
@@ -42,7 +47,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         setContent {
-            val app = ElectricalApp.instance
+            val app = ElectricalApp.getApp(this)
             val themeMode by app.settingsManager.themeModeFlow.collectAsState(initial = "LIGHT")
             val darkTheme = when (themeMode) {
                 "DARK" -> true
@@ -63,15 +68,18 @@ fun MainAppNavigation() {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
+    val isSplashScreen = currentRoute == Screen.Splash.route
+
     val isTopLevelRoute = currentRoute in listOf(
         Screen.Main.route,
         Screen.Advance.route,
         Screen.Basic.route,
-        Screen.Lower.route
+        Screen.Lower.route,
+        Screen.Settings.route
     )
 
     val currentTitle = when {
-        currentRoute == Screen.Main.route -> "ELECTRICAL CALCULATION ALL"
+        currentRoute == Screen.Main.route -> "Electrical Cal/Pro"
         currentRoute == Screen.Advance.route -> "Advance Calculators (55)"
         currentRoute == Screen.Basic.route -> "Basic Calculators (61)"
         currentRoute == Screen.Lower.route -> "Lower Calculators (51)"
@@ -83,30 +91,28 @@ fun MainAppNavigation() {
         currentRoute == Screen.Developer.route -> "Developer Information"
         currentRoute == Screen.PrivacyPolicy.route -> "Privacy Policy"
         currentRoute == Screen.Notification.route -> "Notifications"
+        currentRoute == Screen.TechnicianProfile.route -> "Technician Report Profile"
         currentRoute?.startsWith("calculator/") == true -> {
             val id = navBackStackEntry?.arguments?.getInt("calcId") ?: 0
             CalculatorRegistry.getById(id)?.name ?: "Calculator"
         }
-        else -> "ELECTRICAL CALCULATION ALL"
+        else -> "Electrical Cal/Pro"
     }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            AppTopBar(
-                title = currentTitle,
-                canNavigateBack = !isTopLevelRoute,
-                onNavigateBack = { navController.popBackStack() },
-                onNavigateToHistory = { navController.navigate(Screen.History.route) },
-                onNavigateToSettings = { navController.navigate(Screen.Settings.route) },
-                onNavigateToAbout = { navController.navigate(Screen.About.route) },
-                onNavigateToDeveloper = { navController.navigate(Screen.Developer.route) },
-                onNavigateToPrivacy = { navController.navigate(Screen.PrivacyPolicy.route) },
-                onNavigateToNotification = { navController.navigate(Screen.Notification.route) }
-            )
+            if (!isSplashScreen) {
+                AppTopBar(
+                    title = currentTitle,
+                    canNavigateBack = !isTopLevelRoute,
+                    onNavigateBack = { navController.popBackStack() },
+                    onNavigateToNotification = { navController.navigate(Screen.Notification.route) }
+                )
+            }
         },
         bottomBar = {
-            if (isTopLevelRoute) {
+            if (isTopLevelRoute && !isSplashScreen) {
                 AppBottomBar(
                     currentRoute = currentRoute,
                     onNavigate = { route ->
@@ -124,9 +130,22 @@ fun MainAppNavigation() {
     ) { innerPadding ->
         NavHost(
             navController = navController,
-            startDestination = Screen.Main.route,
-            modifier = Modifier.padding(innerPadding)
+            startDestination = Screen.Splash.route,
+            modifier = if (isSplashScreen) Modifier.fillMaxSize() else Modifier.padding(innerPadding)
         ) {
+            composable(Screen.Splash.route) {
+                SplashScreen(
+                    onLoadingFinished = {
+                        navController.navigate(Screen.Main.route) {
+                            popUpTo(Screen.Splash.route) {
+                                inclusive = true
+                            }
+                            launchSingleTop = true
+                        }
+                    }
+                )
+            }
+
             composable(Screen.Main.route) {
                 HomeScreen(
                     onNavigateToCalculator = { id ->
@@ -206,7 +225,20 @@ fun MainAppNavigation() {
             }
 
             composable(Screen.Settings.route) {
-                SettingsScreen()
+                SettingsScreen(
+                    onNavigateToHistory = { navController.navigate(Screen.History.route) },
+                    onNavigateToNotification = { navController.navigate(Screen.Notification.route) },
+                    onNavigateToAbout = { navController.navigate(Screen.About.route) },
+                    onNavigateToDeveloper = { navController.navigate(Screen.Developer.route) },
+                    onNavigateToPrivacy = { navController.navigate(Screen.PrivacyPolicy.route) },
+                    onNavigateToTechnicianProfile = { navController.navigate(Screen.TechnicianProfile.route) }
+                )
+            }
+
+            composable(Screen.TechnicianProfile.route) {
+                TechnicianProfileScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
             }
 
             composable(Screen.About.route) {

@@ -98,6 +98,7 @@ fun BuildingMaterialScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color(0xFFF8FAFC))
             .verticalScroll(rememberScrollState())
             .padding(16.dp)
             .testTag("building_material_screen")
@@ -105,7 +106,7 @@ fun BuildingMaterialScreen(
         // Hero Card with architectural house rendering
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(16.dp),
+            shape = RoundedCornerShape(8.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
             Column {
@@ -222,7 +223,7 @@ fun BuildingMaterialScreen(
 
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(14.dp),
+            shape = RoundedCornerShape(6.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Column(modifier = Modifier.padding(12.dp)) {

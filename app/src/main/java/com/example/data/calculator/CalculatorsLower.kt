@@ -348,23 +348,28 @@ object CalculatorsLower {
             name = "kW to Volts",
             level = CalculatorLevel.LOWER,
             category = CalculatorCategory.CONVERSION,
-            description = "Calculates required circuit voltage from electric power, current draw, and power factor.",
-            formula = "V = (kW × 1000) / (I × PF)  [1-Phase]",
+            description = "Calculates required circuit voltage from electric power, current draw, and power factor for 1-Phase or 3-Phase systems.",
+            formula = "1φ: V = (kW × 1000) / (I × PF) | 3φ: V = (kW × 1000) / (√3 × I × PF)",
+            supportsPhaseSelection = true,
+            defaultPhase = "3-Phase",
             inputs = listOf(
                 InputFieldConfig("kw", "Power (kW)", "11", listOf("kW"), "kW"),
-                InputFieldConfig("current", "Current (Amperes)", "50", listOf("A"), "A"),
-                InputFieldConfig("pf", "Power Factor", "0.9", emptyList(), "")
+                InputFieldConfig("current", "Current (Amperes)", "20", listOf("A"), "A"),
+                InputFieldConfig("pf", "Power Factor", "0.85", emptyList(), "")
             ),
-            calculate = { vals, _ ->
+            calculate = { vals, units ->
                 val kw = vals["kw"] ?: 11.0
-                val i = (vals["current"] ?: 50.0).coerceAtLeast(0.1)
-                val pf = (vals["pf"] ?: 0.9).coerceIn(0.1, 1.0)
-                val v = (kw * 1000.0) / (i * pf)
+                val i = (vals["current"] ?: 20.0).coerceAtLeast(0.1)
+                val pf = (vals["pf"] ?: 0.85).coerceIn(0.1, 1.0)
+                val is3p = (units["phase"] ?: units["is3Phase"] ?: "3-Phase") != "1-Phase"
+                val v = if (is3p) (kw * 1000.0) / (sqrt(3.0) * i * pf) else (kw * 1000.0) / (i * pf)
+                val form = if (is3p) "V = (kW × 1000) / (√3 × I × PF)" else "V = (kW × 1000) / (I × PF)"
                 CalculationResult(
                     primaryValue = ElectricalFormulas.fmt(v),
-                    primaryUnit = "Volts (V)",
-                    formulaUsed = "V = (kW × 1000) / (I × PF)",
-                    steps = listOf(CalculationStep(1, "Voltage", "(kW × 1000) / (I × PF)", "(${kw * 1000}) / ($i × $pf)", "${ElectricalFormulas.fmt(v)} V"))
+                    primaryUnit = "Volts (${if (is3p) "3-Phase Line-to-Line" else "Single Phase Line-to-Neutral"})",
+                    formulaUsed = form,
+                    steps = listOf(CalculationStep(1, "Voltage", form, "(${kw * 1000}) / (${if (is3p) "1.732 × " else ""}$i × $pf)", "${ElectricalFormulas.fmt(v)} V")),
+                    notes = listOf("Strict Phase Isolation: Single Phase ও Three Phase লোড পৃথকভাবে হিসাব করা হয়েছে।")
                 )
             }
         ),
@@ -377,23 +382,26 @@ object CalculatorsLower {
             category = CalculatorCategory.CONVERSION,
             description = "Calculates current in Amperes for single-phase or three-phase systems.",
             formula = "1φ: I = (kW × 1000) / (V × PF) | 3φ: I = (kW × 1000) / (√3 × V × PF)",
+            supportsPhaseSelection = true,
+            defaultPhase = "3-Phase",
             inputs = listOf(
                 InputFieldConfig("kw", "Power (kW)", "15", listOf("kW"), "kW"),
                 InputFieldConfig("voltage", "Voltage (V)", "400", listOf("V"), "V"),
-                InputFieldConfig("pf", "Power Factor", "0.85", emptyList(), ""),
-                InputFieldConfig("is3Phase", "System Phase (1 = Single Phase, 3 = Three Phase)", "3", listOf("3-Phase", "1-Phase"), "3-Phase")
+                InputFieldConfig("pf", "Power Factor", "0.85", emptyList(), "")
             ),
             calculate = { vals, units ->
                 val kw = vals["kw"] ?: 15.0
                 val v = (vals["voltage"] ?: 400.0).coerceAtLeast(1.0)
                 val pf = (vals["pf"] ?: 0.85).coerceIn(0.1, 1.0)
-                val is3p = units["is3Phase"] != "1-Phase"
+                val is3p = (units["phase"] ?: units["is3Phase"] ?: "3-Phase") != "1-Phase"
                 val i = if (is3p) (kw * 1000.0) / (sqrt(3.0) * v * pf) else (kw * 1000.0) / (v * pf)
+                val form = if (is3p) "I = (kW × 1000) / (√3 × V × PF)" else "I = (kW × 1000) / (V × PF)"
                 CalculationResult(
                     primaryValue = ElectricalFormulas.fmt(i),
-                    primaryUnit = "Amperes (A)",
-                    formulaUsed = if (is3p) "I = P / (√3 × V × PF)" else "I = P / (V × PF)",
-                    steps = listOf(CalculationStep(1, "Current", if (is3p) "(kW × 1000) / (1.732 × V × PF)" else "(kW × 1000) / (V × PF)", "${kw * 1000} / ...", "${ElectricalFormulas.fmt(i)} A"))
+                    primaryUnit = "Amperes (${if (is3p) "3-Phase" else "1-Phase"})",
+                    formulaUsed = form,
+                    steps = listOf(CalculationStep(1, "Current", form, "${kw * 1000} / (${if (is3p) "1.732 × " else ""}$v × $pf)", "${ElectricalFormulas.fmt(i)} A")),
+                    notes = listOf("Strict Phase Isolation: Single Phase ও Three Phase লোড পৃথকভাবে হিসাব করা হয়েছে।")
                 )
             }
         ),
@@ -481,21 +489,24 @@ object CalculatorsLower {
             category = CalculatorCategory.CONVERSION,
             description = "Calculates full load current in Amperes from apparent power (kVA) and voltage rating.",
             formula = "3φ: I = (kVA × 1000) / (√3 × V)  |  1φ: I = (kVA × 1000) / V",
+            supportsPhaseSelection = true,
+            defaultPhase = "3-Phase",
             inputs = listOf(
                 InputFieldConfig("kva", "Apparent Power (kVA)", "250", listOf("kVA"), "kVA"),
-                InputFieldConfig("voltage", "Voltage (V)", "400", listOf("V"), "V"),
-                InputFieldConfig("phase", "Phase System", "3", listOf("3-Phase", "1-Phase"), "3-Phase")
+                InputFieldConfig("voltage", "Voltage (V)", "400", listOf("V"), "V")
             ),
             calculate = { vals, units ->
                 val kva = vals["kva"] ?: 250.0
                 val v = (vals["voltage"] ?: 400.0).coerceAtLeast(1.0)
-                val is3p = units["phase"] != "1-Phase"
+                val is3p = (units["phase"] ?: units["is3Phase"] ?: "3-Phase") != "1-Phase"
                 val i = if (is3p) (kva * 1000.0) / (sqrt(3.0) * v) else (kva * 1000.0) / v
+                val form = if (is3p) "I = (kVA × 1000) / (√3 × V)" else "I = (kVA × 1000) / V"
                 CalculationResult(
                     primaryValue = ElectricalFormulas.fmt(i),
-                    primaryUnit = "Amperes (A)",
-                    formulaUsed = if (is3p) "I = (kVA × 1000) / (√3 × V)" else "I = (kVA × 1000) / V",
-                    steps = listOf(CalculationStep(1, "Current", "S / V", "${kva * 1000} / ${if (is3p) sqrt(3.0) * v else v}", "${ElectricalFormulas.fmt(i)} A"))
+                    primaryUnit = "Amperes (${if (is3p) "3-Phase" else "1-Phase"})",
+                    formulaUsed = form,
+                    steps = listOf(CalculationStep(1, "Current", form, "${kva * 1000} / ${if (is3p) "1.732 × $v" else "$v"}", "${ElectricalFormulas.fmt(i)} A")),
+                    notes = listOf("Strict Phase Isolation: Single Phase ও Three Phase লোড পৃথকভাবে হিসাব করা হয়েছে।")
                 )
             }
         ),
@@ -527,23 +538,28 @@ object CalculatorsLower {
             name = "Watts to Amps",
             level = CalculatorLevel.LOWER,
             category = CalculatorCategory.CONVERSION,
-            description = "Calculates electric current in Amperes from active power in Watts.",
-            formula = "I = Watts / (Volts × Power Factor)",
+            description = "Calculates electric current in Amperes from active power in Watts for Single Phase or Three Phase.",
+            formula = "1φ: I = Watts / (V × PF) | 3φ: I = Watts / (√3 × V × PF)",
+            supportsPhaseSelection = true,
+            defaultPhase = "1-Phase",
             inputs = listOf(
                 InputFieldConfig("watts", "Power (Watts)", "2200", listOf("W"), "W"),
                 InputFieldConfig("voltage", "Voltage (V)", "230", listOf("V"), "V"),
                 InputFieldConfig("pf", "Power Factor", "0.95", emptyList(), "")
             ),
-            calculate = { vals, _ ->
+            calculate = { vals, units ->
                 val w = vals["watts"] ?: 2200.0
                 val v = (vals["voltage"] ?: 230.0).coerceAtLeast(1.0)
                 val pf = (vals["pf"] ?: 0.95).coerceIn(0.1, 1.0)
-                val i = w / (v * pf)
+                val is3p = (units["phase"] ?: units["is3Phase"] ?: "1-Phase") != "1-Phase"
+                val i = if (is3p) w / (sqrt(3.0) * v * pf) else w / (v * pf)
+                val form = if (is3p) "I = Watts / (√3 × V × PF)" else "I = Watts / (V × PF)"
                 CalculationResult(
                     primaryValue = ElectricalFormulas.fmt(i),
-                    primaryUnit = "Amperes (A)",
-                    formulaUsed = "I = W / (V × PF)",
-                    steps = listOf(CalculationStep(1, "Current", "W / (V × PF)", "$w / ($v × $pf)", "${ElectricalFormulas.fmt(i)} A"))
+                    primaryUnit = "Amperes (${if (is3p) "3-Phase" else "1-Phase"})",
+                    formulaUsed = form,
+                    steps = listOf(CalculationStep(1, "Current", form, "$w / (${if (is3p) "1.732 × " else ""}$v × $pf)", "${ElectricalFormulas.fmt(i)} A")),
+                    notes = listOf("Strict Phase Isolation: Single Phase ও Three Phase লোড পৃথকভাবে হিসাব করা হয়েছে।")
                 )
             }
         ),
@@ -632,28 +648,33 @@ object CalculatorsLower {
             level = CalculatorLevel.LOWER,
             category = CalculatorCategory.BASIC_ELEC,
             description = "Comprehensive multi-variable solver for Watts, Volts, Amperes, and Power Factor.",
-            formula = "P = V × I × PF",
+            formula = "1φ: P = V × I × PF | 3φ: P = √3 × V × I × PF",
+            supportsPhaseSelection = true,
+            defaultPhase = "1-Phase",
             inputs = listOf(
                 InputFieldConfig("v", "Voltage (V)", "230", listOf("V"), "V"),
                 InputFieldConfig("i", "Current (A)", "10", listOf("A"), "A"),
                 InputFieldConfig("pf", "Power Factor", "0.9", emptyList(), "")
             ),
-            calculate = { vals, _ ->
+            calculate = { vals, units ->
                 val v = vals["v"] ?: 230.0
                 val i = vals["i"] ?: 10.0
                 val pf = (vals["pf"] ?: 0.9).coerceIn(0.1, 1.0)
-                val w = v * i * pf
-                val va = v * i
+                val is3p = (units["phase"] ?: units["is3Phase"] ?: "1-Phase") != "1-Phase"
+                val w = if (is3p) sqrt(3.0) * v * i * pf else v * i * pf
+                val va = if (is3p) sqrt(3.0) * v * i else v * i
+                val form = if (is3p) "P = √3 × V × I × PF" else "P = V × I × PF"
                 CalculationResult(
                     primaryValue = ElectricalFormulas.fmt(w),
-                    primaryUnit = "Watts (W)",
-                    formulaUsed = "P = V × I × PF",
-                    steps = listOf(CalculationStep(1, "Power", "V × I × PF", "$v × $i × $pf", "${ElectricalFormulas.fmt(w)} W")),
+                    primaryUnit = "Watts (${if (is3p) "3-Phase" else "1-Phase"})",
+                    formulaUsed = form,
+                    steps = listOf(CalculationStep(1, "Power", form, "${if (is3p) "1.732 × " else ""}$v × $i × $pf", "${ElectricalFormulas.fmt(w)} W")),
                     secondaryResults = listOf(
                         "Apparent Power" to "${ElectricalFormulas.fmt(va)} VA",
                         "Apparent Power (kVA)" to "${ElectricalFormulas.fmt(va / 1000.0)} kVA",
                         "Active Power (kW)" to "${ElectricalFormulas.fmt(w / 1000.0)} kW"
-                    )
+                    ),
+                    notes = listOf("Strict Phase Isolation: Single Phase ও Three Phase লোড পৃথকভাবে হিসাব করা হয়েছে।")
                 )
             }
         ),
@@ -664,23 +685,28 @@ object CalculatorsLower {
             name = "Amps to Watts",
             level = CalculatorLevel.LOWER,
             category = CalculatorCategory.CONVERSION,
-            description = "Converts current in Amperes to active power in Watts.",
-            formula = "Watts = Volts × Amps × Power Factor",
+            description = "Converts current in Amperes to active power in Watts for 1-Phase or 3-Phase.",
+            formula = "1φ: W = V × I × PF | 3φ: W = √3 × V × I × PF",
+            supportsPhaseSelection = true,
+            defaultPhase = "1-Phase",
             inputs = listOf(
                 InputFieldConfig("amps", "Current (A)", "16", listOf("A"), "A"),
                 InputFieldConfig("voltage", "Voltage (V)", "230", listOf("V"), "V"),
                 InputFieldConfig("pf", "Power Factor", "0.9", emptyList(), "")
             ),
-            calculate = { vals, _ ->
+            calculate = { vals, units ->
                 val a = vals["amps"] ?: 16.0
                 val v = vals["voltage"] ?: 230.0
                 val pf = (vals["pf"] ?: 0.9).coerceIn(0.1, 1.0)
-                val w = v * a * pf
+                val is3p = (units["phase"] ?: units["is3Phase"] ?: "1-Phase") != "1-Phase"
+                val w = if (is3p) sqrt(3.0) * v * a * pf else v * a * pf
+                val form = if (is3p) "W = √3 × V × I × PF" else "W = V × I × PF"
                 CalculationResult(
                     primaryValue = ElectricalFormulas.fmt(w),
-                    primaryUnit = "Watts (W)",
-                    formulaUsed = "W = V × I × PF",
-                    steps = listOf(CalculationStep(1, "Power", "V × I × PF", "$v × $a × $pf", "${ElectricalFormulas.fmt(w)} W"))
+                    primaryUnit = "Watts (${if (is3p) "3-Phase" else "1-Phase"})",
+                    formulaUsed = form,
+                    steps = listOf(CalculationStep(1, "Power", form, "${if (is3p) "1.732 × " else ""}$v × $a × $pf", "${ElectricalFormulas.fmt(w)} W")),
+                    notes = listOf("Strict Phase Isolation: Single Phase ও Three Phase লোড পৃথকভাবে হিসাব করা হয়েছে।")
                 )
             }
         ),
@@ -693,23 +719,26 @@ object CalculatorsLower {
             category = CalculatorCategory.CONVERSION,
             description = "Calculates power in kilowatts from current in Amperes and operating voltage.",
             formula = "1φ: kW = (V × I × PF) / 1000 | 3φ: kW = (√3 × V × I × PF) / 1000",
+            supportsPhaseSelection = true,
+            defaultPhase = "3-Phase",
             inputs = listOf(
                 InputFieldConfig("amps", "Current (A)", "40", listOf("A"), "A"),
                 InputFieldConfig("voltage", "Voltage (V)", "400", listOf("V"), "V"),
-                InputFieldConfig("pf", "Power Factor", "0.85", emptyList(), ""),
-                InputFieldConfig("phase", "Phase", "3", listOf("3-Phase", "1-Phase"), "3-Phase")
+                InputFieldConfig("pf", "Power Factor", "0.85", emptyList(), "")
             ),
             calculate = { vals, units ->
                 val a = vals["amps"] ?: 40.0
                 val v = vals["voltage"] ?: 400.0
                 val pf = (vals["pf"] ?: 0.85).coerceIn(0.1, 1.0)
-                val is3p = units["phase"] != "1-Phase"
+                val is3p = (units["phase"] ?: units["is3Phase"] ?: "3-Phase") != "1-Phase"
                 val kw = if (is3p) (sqrt(3.0) * v * a * pf) / 1000.0 else (v * a * pf) / 1000.0
+                val form = if (is3p) "kW = (√3 × V × I × PF) / 1000" else "kW = (V × I × PF) / 1000"
                 CalculationResult(
                     primaryValue = ElectricalFormulas.fmt(kw),
-                    primaryUnit = "kW",
-                    formulaUsed = if (is3p) "kW = (√3 × V × I × PF) / 1000" else "kW = (V × I × PF) / 1000",
-                    steps = listOf(CalculationStep(1, "Power", "P / 1000", "${if (is3p) "1.732 × $v × $a × $pf" else "$v × $a × $pf"} / 1000", "${ElectricalFormulas.fmt(kw)} kW"))
+                    primaryUnit = "kW (${if (is3p) "3-Phase" else "1-Phase"})",
+                    formulaUsed = form,
+                    steps = listOf(CalculationStep(1, "Power", form, "${if (is3p) "1.732 × $v × $a × $pf" else "$v × $a × $pf"} / 1000", "${ElectricalFormulas.fmt(kw)} kW")),
+                    notes = listOf("Strict Phase Isolation: Single Phase ও Three Phase লোড পৃথকভাবে হিসাব করা হয়েছে।")
                 )
             }
         ),
@@ -722,21 +751,24 @@ object CalculatorsLower {
             category = CalculatorCategory.CONVERSION,
             description = "Computes apparent power in kVA from line current and voltage.",
             formula = "3φ: kVA = (√3 × V × I) / 1000 | 1φ: kVA = (V × I) / 1000",
+            supportsPhaseSelection = true,
+            defaultPhase = "3-Phase",
             inputs = listOf(
                 InputFieldConfig("amps", "Current (A)", "144", listOf("A"), "A"),
-                InputFieldConfig("voltage", "Voltage (V)", "400", listOf("V"), "V"),
-                InputFieldConfig("phase", "Phase", "3", listOf("3-Phase", "1-Phase"), "3-Phase")
+                InputFieldConfig("voltage", "Voltage (V)", "400", listOf("V"), "V")
             ),
             calculate = { vals, units ->
                 val a = vals["amps"] ?: 144.0
                 val v = vals["voltage"] ?: 400.0
-                val is3p = units["phase"] != "1-Phase"
+                val is3p = (units["phase"] ?: units["is3Phase"] ?: "3-Phase") != "1-Phase"
                 val kva = if (is3p) (sqrt(3.0) * v * a) / 1000.0 else (v * a) / 1000.0
+                val form = if (is3p) "S = (√3 × V × I) / 1000" else "S = (V × I) / 1000"
                 CalculationResult(
                     primaryValue = ElectricalFormulas.fmt(kva),
-                    primaryUnit = "kVA",
-                    formulaUsed = if (is3p) "S = (√3 × V × I) / 1000" else "S = (V × I) / 1000",
-                    steps = listOf(CalculationStep(1, "Apparent Power", "S / 1000", "${if (is3p) "1.732 × $v × $a" else "$v × $a"} / 1000", "${ElectricalFormulas.fmt(kva)} kVA"))
+                    primaryUnit = "kVA (${if (is3p) "3-Phase" else "1-Phase"})",
+                    formulaUsed = form,
+                    steps = listOf(CalculationStep(1, "Apparent Power", form, "${if (is3p) "1.732 × $v × $a" else "$v × $a"} / 1000", "${ElectricalFormulas.fmt(kva)} kVA")),
+                    notes = listOf("Strict Phase Isolation: Single Phase ও Three Phase লোড পৃথকভাবে হিসাব করা হয়েছে।")
                 )
             }
         ),
@@ -748,20 +780,25 @@ object CalculatorsLower {
             level = CalculatorLevel.LOWER,
             category = CalculatorCategory.CONVERSION,
             description = "Converts current in Amperes and voltage in Volts to Volt-Amperes.",
-            formula = "VA = V × I",
+            formula = "1φ: VA = V × I | 3φ: VA = √3 × V × I",
+            supportsPhaseSelection = true,
+            defaultPhase = "1-Phase",
             inputs = listOf(
                 InputFieldConfig("amps", "Current (A)", "10", listOf("A"), "A"),
                 InputFieldConfig("voltage", "Voltage (V)", "230", listOf("V"), "V")
             ),
-            calculate = { vals, _ ->
+            calculate = { vals, units ->
                 val a = vals["amps"] ?: 10.0
                 val v = vals["voltage"] ?: 230.0
-                val va = v * a
+                val is3p = (units["phase"] ?: units["is3Phase"] ?: "1-Phase") != "1-Phase"
+                val va = if (is3p) sqrt(3.0) * v * a else v * a
+                val form = if (is3p) "VA = √3 × V × I" else "VA = V × I"
                 CalculationResult(
                     primaryValue = ElectricalFormulas.fmt(va),
-                    primaryUnit = "VA",
-                    formulaUsed = "VA = V × I",
-                    steps = listOf(CalculationStep(1, "VA", "V × I", "$v × $a", "${ElectricalFormulas.fmt(va)} VA"))
+                    primaryUnit = "VA (${if (is3p) "3-Phase" else "1-Phase"})",
+                    formulaUsed = form,
+                    steps = listOf(CalculationStep(1, "VA", form, "${if (is3p) "1.732 × " else ""}$v × $a", "${ElectricalFormulas.fmt(va)} VA")),
+                    notes = listOf("Strict Phase Isolation: Single Phase ও Three Phase লোড পৃথকভাবে হিসাব করা হয়েছে।")
                 )
             }
         ),
@@ -847,23 +884,28 @@ object CalculatorsLower {
             name = "Volts to kW",
             level = CalculatorLevel.LOWER,
             category = CalculatorCategory.CONVERSION,
-            description = "Calculates electric power in kW from voltage, current, and power factor.",
-            formula = "kW = (V × I × PF) / 1000",
+            description = "Calculates electric power in kW from voltage, current, and power factor for 1-Phase or 3-Phase.",
+            formula = "1φ: kW = (V × I × PF) / 1000 | 3φ: kW = (√3 × V × I × PF) / 1000",
+            supportsPhaseSelection = true,
+            defaultPhase = "3-Phase",
             inputs = listOf(
-                InputFieldConfig("volts", "Voltage (V)", "230", listOf("V"), "V"),
+                InputFieldConfig("volts", "Voltage (V)", "400", listOf("V"), "V"),
                 InputFieldConfig("current", "Current (A)", "25", listOf("A"), "A"),
                 InputFieldConfig("pf", "Power Factor", "0.9", emptyList(), "")
             ),
-            calculate = { vals, _ ->
-                val v = vals["volts"] ?: 230.0
+            calculate = { vals, units ->
+                val v = vals["volts"] ?: 400.0
                 val i = vals["current"] ?: 25.0
                 val pf = (vals["pf"] ?: 0.9).coerceIn(0.1, 1.0)
-                val kw = (v * i * pf) / 1000.0
+                val is3p = (units["phase"] ?: units["is3Phase"] ?: "3-Phase") != "1-Phase"
+                val kw = if (is3p) (sqrt(3.0) * v * i * pf) / 1000.0 else (v * i * pf) / 1000.0
+                val form = if (is3p) "kW = (√3 × V × I × PF) / 1000" else "kW = (V × I × PF) / 1000"
                 CalculationResult(
                     primaryValue = ElectricalFormulas.fmt(kw),
-                    primaryUnit = "kW",
-                    formulaUsed = "kW = (V × I × PF) / 1000",
-                    steps = listOf(CalculationStep(1, "Power", "(V × I × PF) / 1000", "($v × $i × $pf) / 1000", "${ElectricalFormulas.fmt(kw)} kW"))
+                    primaryUnit = "kW (${if (is3p) "3-Phase" else "1-Phase"})",
+                    formulaUsed = form,
+                    steps = listOf(CalculationStep(1, "Power", form, "(${if (is3p) "1.732 × " else ""}$v × $i × $pf) / 1000", "${ElectricalFormulas.fmt(kw)} kW")),
+                    notes = listOf("Strict Phase Isolation: Single Phase ও Three Phase লোড পৃথকভাবে হিসাব করা হয়েছে।")
                 )
             }
         ),
@@ -1171,25 +1213,28 @@ object CalculatorsLower {
             level = CalculatorLevel.LOWER,
             category = CalculatorCategory.BASIC_ELEC,
             description = "Calculates true active power (kW) consumed by single or three phase AC loads.",
-            formula = "P = √3 × V × I × cos φ  (3φ)  |  P = V × I × cos φ (1φ)",
+            formula = "1φ: P = V × I × cos φ | 3φ: P = √3 × V × I × cos φ",
+            supportsPhaseSelection = true,
+            defaultPhase = "3-Phase",
             inputs = listOf(
-                InputFieldConfig("voltage", "Line-to-Line Voltage (V)", "400", listOf("V"), "V"),
+                InputFieldConfig("voltage", "Voltage (V)", "400", listOf("V"), "V"),
                 InputFieldConfig("current", "Line Current (A)", "65", listOf("A"), "A"),
-                InputFieldConfig("pf", "Power Factor (cos φ)", "0.85", emptyList(), ""),
-                InputFieldConfig("phase", "Phase Configuration", "3", listOf("3-Phase", "1-Phase"), "3-Phase")
+                InputFieldConfig("pf", "Power Factor (cos φ)", "0.85", emptyList(), "")
             ),
             calculate = { vals, units ->
                 val v = vals["voltage"] ?: 400.0
                 val i = vals["current"] ?: 65.0
                 val pf = (vals["pf"] ?: 0.85).coerceIn(0.1, 1.0)
-                val is3p = units["phase"] != "1-Phase"
+                val is3p = (units["phase"] ?: units["is3Phase"] ?: "3-Phase") != "1-Phase"
                 val pWatts = if (is3p) sqrt(3.0) * v * i * pf else v * i * pf
+                val form = if (is3p) "P = √3 × V × I × cos φ" else "P = V × I × cos φ"
                 CalculationResult(
                     primaryValue = ElectricalFormulas.fmt(pWatts / 1000.0),
-                    primaryUnit = "kW (Kilowatts)",
-                    formulaUsed = if (is3p) "P = √3 × V × I × cos φ" else "P = V × I × cos φ",
-                    steps = listOf(CalculationStep(1, "Active Power", "P in Watts", "${if (is3p) "1.732 × $v × $i × $pf" else "$v × $i × $pf"}", "${ElectricalFormulas.fmt(pWatts)} W")),
-                    secondaryResults = listOf("Active Power in Watts" to "${ElectricalFormulas.fmt(pWatts)} W")
+                    primaryUnit = "kW (${if (is3p) "3-Phase" else "1-Phase"})",
+                    formulaUsed = form,
+                    steps = listOf(CalculationStep(1, "Active Power", form, "${if (is3p) "1.732 × " else ""}$v × $i × $pf", "${ElectricalFormulas.fmt(pWatts)} W")),
+                    secondaryResults = listOf("Active Power in Watts" to "${ElectricalFormulas.fmt(pWatts)} W"),
+                    notes = listOf("Strict Phase Isolation: Single Phase ও Three Phase লোড পৃথকভাবে হিসাব করা হয়েছে।")
                 )
             }
         ),
@@ -1201,22 +1246,25 @@ object CalculatorsLower {
             level = CalculatorLevel.LOWER,
             category = CalculatorCategory.BASIC_ELEC,
             description = "Calculates total apparent power (kVA) supplied to an AC electrical system.",
-            formula = "S = √3 × V × I  (3φ)  |  S = V × I (1φ)",
+            formula = "1φ: S = V × I | 3φ: S = √3 × V × I",
+            supportsPhaseSelection = true,
+            defaultPhase = "3-Phase",
             inputs = listOf(
                 InputFieldConfig("voltage", "Voltage (V)", "400", listOf("V"), "V"),
-                InputFieldConfig("current", "Current (A)", "120", listOf("A"), "A"),
-                InputFieldConfig("phase", "Phase", "3", listOf("3-Phase", "1-Phase"), "3-Phase")
+                InputFieldConfig("current", "Current (A)", "120", listOf("A"), "A")
             ),
             calculate = { vals, units ->
                 val v = vals["voltage"] ?: 400.0
                 val i = vals["current"] ?: 120.0
-                val is3p = units["phase"] != "1-Phase"
+                val is3p = (units["phase"] ?: units["is3Phase"] ?: "3-Phase") != "1-Phase"
                 val sVa = if (is3p) sqrt(3.0) * v * i else v * i
+                val form = if (is3p) "S = √3 × V × I" else "S = V × I"
                 CalculationResult(
                     primaryValue = ElectricalFormulas.fmt(sVa / 1000.0),
-                    primaryUnit = "kVA",
-                    formulaUsed = if (is3p) "S = √3 × V × I" else "S = V × I",
-                    steps = listOf(CalculationStep(1, "Apparent Power", "S in VA", "${if (is3p) "1.732 × $v × $i" else "$v × $i"}", "${ElectricalFormulas.fmt(sVa)} VA"))
+                    primaryUnit = "kVA (${if (is3p) "3-Phase" else "1-Phase"})",
+                    formulaUsed = form,
+                    steps = listOf(CalculationStep(1, "Apparent Power", form, "${if (is3p) "1.732 × " else ""}$v × $i", "${ElectricalFormulas.fmt(sVa)} VA")),
+                    notes = listOf("Strict Phase Isolation: Single Phase ও Three Phase লোড পৃথকভাবে হিসাব করা হয়েছে।")
                 )
             }
         ),
@@ -1227,28 +1275,33 @@ object CalculatorsLower {
             name = "Reactive Power Calculation",
             level = CalculatorLevel.LOWER,
             category = CalculatorCategory.BASIC_ELEC,
-            description = "Calculates imaginary reactive magnetizing power in kVAR.",
-            formula = "Q = √3 × V × I × sin φ  or  Q = √(S² - P²)",
+            description = "Calculates imaginary reactive magnetizing power in kVAR for Single or Three Phase.",
+            formula = "1φ: Q = V × I × sin φ | 3φ: Q = √3 × V × I × sin φ",
+            supportsPhaseSelection = true,
+            defaultPhase = "3-Phase",
             inputs = listOf(
                 InputFieldConfig("voltage", "Voltage (V)", "400", listOf("V"), "V"),
                 InputFieldConfig("current", "Current (A)", "80", listOf("A"), "A"),
                 InputFieldConfig("pf", "Power Factor (cos φ)", "0.80", emptyList(), "")
             ),
-            calculate = { vals, _ ->
+            calculate = { vals, units ->
                 val v = vals["voltage"] ?: 400.0
                 val i = vals["current"] ?: 80.0
                 val pf = (vals["pf"] ?: 0.80).coerceIn(0.1, 1.0)
+                val is3p = (units["phase"] ?: units["is3Phase"] ?: "3-Phase") != "1-Phase"
                 val sinPhi = sqrt(1.0 - (pf * pf))
-                val qVar = sqrt(3.0) * v * i * sinPhi
+                val qVar = if (is3p) sqrt(3.0) * v * i * sinPhi else v * i * sinPhi
+                val form = if (is3p) "Q = √3 × V × I × sin φ" else "Q = V × I × sin φ"
                 CalculationResult(
                     primaryValue = ElectricalFormulas.fmt(qVar / 1000.0),
-                    primaryUnit = "kVAR",
-                    formulaUsed = "Q = √3 × V × I × sin φ",
+                    primaryUnit = "kVAR (${if (is3p) "3-Phase" else "1-Phase"})",
+                    formulaUsed = form,
                     steps = listOf(
                         CalculationStep(1, "sin φ", "√(1 - cos² φ)", "√(1 - $pf²)", ElectricalFormulas.fmt(sinPhi, 4)),
-                        CalculationStep(2, "Reactive Power", "1.732 × V × I × sin φ", "1.732 × $v × $i × ${ElectricalFormulas.fmt(sinPhi, 3)}", "${ElectricalFormulas.fmt(qVar)} VAR")
+                        CalculationStep(2, "Reactive Power", form, "${if (is3p) "1.732 × " else ""}$v × $i × ${ElectricalFormulas.fmt(sinPhi, 3)}", "${ElectricalFormulas.fmt(qVar)} VAR")
                     ),
-                    secondaryResults = listOf("sin φ (Reactive Factor)" to ElectricalFormulas.fmt(sinPhi, 4))
+                    secondaryResults = listOf("sin φ (Reactive Factor)" to ElectricalFormulas.fmt(sinPhi, 4)),
+                    notes = listOf("Strict Phase Isolation: Single Phase ও Three Phase লোড পৃথকভাবে হিসাব করা হয়েছে।")
                 )
             }
         ),

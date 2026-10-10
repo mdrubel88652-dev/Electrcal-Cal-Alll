@@ -1,5 +1,5 @@
 {
-  "name": "ELECTRICAL CALCULATION ALL",
+  "name": "Electrical Cal/Pro",
   "description": "Electrical Engineering Calculation & Estimation with 167 professional engineering calculators and building material estimation.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

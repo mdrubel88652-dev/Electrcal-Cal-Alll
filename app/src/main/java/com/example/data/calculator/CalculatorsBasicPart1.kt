@@ -48,18 +48,44 @@ object CalculatorsBasicPart1 {
         // 4. Solar System Size Calculation All In
         CalcFactory.create(
             4, "Solar System Size Calculation All In", CalculatorLevel.BASIC, CalculatorCategory.POWER,
-            "Calculates required photovoltaic solar panel array capacity (kWp) and inverter size.",
-            "Solar Array kWp = (Daily Energy kWh) / (Peak Sun Hours × System Derate 0.75)",
-            listOf(input("dailyKwh", "Daily Energy Consumption (kWh)", "25", "kWh"), input("sunHours", "Average Peak Sun Hours (h)", "4.5", "Hours")),
+            "Solar PV System Design & Backup Calculation. Sizing for solar panels, inverter, battery bank, and charge controller.",
+            "P_pv (kW) = (Daily_kWh / Derate_0.80) / Peak_Sun_Hours | Battery_Ah = Backup_Wh / (V_sys × DoD × η_inv)",
+            listOf(
+                input("dailyKwh", "Daily Energy Consumption (kWh)", "10", "kWh/day"),
+                input("sunHours", "Average Peak Sun Hours (h)", "4.5", "Hours"),
+                input("backupHours", "Backup System Hours (h)", "6", "Hours"),
+                input("panelW", "Solar Panel Wattage (W)", "550", "W")
+            ),
             calc = { v ->
-                val kwh = v["dailyKwh"] ?: 25.0; val psh = v["sunHours"] ?: 4.5
-                val kwp = kwh / (psh * 0.75)
-                fmt(kwp) to "kWp Solar Array"
+                val kwh = v["dailyKwh"] ?: 10.0
+                val psh = v["sunHours"] ?: 4.5
+                val panelW = v["panelW"] ?: 550.0
+                val reqKw = (kwh / 0.80) / psh
+                val panels = ceil((reqKw * 1000.0) / panelW).toInt()
+                val actualKw = (panels * panelW) / 1000.0
+                fmt(actualKw) to "kW PV Array ($panels × ${panelW.toInt()}W)"
             },
+            standard = "IEC 62548 / NEC Article 690 / IEEE 1561 Solar PV Standards",
             secondaryBuilder = { v ->
-                val kwh = v["dailyKwh"] ?: 25.0; val psh = v["sunHours"] ?: 4.5
-                val kwp = kwh / (psh * 0.75)
-                listOf("Inverter Size" to "${fmt(kwp * 1.15)} kW Inverter", "Approx 550W Panels Needed" to "${ceil((kwp * 1000) / 550).toInt()} Panels")
+                val kwh = v["dailyKwh"] ?: 10.0
+                val psh = v["sunHours"] ?: 4.5
+                val backupH = v["backupHours"] ?: 6.0
+                val panelW = v["panelW"] ?: 550.0
+                val reqKw = (kwh / 0.80) / psh
+                val panels = ceil((reqKw * 1000.0) / panelW).toInt()
+                val actualKw = (panels * panelW) / 1000.0
+                val backupLoadKw = kwh / 24.0
+                val battKwh = (backupLoadKw * backupH) / (0.90 * 0.90 * 0.90)
+                val bankAh = (battKwh * 1000.0) / 48.0
+                val strings = ceil(bankAh / 200.0).toInt()
+                val totalBatt = 4 * strings
+                listOf(
+                    "Recommended PV Array" to "${fmt(actualKw)} kW ($panels Panels)",
+                    "Inverter Size" to "${fmt(ceil(actualKw * 1.25))} kVA Inverter",
+                    "Battery Bank" to "48V / ${strings * 200}Ah ($totalBatt × 12V 200Ah Units)",
+                    "Backup Runtime" to "${backupH.toInt()} Hours Expected",
+                    "Charge Controller" to "${ceil((actualKw * 1000.0 / 48.0) * 1.25).toInt()}A MPPT"
+                )
             }
         ),
         // 5. PFI Size Calculation / Capacitor Bank
@@ -68,11 +94,23 @@ object CalculatorsBasicPart1 {
             "Calculates required Power Factor Improvement capacitor bank kVAR rating to achieve target PF.",
             "Q (kVAR) = P (kW) × [tan(cos⁻¹ PF₁) - tan(cos⁻¹ PF₂)]",
             listOf(input("kw", "Active Load P (kW)", "200", "kW"), input("pf1", "Initial Power Factor", "0.72"), input("pf2", "Target Power Factor", "0.98")),
+            standard = "IEC 60831 / IEEE 18 / NEC 460 / BNBC",
             calc = { v ->
                 val p = v["kw"] ?: 200.0; val pf1 = (v["pf1"] ?: 0.72).coerceIn(0.1, 0.99); val pf2 = (v["pf2"] ?: 0.98).coerceIn(pf1, 1.0)
                 val phi1 = kotlin.math.acos(pf1); val phi2 = kotlin.math.acos(pf2)
                 val kvar = p * (kotlin.math.tan(phi1) - kotlin.math.tan(phi2))
                 fmt(kvar) to "kVAR Required"
+            },
+            secondaryBuilder = { v ->
+                val p = v["kw"] ?: 200.0; val pf1 = (v["pf1"] ?: 0.72).coerceIn(0.1, 0.99); val pf2 = (v["pf2"] ?: 0.98).coerceIn(pf1, 1.0)
+                val phi1 = kotlin.math.acos(pf1); val phi2 = kotlin.math.acos(pf2)
+                val kvar = p * (kotlin.math.tan(phi1) - kotlin.math.tan(phi2))
+                val bank = kotlin.math.ceil(kvar / 25.0) * 25.0
+                listOf(
+                    "Recommended Bank" to "$bank kVAR",
+                    "APFC Stages" to "6-Step Automatic Controller",
+                    "Capacitor Voltage Rating" to "440V / 480V Heavy Duty"
+                )
             }
         ),
         // 10. Transformer Size Calculation

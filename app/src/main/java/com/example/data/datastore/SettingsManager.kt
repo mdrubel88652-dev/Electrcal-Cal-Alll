@@ -13,10 +13,10 @@ import kotlinx.coroutines.flow.map
 private val Context.dataStore by preferencesDataStore(name = "electrical_settings")
 
 data class DeveloperReportSettings(
-    val developerName: String = "Lead Electrical Engineer",
+    val developerName: String = "Rubel Electrical Engineer & Developer",
     val companyName: String = "Industrial Electrical & Power Engineering",
-    val contactNumber: String = "+880 1700-123456",
-    val email: String = "electrical.engineer@domain.com",
+    val contactNumber: String = "+880 16094-92193",
+    val email: String = "mdrubel88652@gmail.com",
     val address: String = "Power Systems Engineering Division",
     val website: String = "www.electricalcalculationall.com"
 )
@@ -92,6 +92,13 @@ class SettingsManager(private val context: Context) {
         val SHOW_SPEC = booleanPreferencesKey("show_spec")
         val SHOW_BRAND = booleanPreferencesKey("show_brand")
         val SHOW_QTY = booleanPreferencesKey("show_qty")
+
+        // Technician Report Profile
+        val TECH_NAME = stringPreferencesKey("tech_name")
+        val TECH_COMPANY = stringPreferencesKey("tech_company")
+        val TECH_PHONE = stringPreferencesKey("tech_phone")
+        val TECH_EMAIL = stringPreferencesKey("tech_email")
+        val TECH_ADDRESS = stringPreferencesKey("tech_address")
     }
 
     val themeModeFlow: Flow<String> = context.dataStore.data.map { prefs ->
@@ -146,6 +153,16 @@ class SettingsManager(private val context: Context) {
         )
     }
 
+    val technicianProfileFlow: Flow<TechnicianReportProfile> = context.dataStore.data.map { prefs ->
+        TechnicianReportProfile(
+            name = prefs[Keys.TECH_NAME] ?: "",
+            company = prefs[Keys.TECH_COMPANY] ?: "",
+            contactPhone = prefs[Keys.TECH_PHONE] ?: "",
+            email = prefs[Keys.TECH_EMAIL] ?: "",
+            officialAddress = prefs[Keys.TECH_ADDRESS] ?: ""
+        )
+    }
+
     suspend fun setThemeMode(mode: String) {
         context.dataStore.edit { it[Keys.THEME_MODE] = mode }
     }
@@ -195,6 +212,26 @@ class SettingsManager(private val context: Context) {
             prefs[Keys.SHOW_SPEC] = settings.showSpecification
             prefs[Keys.SHOW_BRAND] = settings.showBrand
             prefs[Keys.SHOW_QTY] = settings.showQuantity
+        }
+    }
+
+    suspend fun updateTechnicianProfile(profile: TechnicianReportProfile) {
+        context.dataStore.edit { prefs ->
+            prefs[Keys.TECH_NAME] = profile.name.trim()
+            prefs[Keys.TECH_COMPANY] = profile.company.trim()
+            prefs[Keys.TECH_PHONE] = profile.contactPhone.trim()
+            prefs[Keys.TECH_EMAIL] = profile.email.trim()
+            prefs[Keys.TECH_ADDRESS] = profile.officialAddress.trim()
+        }
+    }
+
+    suspend fun resetTechnicianProfile() {
+        context.dataStore.edit { prefs ->
+            prefs.remove(Keys.TECH_NAME)
+            prefs.remove(Keys.TECH_COMPANY)
+            prefs.remove(Keys.TECH_PHONE)
+            prefs.remove(Keys.TECH_EMAIL)
+            prefs.remove(Keys.TECH_ADDRESS)
         }
     }
 }

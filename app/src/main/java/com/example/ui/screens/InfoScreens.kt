@@ -50,19 +50,26 @@ fun AboutScreen() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Spacer(modifier = Modifier.height(16.dp))
-        Image(
-            painter = painterResource(id = R.drawable.img_app_icon),
-            contentDescription = "App Icon",
-            modifier = Modifier.size(80.dp).clip(CircleShape)
-        )
+        Box(
+            modifier = Modifier
+                .size(96.dp)
+                .clip(RoundedCornerShape(20.dp))
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.ic_app_logo),
+                contentDescription = "App Icon",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = androidx.compose.ui.layout.ContentScale.Crop
+            )
+        }
         Spacer(modifier = Modifier.height(12.dp))
         Text(
-            text = "ELECTRICAL CALCULATION ALL",
+            text = "Electrical Cal/Pro",
             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
             color = ElectricBluePrimary
         )
         Text(
-            text = "Electrical Engineering Calculation & Estimation",
+            text = "Professional Electrical Engineering & Estimation",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -77,7 +84,7 @@ fun AboutScreen() {
 
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(6.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {
@@ -135,7 +142,7 @@ fun PrivacyPolicyScreen() {
     ) {
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(14.dp),
+            shape = RoundedCornerShape(6.dp),
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
         ) {
             Column(modifier = Modifier.padding(16.dp)) {

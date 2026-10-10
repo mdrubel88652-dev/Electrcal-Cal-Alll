@@ -96,6 +96,7 @@ fun LevelScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color(0xFFF8FAFC))
             .testTag("level_screen_${level.routeName}"),
         contentPadding = PaddingValues(bottom = 16.dp)
     ) {
@@ -105,7 +106,7 @@ fun LevelScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(8.dp),
                 elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
             ) {
                 Box(
@@ -174,7 +175,7 @@ fun LevelScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .testTag("level_search_bar"),
-                    shape = RoundedCornerShape(12.dp),
+                    shape = RoundedCornerShape(6.dp),
                     colors = OutlinedTextFieldDefaults.colors(
                         focusedContainerColor = MaterialTheme.colorScheme.surface,
                         unfocusedContainerColor = MaterialTheme.colorScheme.surface

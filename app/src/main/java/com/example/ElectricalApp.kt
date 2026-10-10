@@ -1,31 +1,40 @@
 package com.example
 
 import android.app.Application
+import android.content.Context
 import com.example.data.database.AppDatabase
 import com.example.data.datastore.SettingsManager
 import com.example.data.repository.HistoryRepository
 
 class ElectricalApp : Application() {
 
-    lateinit var database: AppDatabase
-        private set
+    val database: AppDatabase by lazy {
+        AppDatabase.getDatabase(this)
+    }
 
-    lateinit var historyRepository: HistoryRepository
-        private set
+    val historyRepository: HistoryRepository by lazy {
+        HistoryRepository(database.historyDao(), database.buildingProjectDao())
+    }
 
-    lateinit var settingsManager: SettingsManager
-        private set
+    val settingsManager: SettingsManager by lazy {
+        SettingsManager(this)
+    }
 
     override fun onCreate() {
         super.onCreate()
-        instance = this
-        database = AppDatabase.getDatabase(this)
-        historyRepository = HistoryRepository(database.historyDao(), database.buildingProjectDao())
-        settingsManager = SettingsManager(this)
+        _instance = this
     }
 
     companion object {
-        lateinit var instance: ElectricalApp
-            private set
+        private var _instance: ElectricalApp? = null
+
+        val instance: ElectricalApp
+            get() = _instance ?: synchronized(this) {
+                _instance ?: ElectricalApp().also { _instance = it }
+            }
+
+        fun getApp(context: Context): ElectricalApp {
+            return (context.applicationContext as? ElectricalApp) ?: instance
+        }
     }
 }

@@ -18,7 +18,12 @@ data class HistoryEntity(
     val resultUnit: String,
     val formula: String,
     val stepSummary: String,
-    val notes: String = ""
+    val notes: String = "",
+    val technicianName: String = "",
+    val technicianCompany: String = "",
+    val technicianPhone: String = "",
+    val technicianEmail: String = "",
+    val technicianAddress: String = ""
 )
 
 @Entity(tableName = "building_projects")

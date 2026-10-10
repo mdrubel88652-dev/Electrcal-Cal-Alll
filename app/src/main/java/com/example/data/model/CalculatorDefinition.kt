@@ -63,8 +63,23 @@ data class CalculatorDefinition(
     val standard: String = "IEC 60364 / IEEE Std",
     val keywords: List<String> = emptyList(),
     val inputs: List<InputFieldConfig>,
-    val calculate: (Map<String, Double>, Map<String, String>) -> CalculationResult
+    val calculate: (Map<String, Double>, Map<String, String>) -> CalculationResult,
+    val supportsPhaseSelection: Boolean = false,
+    val defaultPhase: String = "3-Phase"
 ) {
     val route: String
         get() = "calc_$id"
+
+    val isPhaseSelectable: Boolean
+        get() = supportsPhaseSelection || inputs.any { it.id.equals("phase", ignoreCase = true) || it.id.equals("is3Phase", ignoreCase = true) } || id in PHASE_ENABLED_CALC_IDS
+
+    companion object {
+        val PHASE_ENABLED_CALC_IDS = setOf(
+            1, 3, 5, 11, 13, 14, 16, 17, 18, 19, 20, 21, 22, 24, 28, 29, 36, 37,
+            48, 49, 50, 51, 52, 53, 55, 57, 59, 60, 61, 62,
+            69, 70, 74, 76, 80, 81, 82, 83, 84, 88,
+            101, 102, 103, 106, 107, 110, 111, 125, 128,
+            142, 143, 144, 145, 146, 160, 161, 162, 164, 165, 166
+        )
+    }
 }

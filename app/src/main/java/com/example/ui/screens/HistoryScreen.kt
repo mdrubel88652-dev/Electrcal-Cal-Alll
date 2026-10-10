@@ -1,6 +1,7 @@
 package com.example.ui.screens
 
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -58,7 +59,7 @@ fun HistoryScreen(
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
-    val app = ElectricalApp.instance
+    val app = ElectricalApp.getApp(context)
     var searchQuery by remember { mutableStateOf("") }
 
     val historyList by if (searchQuery.isBlank()) {
@@ -70,6 +71,7 @@ fun HistoryScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(Color(0xFFF8FAFC))
             .padding(16.dp)
             .testTag("history_screen")
     ) {
@@ -130,7 +132,7 @@ fun HistoryScreen(
                 items(historyList, key = { it.id }) { item ->
                     Card(
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(6.dp),
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                         elevation = CardDefaults.cardElevation(defaultElevation = 1.5.dp)
                     ) {
