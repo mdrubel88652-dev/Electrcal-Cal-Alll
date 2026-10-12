@@ -1,6 +1,8 @@
 package com.example.ui.screens
 
-import androidx.compose.foundation.Image
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -18,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -29,19 +32,23 @@ import androidx.compose.material.icons.filled.Assignment
 import androidx.compose.material.icons.filled.BatteryChargingFull
 import androidx.compose.material.icons.filled.Bolt
 import androidx.compose.material.icons.filled.Cable
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.ElectricBolt
 import androidx.compose.material.icons.filled.Engineering
 import androidx.compose.material.icons.filled.Factory
 import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Memory
 import androidx.compose.material.icons.filled.PrecisionManufacturing
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Shield
+import androidx.compose.material.icons.filled.SolarPower
 import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.StarBorder
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -63,16 +70,14 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ElectricalApp
-import com.example.R
 import com.example.data.calculator.CalculatorRegistry
 import com.example.data.model.CalculatorCategory
 import com.example.data.model.CalculatorDefinition
@@ -89,6 +94,7 @@ fun HomeScreen(
     onNavigateToSettings: () -> Unit = {},
     onNavigateToProject: () -> Unit = {},
     onNavigateToInformation: () -> Unit = {},
+    onNavigateToNotification: () -> Unit = {},
     onNavigateToAdvance: () -> Unit = {},
     onNavigateToBasic: () -> Unit = {},
     onNavigateToLower: () -> Unit = {}
@@ -101,15 +107,42 @@ fun HomeScreen(
 
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategoryFilter by remember { mutableStateOf<CalculatorCategory?>(null) }
+    var selectedLevelFilter by remember { mutableStateOf<CalculatorLevel?>(null) }
 
-    val filteredList = remember(searchQuery, selectedCategoryFilter) {
+    val isSearching = searchQuery.isNotBlank()
+
+    val filteredList = remember(searchQuery, selectedCategoryFilter, selectedLevelFilter) {
         var res = if (searchQuery.isNotBlank()) CalculatorRegistry.search(searchQuery)
         else CalculatorRegistry.allCalculators
 
         if (selectedCategoryFilter != null) {
             res = res.filter { it.category == selectedCategoryFilter }
         }
+        if (selectedLevelFilter != null) {
+            res = res.filter { it.level == selectedLevelFilter }
+        }
         res
+    }
+
+    val displayList = remember(selectedCategoryFilter) {
+        if (selectedCategoryFilter != null) {
+            CalculatorRegistry.allCalculators.filter { it.category == selectedCategoryFilter }
+        } else {
+            listOfNotNull(
+                CalculatorRegistry.getById(1),  // Factory Load
+                CalculatorRegistry.getById(6),  // Motor FLC
+                CalculatorRegistry.getById(2),  // Transformer
+                CalculatorRegistry.getById(3),  // House Wiring
+                CalculatorRegistry.getById(5),  // PFI Size
+                CalculatorRegistry.getById(4),  // Solar
+                CalculatorRegistry.getById(13), // Generator
+                CalculatorRegistry.getById(8),  // Earthing
+                CalculatorRegistry.getById(14), // Substation
+                CalculatorRegistry.getById(7),  // Voltage Drop
+                CalculatorRegistry.getById(9),  // Conduit Sizing
+                CalculatorRegistry.getById(12)  // Power Factor Improvement
+            )
+        }
     }
 
     LazyColumn(
@@ -117,726 +150,817 @@ fun HomeScreen(
             .fillMaxSize()
             .background(Color(0xFFF8FAFC))
             .testTag("home_screen_column"),
-        contentPadding = PaddingValues(bottom = 28.dp)
+        contentPadding = PaddingValues(bottom = 36.dp)
     ) {
-        // 1. HERO HEADER AREA with High-Definition Electrical Control Room Wallpaper & Glassmorphism
+        // ==========================================
+        // 1. FLOATING MODERN SEARCH & METRICS DOCK
+        // ==========================================
         item {
-            Box(
+            Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp))
-                    .background(
-                        Brush.verticalGradient(
-                            listOf(
-                                Color(0xFF061426),
-                                Color(0xFF0A1E38),
-                                Color(0xFF0F2E59)
-                            )
-                        )
-                    )
+                    .background(Color.White)
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
             ) {
-                // Background Hero Banner
-                Image(
-                    painter = painterResource(id = R.drawable.img_electrical_hero),
-                    contentDescription = null,
+                // Sleek Search Bar
+                Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(265.dp),
-                    contentScale = ContentScale.Crop,
-                    alpha = 0.32f
-                )
-
-                // Gradient scrim overlay
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(265.dp)
-                        .background(
-                            Brush.verticalGradient(
-                                listOf(
-                                    Color(0xCC050E1D),
-                                    Color(0xAA0A1E38),
-                                    Color(0xF00F172A)
-                                )
-                            )
-                        )
-                )
-
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 14.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
+                        .height(48.dp)
+                        .shadow(2.dp, RoundedCornerShape(24.dp)),
+                    shape = RoundedCornerShape(24.dp),
+                    color = Color(0xFFF1F5F9),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E8F0))
                 ) {
-                    // Top Actions Row: Information Guide on Left, Settings on Right
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 14.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Information Guide Chip
-                        Surface(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(18.dp))
-                                .clickable { onNavigateToInformation() },
-                            color = Color(0x3300E5FF),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x6600E5FF))
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Search",
+                            tint = Color(0xFF0284C7),
+                            modifier = Modifier.size(20.dp)
+                        )
+
+                        Spacer(modifier = Modifier.width(10.dp))
+
+                        Box(modifier = Modifier.weight(1f)) {
+                            if (searchQuery.isEmpty()) {
+                                Text(
+                                    text = "১৬৭টি ক্যালকুলেটরের যেকোনোটি সার্চ করুন...",
+                                    fontSize = 13.sp,
+                                    color = Color(0xFF94A3B8)
+                                )
+                            }
+                            BasicTextField(
+                                value = searchQuery,
+                                onValueChange = { searchQuery = it },
+                                singleLine = true,
+                                textStyle = TextStyle(
+                                    fontSize = 13.5.sp,
+                                    color = Color(0xFF0F172A),
+                                    fontWeight = FontWeight.Medium
+                                ),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .testTag("home_search_input")
+                            )
+                        }
+
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(
+                                onClick = { searchQuery = "" },
+                                modifier = Modifier.size(24.dp)
                             ) {
                                 Icon(
-                                    imageVector = Icons.Default.Info,
-                                    contentDescription = "Information",
-                                    tint = Color(0xFF00E5FF),
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Clear",
+                                    tint = Color(0xFF64748B),
                                     modifier = Modifier.size(16.dp)
                                 )
-                                Spacer(modifier = Modifier.width(5.dp))
-                                Text(
-                                    text = "সহায়িকা (১৬৭)",
-                                    fontSize = 11.5.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFE0F7FA)
-                                )
                             }
                         }
-
-                        // Settings Pill
-                        Surface(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(18.dp))
-                                .clickable { onNavigateToSettings() },
-                            color = Color(0x22FFFFFF),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0x44FFFFFF))
-                        ) {
-                            Row(
-                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Settings,
-                                    contentDescription = "Settings",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(5.dp))
-                                Text(
-                                    text = "সেটিংস",
-                                    fontSize = 11.5.sp,
-                                    fontWeight = FontWeight.Medium,
-                                    color = Color.White
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    // Center App Identity: Glowing Emblem + Brand Title
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(56.dp)
-                                .shadow(14.dp, CircleShape, spotColor = Color(0xFF00E5FF), ambientColor = Color(0xFF00E5FF))
-                                .clip(CircleShape)
-                                .border(2.dp, Color(0xFF00E5FF), CircleShape)
-                                .background(Color(0xFF0B192C)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Image(
-                                painter = painterResource(id = R.drawable.ic_app_logo),
-                                contentDescription = "App Logo",
-                                modifier = Modifier.fillMaxSize(),
-                                contentScale = ContentScale.Crop
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.width(12.dp))
-
-                        Column {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = "Electrical Cal/Pro",
-                                    fontSize = 20.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = Color.White,
-                                    letterSpacing = 0.5.sp
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Surface(
-                                    color = Color(0xFFF59E0B),
-                                    shape = RoundedCornerShape(4.dp)
-                                ) {
-                                    Text(
-                                        text = "167 PRO",
-                                        fontSize = 9.sp,
-                                        fontWeight = FontWeight.Black,
-                                        color = Color(0xFF1E1B4B),
-                                        modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp)
-                                    )
-                                }
-                            }
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = "পেশাদার ইলেকট্রিক্যাল ইঞ্জিনিয়ারিং ক্যালকুলেশন ও এস্টিমেশন",
-                                fontSize = 11.5.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = Color(0xFFBAE6FD)
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(14.dp))
-
-                    // Rounded Capsule Search Bar
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(46.dp)
-                            .shadow(6.dp, RoundedCornerShape(23.dp))
-                            .clip(RoundedCornerShape(23.dp))
-                            .background(Color.White)
-                            .border(1.dp, Color(0xFFBAE6FD), RoundedCornerShape(23.dp))
-                            .padding(horizontal = 14.dp),
-                        contentAlignment = Alignment.CenterStart
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Search,
-                                contentDescription = "Search",
-                                tint = Color(0xFF0284C7),
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Box(modifier = Modifier.weight(1f)) {
-                                if (searchQuery.isEmpty()) {
-                                    Text(
-                                        text = "ক্যালকুলেটর খুঁজুন (নাম বা বিষয়)...",
-                                        fontSize = 13.sp,
-                                        color = Color(0xFF94A3B8)
-                                    )
-                                }
-                                BasicTextField(
-                                    value = searchQuery,
-                                    onValueChange = { searchQuery = it },
-                                    singleLine = true,
-                                    textStyle = TextStyle(
-                                        fontSize = 13.5.sp,
-                                        color = Color(0xFF0F172A),
-                                        fontWeight = FontWeight.Medium
-                                    ),
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .testTag("home_search_input")
-                                )
-                            }
-                            if (searchQuery.isNotEmpty()) {
-                                IconButton(
-                                    onClick = { searchQuery = "" },
-                                    modifier = Modifier.size(24.dp)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Close,
-                                        contentDescription = "Clear",
-                                        tint = Color(0xFF64748B),
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                }
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    // Horizontal Quick Category Filter Chips
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .horizontalScroll(rememberScrollState()),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
-                    ) {
-                        CategoryPill(
-                            title = "সবগুলো (১৬৭)",
-                            isSelected = selectedCategoryFilter == null,
-                            onClick = { selectedCategoryFilter = null }
-                        )
-                        CategoryPill(
-                            title = "ফ্যাক্টরি লোড",
-                            isSelected = selectedCategoryFilter == CalculatorCategory.FACTORY,
-                            onClick = { selectedCategoryFilter = CalculatorCategory.FACTORY }
-                        )
-                        CategoryPill(
-                            title = "মোটর ও পাম্প",
-                            isSelected = selectedCategoryFilter == CalculatorCategory.MOTOR,
-                            onClick = { selectedCategoryFilter = CalculatorCategory.MOTOR }
-                        )
-                        CategoryPill(
-                            title = "ট্রান্সফরমার",
-                            isSelected = selectedCategoryFilter == CalculatorCategory.TRANSFORMER,
-                            onClick = { selectedCategoryFilter = CalculatorCategory.TRANSFORMER }
-                        )
-                        CategoryPill(
-                            title = "ক্যাবল সাইজ",
-                            isSelected = selectedCategoryFilter == CalculatorCategory.CABLE,
-                            onClick = { selectedCategoryFilter = CalculatorCategory.CABLE }
-                        )
-                        CategoryPill(
-                            title = "সোলার পাওয়ার",
-                            isSelected = selectedCategoryFilter == CalculatorCategory.POWER,
-                            onClick = { selectedCategoryFilter = CalculatorCategory.POWER }
-                        )
-                        CategoryPill(
-                            title = "ব্রেকার ও সুইচগিয়ার",
-                            isSelected = selectedCategoryFilter == CalculatorCategory.PROTECTION,
-                            onClick = { selectedCategoryFilter = CalculatorCategory.PROTECTION }
-                        )
-                        CategoryPill(
-                            title = "বিল্ডিং ওয়্যারিং",
-                            isSelected = selectedCategoryFilter == CalculatorCategory.BUILDING,
-                            onClick = { selectedCategoryFilter = CalculatorCategory.BUILDING }
-                        )
                     }
                 }
-            }
-        }
 
-        // 2. QUICK STAT CARDS ROW (Favorites | History | Material Estimate)
-        item {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 14.dp, end = 14.dp, top = 14.dp, bottom = 6.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                // Favorites Card
-                StatDashboardCard(
-                    modifier = Modifier.weight(1f),
-                    icon = Icons.Default.Star,
-                    iconBgColor = Color(0xFFFEF3C7),
-                    iconTint = Color(0xFFD97706),
-                    title = "পছন্দের হিসাব",
-                    subtitle = "${favoriteIds.size} টি সেভ করা",
-                    onClick = onNavigateToFavorites
-                )
+                Spacer(modifier = Modifier.height(10.dp))
 
-                // History Card
-                StatDashboardCard(
-                    modifier = Modifier.weight(1f),
-                    icon = Icons.Default.History,
-                    iconBgColor = Color(0xFFE0F2FE),
-                    iconTint = Color(0xFF0284C7),
-                    title = "হিসাবের ইতিহাস",
-                    subtitle = "${historyList.size} টি সম্পন্ন",
-                    onClick = onNavigateToHistory
-                )
-
-                // Material Estimate Card
-                StatDashboardCard(
-                    modifier = Modifier.weight(1.1f),
-                    icon = Icons.Default.Description,
-                    iconBgColor = Color(0xFFDCFCE7),
-                    iconTint = Color(0xFF16A34A),
-                    title = "মালামাল এস্টিমেট",
-                    subtitle = "বিল্ডিং ওয়্যারিং বিওকিউ",
-                    onClick = onNavigateToBuildingMaterial
-                )
-            }
-        }
-
-        // 3. LEVEL SELECTION TIERS (Advance 55, Basic 61, Lower 51, Building Material)
-        item {
-            Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)) {
+                // Quick Metric Bar
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text(
-                        text = "ক্যালকুলেটর লেভেল ও ক্যাটাগরি",
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF0F172A)
-                    )
-                    Text(
-                        text = "সব ক্যালকুলেটর (১৬৭) ➔",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF0284C7),
-                        modifier = Modifier.clickable { onNavigateToCalculatorsList() }
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    LevelBadgeCard(
-                        modifier = Modifier.weight(1f),
-                        title = "Advance",
-                        count = "৫৫ টি",
-                        subtitle = "পাওয়ার ও ফ্যাক্টরি",
-                        gradient = listOf(Color(0xFF4F46E5), Color(0xFF7C3AED)),
-                        icon = Icons.Default.ElectricBolt,
-                        onClick = onNavigateToAdvance
-                    )
-                    LevelBadgeCard(
-                        modifier = Modifier.weight(1f),
-                        title = "Basic",
-                        count = "৬১ টি",
-                        subtitle = "ওহম ও সার্কিট",
-                        gradient = listOf(Color(0xFF0284C7), Color(0xFF0EA5E9)),
-                        icon = Icons.Default.Speed,
-                        onClick = onNavigateToBasic
-                    )
-                    LevelBadgeCard(
-                        modifier = Modifier.weight(1f),
-                        title = "Lower",
-                        count = "৫১ টি",
-                        subtitle = "একক রূপান্তর",
-                        gradient = listOf(Color(0xFFD97706), Color(0xFFF59E0B)),
-                        icon = Icons.Default.Cable,
-                        onClick = onNavigateToLower
-                    )
-                }
-            }
-        }
-
-        // 4. FEATURED CONTRACT PROJECT MANAGER CARD (Technician 5-Project System)
-        item {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 14.dp, vertical = 8.dp)
-                    .clickable(onClick = onNavigateToProject),
-                shape = RoundedCornerShape(16.dp),
-                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(130.dp)
-                ) {
-                    // Futuristic Blueprint Project Artwork
-                    Image(
-                        painter = painterResource(id = R.drawable.img_project_tech),
-                        contentDescription = null,
-                        modifier = Modifier.fillMaxSize(),
-                        contentScale = ContentScale.Crop
-                    )
-
-                    // Dark gradient scrim
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.horizontalGradient(
-                                    listOf(
-                                        Color(0xF50A192F),
-                                        Color(0xDD0F2547),
-                                        Color(0x991E3A8A)
-                                    )
-                                )
-                            )
-                    )
-
                     Row(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(14.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column(
-                            modifier = Modifier.weight(1f),
-                            verticalArrangement = Arrangement.Center
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = Color(0xFFE0F2FE),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFBAE6FD))
                         ) {
-                            Surface(
-                                shape = RoundedCornerShape(4.dp),
-                                color = Color(0xFF10B981)
-                            ) {
-                                Text(
-                                    text = "★ টেকনিশিয়ান স্পেশাল",
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White,
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.height(4.dp))
-
                             Text(
-                                text = "কন্ট্রাক্ট প্রজেক্ট ও কিস্তির হিসাব",
-                                fontSize = 15.sp,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = Color.White
-                            )
-
-                            Spacer(modifier = Modifier.height(2.dp))
-
-                            Text(
-                                text = "৫টি প্রজেক্ট খতিয়ান • কিস্তির জমা-খরচ ট্র্যাকিং • অফিশিয়াল PDF ভাউচার ও প্রিন্ট",
-                                fontSize = 11.sp,
-                                color = Color(0xFFBAE6FD),
-                                maxLines = 2,
-                                lineHeight = 15.sp
+                                text = "১৬৭ ক্যালকুলেটর",
+                                fontSize = 11.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF0369A1),
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                             )
                         }
 
                         Surface(
                             shape = RoundedCornerShape(12.dp),
-                            color = Color(0xFF00E5FF),
-                            shadowElevation = 4.dp
+                            color = Color(0xFFFEF3C7),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFDE68A)),
+                            modifier = Modifier.clickable { onNavigateToFavorites() }
                         ) {
                             Row(
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(3.dp)
                             ) {
+                                Icon(
+                                    imageVector = Icons.Default.Star,
+                                    contentDescription = null,
+                                    tint = Color(0xFFD97706),
+                                    modifier = Modifier.size(12.dp)
+                                )
                                 Text(
-                                    text = "ম্যানেজ ➔",
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = Color(0xFF0A192F)
+                                    text = "${favoriteIds.size} প্রিয়",
+                                    fontSize = 11.5.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFB45309)
                                 )
                             }
+                        }
+
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = Color(0xFFF1F5F9),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                            modifier = Modifier.clickable { onNavigateToHistory() }
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(3.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.History,
+                                    contentDescription = null,
+                                    tint = Color(0xFF64748B),
+                                    modifier = Modifier.size(12.dp)
+                                )
+                                Text(
+                                    text = "${historyList.size} হিস্টোরি",
+                                    fontSize = 11.5.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF475569)
+                                )
+                            }
+                        }
+                    }
+
+                    Text(
+                        text = "সব দেখুন ➔",
+                        fontSize = 11.5.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF0284C7),
+                        modifier = Modifier.clickable { onNavigateToCalculatorsList() }
+                    )
+                }
+            }
+        }
+
+        // ==========================================
+        // 2. LIVE SEARCH RESULTS (IF SEARCHING)
+        // ==========================================
+        if (isSearching) {
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "সার্চ রেজাল্ট (${filteredList.size} টি ক্যালকুলেটর)",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF0F172A)
+                    )
+                    Text(
+                        text = "রিসেট করুন ✕",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF0284C7),
+                        modifier = Modifier.clickable { searchQuery = "" }
+                    )
+                }
+            }
+
+            if (filteredList.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(40.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = null,
+                                tint = Color(0xFF94A3B8),
+                                modifier = Modifier.size(44.dp)
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = "কোনো ক্যালকুলেটর পাওয়া যায়নি",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF64748B)
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "অন্য কীওয়ার্ড বা বাংলায় নাম লিখে চেষ্টা করুন",
+                                fontSize = 12.sp,
+                                color = Color(0xFF94A3B8)
+                            )
+                        }
+                    }
+                }
+            } else {
+                items(
+                    items = filteredList,
+                    key = { it.id }
+                ) { calc ->
+                    val isFavorite = favoriteIds.contains(calc.id)
+                    Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                        ModernCalculatorRowCard(
+                            calc = calc,
+                            isFavorite = isFavorite,
+                            onToggleFavorite = {
+                                coroutineScope.launch {
+                                    app.settingsManager.toggleFavorite(calc.id)
+                                }
+                            },
+                            onClick = { onNavigateToCalculator(calc.id) }
+                        )
+                    }
+                }
+            }
+        } else {
+            // ==========================================
+            // 3. MAIN DASHBOARD: 6 APP DOCK PORTALS
+            // ==========================================
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                ) {
+                    Text(
+                        text = "ক্যালকুলেটর লেভেল ও বিশেষ ফিচার",
+                        fontSize = 14.5.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF0F172A)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    // Row 1: Advance, Basic, Lower
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        ModernDockButton(
+                            modifier = Modifier.weight(1f),
+                            title = "অ্যাডভান্স",
+                            count = "৫৫ টি",
+                            badge = "ইন্ডাস্ট্রিয়াল",
+                            icon = Icons.Default.ElectricBolt,
+                            iconBg = Color(0xFF4338CA),
+                            cardBg = Color(0xFFEEF2FF),
+                            border = Color(0xFFC7D2FE),
+                            onClick = onNavigateToAdvance
+                        )
+
+                        ModernDockButton(
+                            modifier = Modifier.weight(1f),
+                            title = "বেসিক",
+                            count = "৬১ টি",
+                            badge = "সার্কিট ও লোড",
+                            icon = Icons.Default.Speed,
+                            iconBg = Color(0xFF0284C7),
+                            cardBg = Color(0xFFF0F9FF),
+                            border = Color(0xFFBAE6FD),
+                            onClick = onNavigateToBasic
+                        )
+
+                        ModernDockButton(
+                            modifier = Modifier.weight(1f),
+                            title = "লোয়ার",
+                            count = "৫১ টি",
+                            badge = "একক ও সূত্র",
+                            icon = Icons.Default.Cable,
+                            iconBg = Color(0xFFD97706),
+                            cardBg = Color(0xFFFFFBEB),
+                            border = Color(0xFFFDE68A),
+                            onClick = onNavigateToLower
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // Row 2: Building BOQ, Project Hub, Engineering Guides
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        ModernDockButton(
+                            modifier = Modifier.weight(1f),
+                            title = "বিল্ডিং BOQ",
+                            count = "এস্টিমেশন",
+                            badge = "ম্যাটেরিয়াল",
+                            icon = Icons.Default.Home,
+                            iconBg = Color(0xFF059669),
+                            cardBg = Color(0xFFECFDF5),
+                            border = Color(0xFFA7F3D0),
+                            onClick = onNavigateToBuildingMaterial
+                        )
+
+                        ModernDockButton(
+                            modifier = Modifier.weight(1f),
+                            title = "প্রজেক্ট খতিয়ান",
+                            count = "৫ টি সাইট",
+                            badge = "রিপোর্ট PDF",
+                            icon = Icons.Default.Assignment,
+                            iconBg = Color(0xFF0F172A),
+                            cardBg = Color(0xFFF1F5F9),
+                            border = Color(0xFFCBD5E1),
+                            onClick = onNavigateToProject
+                        )
+
+                        ModernDockButton(
+                            modifier = Modifier.weight(1f),
+                            title = "সহায়িকা গাইড",
+                            count = "১৬৭ সহায়িকা",
+                            badge = "সূত্র ও নিয়ম",
+                            icon = Icons.Outlined.Info,
+                            iconBg = Color(0xFFE11D48),
+                            cardBg = Color(0xFFFFF1F2),
+                            border = Color(0xFFFECDD3),
+                            onClick = onNavigateToInformation
+                        )
+                    }
+                }
+            }
+
+            // ==========================================
+            // 4. TOP ESSENTIAL TOOLS (HORIZONTAL HERO CARDS)
+            // ==========================================
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 6.dp, bottom = 12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 6.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "🔥 সর্বাধিক ব্যবহৃত ক্যালকুলেটর",
+                                fontSize = 14.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF0F172A)
+                            )
+                        }
+                        Text(
+                            text = "সব ক্যালকুলেটর ➔",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF0284C7),
+                            modifier = Modifier.clickable { onNavigateToCalculatorsList() }
+                        )
+                    }
+
+                    val featuredList = listOfNotNull(
+                        CalculatorRegistry.getById(1), // Factory Load
+                        CalculatorRegistry.getById(6), // Motor FLC
+                        CalculatorRegistry.getById(2), // Transformer Sizing
+                        CalculatorRegistry.getById(3), // House Wiring Material
+                        CalculatorRegistry.getById(5), // PFI Sizing
+                        CalculatorRegistry.getById(4)  // Solar PV
+                    )
+
+                    LazyRow(
+                        contentPadding = PaddingValues(horizontal = 16.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(featuredList, key = { it.id }) { calc ->
+                            FeaturedToolCard(
+                                calc = calc,
+                                isFavorite = favoriteIds.contains(calc.id),
+                                onToggleFavorite = {
+                                    coroutineScope.launch {
+                                        app.settingsManager.toggleFavorite(calc.id)
+                                    }
+                                },
+                                onClick = { onNavigateToCalculator(calc.id) }
+                            )
+                        }
+                    }
+                }
+            }
+
+            // ==========================================
+            // 5. SUBJECT FILTER CHIPS ROW
+            // ==========================================
+            item {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(start = 16.dp, end = 16.dp, top = 6.dp, bottom = 8.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "বিষয়ভিত্তিক ক্যালকুলেটর সমূহ",
+                            fontSize = 14.5.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF0F172A)
+                        )
+                        if (selectedCategoryFilter != null) {
+                            Text(
+                                text = "ফিল্টার রিসেট ✕",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF0284C7),
+                                modifier = Modifier.clickable { selectedCategoryFilter = null }
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        CategoryPill(
+                            title = "সব ক্যালকুলেটর",
+                            icon = Icons.Default.Bolt,
+                            isSelected = selectedCategoryFilter == null,
+                            onClick = { selectedCategoryFilter = null }
+                        )
+                        CategoryPill(
+                            title = "ট্রান্সফরমার",
+                            icon = Icons.Default.Memory,
+                            isSelected = selectedCategoryFilter == CalculatorCategory.TRANSFORMER,
+                            onClick = {
+                                selectedCategoryFilter = if (selectedCategoryFilter == CalculatorCategory.TRANSFORMER) null else CalculatorCategory.TRANSFORMER
+                            }
+                        )
+                        CategoryPill(
+                            title = "মোটর ও পাম্প",
+                            icon = Icons.Default.Speed,
+                            isSelected = selectedCategoryFilter == CalculatorCategory.MOTOR,
+                            onClick = {
+                                selectedCategoryFilter = if (selectedCategoryFilter == CalculatorCategory.MOTOR) null else CalculatorCategory.MOTOR
+                            }
+                        )
+                        CategoryPill(
+                            title = "ক্যাবল ও ওয়্যারিং",
+                            icon = Icons.Default.Cable,
+                            isSelected = selectedCategoryFilter == CalculatorCategory.CABLE,
+                            onClick = {
+                                selectedCategoryFilter = if (selectedCategoryFilter == CalculatorCategory.CABLE) null else CalculatorCategory.CABLE
+                            }
+                        )
+                        CategoryPill(
+                            title = "ফ্যাক্টরি ও পাওয়ার",
+                            icon = Icons.Default.Factory,
+                            isSelected = selectedCategoryFilter == CalculatorCategory.FACTORY,
+                            onClick = {
+                                selectedCategoryFilter = if (selectedCategoryFilter == CalculatorCategory.FACTORY) null else CalculatorCategory.FACTORY
+                            }
+                        )
+                        CategoryPill(
+                            title = "সোলার ও গ্রিড",
+                            icon = Icons.Default.SolarPower,
+                            isSelected = selectedCategoryFilter == CalculatorCategory.POWER,
+                            onClick = {
+                                selectedCategoryFilter = if (selectedCategoryFilter == CalculatorCategory.POWER) null else CalculatorCategory.POWER
+                            }
+                        )
+                        CategoryPill(
+                            title = "ব্যাটারি ও UPS",
+                            icon = Icons.Default.BatteryChargingFull,
+                            isSelected = selectedCategoryFilter == CalculatorCategory.BATTERY_UPS,
+                            onClick = {
+                                selectedCategoryFilter = if (selectedCategoryFilter == CalculatorCategory.BATTERY_UPS) null else CalculatorCategory.BATTERY_UPS
+                            }
+                        )
+                        CategoryPill(
+                            title = "ব্রেকার ও সুইচগিয়ার",
+                            icon = Icons.Default.Shield,
+                            isSelected = selectedCategoryFilter == CalculatorCategory.PROTECTION,
+                            onClick = {
+                                selectedCategoryFilter = if (selectedCategoryFilter == CalculatorCategory.PROTECTION) null else CalculatorCategory.PROTECTION
+                            }
+                        )
+                    }
+                }
+            }
+
+            // ==========================================
+            // 6. STREAMLINED CALCULATORS LIST
+            // ==========================================
+            items(
+                items = displayList,
+                key = { it.id }
+            ) { calc ->
+                val isFavorite = favoriteIds.contains(calc.id)
+                Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) {
+                    ModernCalculatorRowCard(
+                        calc = calc,
+                        isFavorite = isFavorite,
+                        onToggleFavorite = {
+                            coroutineScope.launch {
+                                app.settingsManager.toggleFavorite(calc.id)
+                            }
+                        },
+                        onClick = { onNavigateToCalculator(calc.id) }
+                    )
+                }
+            }
+
+            // ==========================================
+            // 7. CONTRACT PROJECT PRO BANNER (BOTTOM)
+            // ==========================================
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 14.dp)
+                        .clickable { onNavigateToProject() }
+                        .testTag("home_contract_project_card"),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color(0xFF0F172A)),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(44.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(Color(0xFF0284C7)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Assignment,
+                                    contentDescription = null,
+                                    tint = Color.White,
+                                    modifier = Modifier.size(24.dp)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.width(12.dp))
+
+                            Column {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Text(
+                                        text = "কন্ট্রাক্ট প্রজেক্ট ও হিসাব",
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Surface(
+                                        color = Color(0xFF0369A1),
+                                        shape = RoundedCornerShape(6.dp)
+                                    ) {
+                                        Text(
+                                            text = "PRO",
+                                            fontSize = 9.sp,
+                                            fontWeight = FontWeight.ExtraBold,
+                                            color = Color.White,
+                                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
+                                        )
+                                    }
+                                }
+                                Text(
+                                    text = "ওয়ার্ক অর্ডার, সাইট হিসাব ও প্রফেশনাল রিপোর্ট PDF",
+                                    fontSize = 11.sp,
+                                    color = Color(0xFF94A3B8)
+                                )
+                            }
+                        }
+
+                        Surface(
+                            shape = CircleShape,
+                            color = Color(0xFF1E293B)
+                        ) {
+                            Icon(
+                                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                                contentDescription = "Open",
+                                tint = Color(0xFF38BDF8),
+                                modifier = Modifier
+                                    .padding(8.dp)
+                                    .size(16.dp)
+                            )
                         }
                     }
                 }
             }
         }
+    }
+}
 
-        // 5. QUICK ACCESS POPULAR TOOLS (Transformer, Motor, Cable, Generator)
-        item {
-            Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 6.dp)) {
-                Text(
-                    text = "জনপ্রিয় ও প্রয়োজনীয় ক্যালকুলেটর",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF0F172A)
-                )
+// ========================================================
+// REUSABLE MODERN COMPONENTS FOR HOMESCREEN
+// ========================================================
 
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    QuickAccessCard(
-                        modifier = Modifier.weight(1f),
-                        title = "ট্রান্সফরমার",
-                        subtitle = "লোড ও কারেন্ট",
-                        icon = Icons.Default.Memory,
-                        bgColor = Color(0xFFE0F2FE),
-                        iconColor = Color(0xFF0284C7),
-                        onClick = { onNavigateToCalculator(2) }
-                    )
-                    QuickAccessCard(
-                        modifier = Modifier.weight(1f),
-                        title = "মোটর FLC",
-                        subtitle = "ক্ষমতা ও কারেন্ট",
-                        icon = Icons.Default.Bolt,
-                        bgColor = Color(0xFFDBEAFE),
-                        iconColor = Color(0xFF2563EB),
-                        onClick = { onNavigateToCalculator(3) }
-                    )
-                    QuickAccessCard(
-                        modifier = Modifier.weight(1f),
-                        title = "ক্যাবল সাইজ",
-                        subtitle = "ড্রপ ও সাইজিং",
-                        icon = Icons.Default.Cable,
-                        bgColor = Color(0xFFFFEDD5),
-                        iconColor = Color(0xFFEA580C),
-                        onClick = { onNavigateToCalculator(1) }
-                    )
-                    QuickAccessCard(
-                        modifier = Modifier.weight(1f),
-                        title = "জেনারেটর",
-                        subtitle = "kVA রেটিং",
-                        icon = Icons.Default.PrecisionManufacturing,
-                        bgColor = Color(0xFFF1F5F9),
-                        iconColor = Color(0xFF475569),
-                        onClick = { onNavigateToCalculator(13) }
-                    )
-                }
-            }
-        }
-
-        // 6. MAIN CATEGORY TILES (8 Categories Grid)
-        item {
-            Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp)) {
-                Text(
-                    text = "প্রধান বিষয়ভিত্তিক ক্যাটাগরি",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF0F172A)
-                )
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Row 1
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    CategoryIconCard(
-                        modifier = Modifier.weight(1f),
-                        title = "ফ্যাক্টরি লোড",
-                        subtitle = "Factory & Plant",
-                        icon = Icons.Default.Factory,
-                        color = Color(0xFF0284C7),
-                        isSelected = selectedCategoryFilter == CalculatorCategory.FACTORY,
-                        onClick = {
-                            selectedCategoryFilter = if (selectedCategoryFilter == CalculatorCategory.FACTORY) null else CalculatorCategory.FACTORY
-                        }
-                    )
-                    CategoryIconCard(
-                        modifier = Modifier.weight(1f),
-                        title = "পাওয়ার সিস্টেম",
-                        subtitle = "Solar & Grid",
-                        icon = Icons.Default.ElectricBolt,
-                        color = Color(0xFF0EA5E9),
-                        isSelected = selectedCategoryFilter == CalculatorCategory.POWER,
-                        onClick = {
-                            selectedCategoryFilter = if (selectedCategoryFilter == CalculatorCategory.POWER) null else CalculatorCategory.POWER
-                        }
-                    )
-                    CategoryIconCard(
-                        modifier = Modifier.weight(1f),
-                        title = "ট্রান্সফরমার",
-                        subtitle = "Substation",
-                        icon = Icons.Default.Memory,
-                        color = Color(0xFF2563EB),
-                        isSelected = selectedCategoryFilter == CalculatorCategory.TRANSFORMER,
-                        onClick = {
-                            selectedCategoryFilter = if (selectedCategoryFilter == CalculatorCategory.TRANSFORMER) null else CalculatorCategory.TRANSFORMER
-                        }
-                    )
-                    CategoryIconCard(
-                        modifier = Modifier.weight(1f),
-                        title = "জেনারেটর",
-                        subtitle = "DG & Backup",
-                        icon = Icons.Default.PrecisionManufacturing,
-                        color = Color(0xFF0D9488),
-                        isSelected = selectedCategoryFilter == CalculatorCategory.GENERATOR,
-                        onClick = {
-                            selectedCategoryFilter = if (selectedCategoryFilter == CalculatorCategory.GENERATOR) null else CalculatorCategory.GENERATOR
-                        }
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(8.dp))
-
-                // Row 2
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    CategoryIconCard(
-                        modifier = Modifier.weight(1f),
-                        title = "ব্যাটারি / UPS",
-                        subtitle = "Power Backup",
-                        icon = Icons.Default.BatteryChargingFull,
-                        color = Color(0xFF16A34A),
-                        isSelected = selectedCategoryFilter == CalculatorCategory.BATTERY_UPS,
-                        onClick = {
-                            selectedCategoryFilter = if (selectedCategoryFilter == CalculatorCategory.BATTERY_UPS) null else CalculatorCategory.BATTERY_UPS
-                        }
-                    )
-                    CategoryIconCard(
-                        modifier = Modifier.weight(1f),
-                        title = "বিল্ডিং ওয়্যারিং",
-                        subtitle = "House & DB",
-                        icon = Icons.Default.Engineering,
-                        color = Color(0xFF7C3AED),
-                        isSelected = selectedCategoryFilter == CalculatorCategory.BUILDING,
-                        onClick = {
-                            selectedCategoryFilter = if (selectedCategoryFilter == CalculatorCategory.BUILDING) null else CalculatorCategory.BUILDING
-                        }
-                    )
-                    CategoryIconCard(
-                        modifier = Modifier.weight(1f),
-                        title = "ব্রেকার / ফিউজ",
-                        subtitle = "Protection",
-                        icon = Icons.Default.Cable,
-                        color = Color(0xFFEA580C),
-                        isSelected = selectedCategoryFilter == CalculatorCategory.PROTECTION,
-                        onClick = {
-                            selectedCategoryFilter = if (selectedCategoryFilter == CalculatorCategory.PROTECTION) null else CalculatorCategory.PROTECTION
-                        }
-                    )
-                    CategoryIconCard(
-                        modifier = Modifier.weight(1f),
-                        title = "PFI / ক্যাপাসিটর",
-                        subtitle = "Power Factor",
-                        icon = Icons.Default.Bolt,
-                        color = Color(0xFF0284C7),
-                        isSelected = selectedCategoryFilter == CalculatorCategory.PFI,
-                        onClick = {
-                            selectedCategoryFilter = if (selectedCategoryFilter == CalculatorCategory.PFI) null else CalculatorCategory.PFI
-                        }
-                    )
-                }
-            }
-        }
-
-        // 7. CALCULATORS LIST HEADER
-        item {
-            Row(
+@Composable
+private fun ModernDockButton(
+    modifier: Modifier = Modifier,
+    title: String,
+    count: String,
+    badge: String,
+    icon: ImageVector,
+    iconBg: Color,
+    cardBg: Color,
+    border: Color,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = modifier
+            .clickable(onClick = onClick)
+            .shadow(1.dp, RoundedCornerShape(14.dp)),
+        shape = RoundedCornerShape(14.dp),
+        colors = CardDefaults.cardColors(containerColor = cardBg),
+        border = androidx.compose.foundation.BorderStroke(1.dp, border)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 12.dp, horizontal = 8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 14.dp, end = 14.dp, top = 12.dp, bottom = 6.dp),
+                    .size(38.dp)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(iconBg),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = title,
+                    tint = Color.White,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Text(
+                text = title,
+                fontSize = 12.5.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF0F172A),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            Text(
+                text = count,
+                fontSize = 10.5.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color(0xFF64748B),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+@Composable
+private fun FeaturedToolCard(
+    calc: CalculatorDefinition,
+    isFavorite: Boolean,
+    onToggleFavorite: () -> Unit,
+    onClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .width(220.dp)
+            .clickable(onClick = onClick)
+            .shadow(2.dp, RoundedCornerShape(16.dp)),
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E8F0))
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(14.dp)
+        ) {
+            // Category & Favorite Row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = if (selectedCategoryFilter != null) "${selectedCategoryFilter?.displayName} (${filteredList.size})"
-                           else "সকল ইলেকট্রিক্যাল ক্যালকুলেটর (${filteredList.size} টি)",
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF0F172A)
-                )
-
-                if (selectedCategoryFilter != null || searchQuery.isNotEmpty()) {
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = when (calc.level) {
+                        CalculatorLevel.ADVANCE -> Color(0xFFEEF2FF)
+                        CalculatorLevel.BASIC -> Color(0xFFF0F9FF)
+                        CalculatorLevel.LOWER -> Color(0xFFFFFBEB)
+                    }
+                ) {
                     Text(
-                        text = "ফিল্টার রিসেট ✕",
-                        fontSize = 12.sp,
+                        text = calc.level.displayName,
+                        fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF0284C7),
-                        modifier = Modifier.clickable {
-                            selectedCategoryFilter = null
-                            searchQuery = ""
-                        }
+                        color = when (calc.level) {
+                            CalculatorLevel.ADVANCE -> Color(0xFF4338CA)
+                            CalculatorLevel.BASIC -> Color(0xFF0284C7)
+                            CalculatorLevel.LOWER -> Color(0xFFD97706)
+                        },
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                    )
+                }
+
+                IconButton(
+                    onClick = onToggleFavorite,
+                    modifier = Modifier.size(28.dp)
+                ) {
+                    Icon(
+                        imageVector = if (isFavorite) Icons.Default.Star else Icons.Outlined.StarBorder,
+                        contentDescription = "Favorite",
+                        tint = if (isFavorite) Color(0xFFF59E0B) else Color(0xFF94A3B8),
+                        modifier = Modifier.size(18.dp)
                     )
                 }
             }
-        }
 
-        // 8. RICH CALCULATORS LIST ITEMS
-        items(
-            items = filteredList,
-            key = { it.id }
-        ) { calc ->
-            val isFavorite = favoriteIds.contains(calc.id)
-            Box(modifier = Modifier.padding(horizontal = 14.dp, vertical = 4.dp)) {
-                PolishedCalculatorCard(
-                    calc = calc,
-                    isFavorite = isFavorite,
-                    onToggleFavorite = {
-                        coroutineScope.launch {
-                            app.settingsManager.toggleFavorite(calc.id)
-                        }
-                    },
-                    onClick = { onNavigateToCalculator(calc.id) }
-                )
+            Spacer(modifier = Modifier.height(10.dp))
+
+            Text(
+                text = calc.name,
+                fontSize = 13.5.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color(0xFF0F172A),
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                lineHeight = 18.sp
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = calc.standard,
+                fontSize = 10.5.sp,
+                color = Color(0xFF64748B),
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(8.dp),
+                color = Color(0xFF0284C7)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 6.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "গণনা করুন",
+                        fontSize = 11.5.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowForward,
+                        contentDescription = null,
+                        tint = Color.White,
+                        modifier = Modifier.size(12.dp)
+                    )
+                }
             }
         }
     }
@@ -845,364 +969,155 @@ fun HomeScreen(
 @Composable
 private fun CategoryPill(
     title: String,
+    icon: ImageVector,
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
     Surface(
-        modifier = Modifier
-            .clip(RoundedCornerShape(16.dp))
-            .clickable(onClick = onClick),
-        color = if (isSelected) Color(0xFF00E5FF) else Color(0x33FFFFFF),
+        shape = RoundedCornerShape(20.dp),
+        color = if (isSelected) Color(0xFF0284C7) else Color.White,
         border = androidx.compose.foundation.BorderStroke(
             1.dp,
-            if (isSelected) Color(0xFF00E5FF) else Color(0x33FFFFFF)
+            if (isSelected) Color(0xFF0284C7) else Color(0xFFE2E8F0)
         ),
-        shape = RoundedCornerShape(16.dp)
+        modifier = Modifier.clickable(onClick = onClick)
     ) {
-        Text(
-            text = title,
-            fontSize = 11.5.sp,
-            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-            color = if (isSelected) Color(0xFF0A192F) else Color.White,
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-        )
-    }
-}
-
-@Composable
-private fun StatDashboardCard(
-    modifier: Modifier = Modifier,
-    icon: ImageVector,
-    iconBgColor: Color,
-    iconTint: Color,
-    title: String,
-    subtitle: String,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = modifier.clickable(onClick = onClick),
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.5.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E8F0))
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp)
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(6.dp)
         ) {
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(iconBgColor),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = iconTint,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-            Spacer(modifier = Modifier.height(8.dp))
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = if (isSelected) Color.White else Color(0xFF64748B),
+                modifier = Modifier.size(14.dp)
+            )
             Text(
                 text = title,
                 fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF0F172A),
-                maxLines = 1
-            )
-            Spacer(modifier = Modifier.height(1.dp))
-            Text(
-                text = subtitle,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color(0xFF64748B),
-                maxLines = 1
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                color = if (isSelected) Color.White else Color(0xFF334155)
             )
         }
     }
 }
 
 @Composable
-private fun LevelBadgeCard(
-    modifier: Modifier = Modifier,
-    title: String,
-    count: String,
-    subtitle: String,
-    gradient: List<Color>,
-    icon: ImageVector,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = modifier.clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(Brush.linearGradient(gradient))
-                .padding(10.dp)
-        ) {
-            Column {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = title,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Black,
-                        color = Color.White
-                    )
-                    Icon(
-                        imageVector = icon,
-                        contentDescription = null,
-                        tint = Color(0xCCFFFFFF),
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Text(
-                    text = count,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    color = Color.White
-                )
-
-                Text(
-                    text = subtitle,
-                    fontSize = 9.5.sp,
-                    color = Color(0xEEFFFFFF),
-                    maxLines = 1
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun QuickAccessCard(
-    modifier: Modifier = Modifier,
-    title: String,
-    subtitle: String,
-    icon: ImageVector,
-    bgColor: Color,
-    iconColor: Color,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = modifier
-            .height(88.dp)
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E8F0))
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(bgColor),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = iconColor,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
-            Spacer(modifier = Modifier.height(5.dp))
-            Text(
-                text = title,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF0F172A),
-                maxLines = 1
-            )
-            Text(
-                text = subtitle,
-                fontSize = 9.sp,
-                color = Color(0xFF64748B),
-                maxLines = 1
-            )
-        }
-    }
-}
-
-@Composable
-private fun CategoryIconCard(
-    modifier: Modifier = Modifier,
-    title: String,
-    subtitle: String,
-    icon: ImageVector,
-    color: Color,
-    isSelected: Boolean,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = modifier
-            .height(80.dp)
-            .clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) color.copy(alpha = 0.12f) else Color.White
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-        border = androidx.compose.foundation.BorderStroke(
-            1.dp,
-            if (isSelected) color else Color(0xFFE2E8F0)
-        )
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(6.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(32.dp)
-                    .clip(CircleShape)
-                    .background(color.copy(alpha = 0.12f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(
-                    imageVector = icon,
-                    contentDescription = null,
-                    tint = color,
-                    modifier = Modifier.size(18.dp)
-                )
-            }
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = title,
-                fontSize = 10.5.sp,
-                fontWeight = FontWeight.Bold,
-                color = if (isSelected) color else Color(0xFF1E293B),
-                maxLines = 1
-            )
-            Text(
-                text = subtitle,
-                fontSize = 8.5.sp,
-                color = Color(0xFF64748B),
-                maxLines = 1
-            )
-        }
-    }
-}
-
-@Composable
-private fun PolishedCalculatorCard(
+private fun ModernCalculatorRowCard(
     calc: CalculatorDefinition,
     isFavorite: Boolean,
     onToggleFavorite: () -> Unit,
     onClick: () -> Unit
 ) {
-    val levelColor = when (calc.level) {
-        CalculatorLevel.ADVANCE -> Color(0xFF7C3AED)
-        CalculatorLevel.BASIC -> Color(0xFF0284C7)
-        CalculatorLevel.LOWER -> Color(0xFFD97706)
-    }
-
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick),
+            .clickable(onClick = onClick)
+            .shadow(1.dp, RoundedCornerShape(12.dp)),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.5.dp),
         border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E8F0))
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 10.dp),
-            verticalAlignment = Alignment.CenterVertically
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            // Category Icon Badge
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(RoundedCornerShape(10.dp))
-                    .background(levelColor.copy(alpha = 0.12f)),
-                contentAlignment = Alignment.Center
+            // Left: Icon + Titles
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.weight(1f)
             ) {
-                Icon(
-                    imageVector = Icons.Default.ElectricBolt,
-                    contentDescription = null,
-                    tint = levelColor,
-                    modifier = Modifier.size(20.dp)
-                )
-            }
+                Box(
+                    modifier = Modifier
+                        .size(38.dp)
+                        .clip(RoundedCornerShape(10.dp))
+                        .background(
+                            when (calc.level) {
+                                CalculatorLevel.ADVANCE -> Color(0xFFEEF2FF)
+                                CalculatorLevel.BASIC -> Color(0xFFF0F9FF)
+                                CalculatorLevel.LOWER -> Color(0xFFFFFBEB)
+                            }
+                        ),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = when (calc.category) {
+                            CalculatorCategory.TRANSFORMER -> Icons.Default.Memory
+                            CalculatorCategory.MOTOR -> Icons.Default.Speed
+                            CalculatorCategory.CABLE -> Icons.Default.Cable
+                            CalculatorCategory.BUILDING -> Icons.Default.Home
+                            CalculatorCategory.FACTORY -> Icons.Default.Factory
+                            CalculatorCategory.POWER -> Icons.Default.SolarPower
+                            CalculatorCategory.BATTERY_UPS -> Icons.Default.BatteryChargingFull
+                            CalculatorCategory.PROTECTION -> Icons.Default.Shield
+                            else -> Icons.Default.ElectricBolt
+                        },
+                        contentDescription = null,
+                        tint = when (calc.level) {
+                            CalculatorLevel.ADVANCE -> Color(0xFF4338CA)
+                            CalculatorLevel.BASIC -> Color(0xFF0284C7)
+                            CalculatorLevel.LOWER -> Color(0xFFD97706)
+                        },
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
 
-            Spacer(modifier = Modifier.width(10.dp))
+                Spacer(modifier = Modifier.width(12.dp))
 
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = calc.name,
-                    fontSize = 13.5.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF0F172A)
-                )
-
-                Spacer(modifier = Modifier.height(2.dp))
-
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Surface(
-                        shape = RoundedCornerShape(4.dp),
-                        color = levelColor.copy(alpha = 0.12f)
+                Column {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
                         Text(
-                            text = calc.level.displayName,
-                            fontSize = 9.sp,
+                            text = calc.name,
+                            fontSize = 13.5.sp,
                             fontWeight = FontWeight.Bold,
-                            color = levelColor,
-                            modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.5.dp)
+                            color = Color(0xFF0F172A),
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f, fill = false)
                         )
+
+                        Surface(
+                            shape = RoundedCornerShape(4.dp),
+                            color = when (calc.level) {
+                                CalculatorLevel.ADVANCE -> Color(0xFFEEF2FF)
+                                CalculatorLevel.BASIC -> Color(0xFFF0F9FF)
+                                CalculatorLevel.LOWER -> Color(0xFFFFFBEB)
+                            }
+                        ) {
+                            Text(
+                                text = calc.level.displayName,
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = when (calc.level) {
+                                    CalculatorLevel.ADVANCE -> Color(0xFF4338CA)
+                                    CalculatorLevel.BASIC -> Color(0xFF0284C7)
+                                    CalculatorLevel.LOWER -> Color(0xFFD97706)
+                                },
+                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
+                            )
+                        }
                     }
 
-                    Spacer(modifier = Modifier.width(6.dp))
+                    Spacer(modifier = Modifier.height(2.dp))
 
                     Text(
-                        text = calc.category.displayName,
-                        fontSize = 10.5.sp,
-                        color = Color(0xFF64748B)
+                        text = "${calc.category.displayName} • ${calc.standard}",
+                        fontSize = 11.sp,
+                        color = Color(0xFF64748B),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
-
-                    Spacer(modifier = Modifier.width(6.dp))
-
-                    Surface(
-                        shape = RoundedCornerShape(3.dp),
-                        color = Color(0xFFF1F5F9)
-                    ) {
-                        Text(
-                            text = calc.standard,
-                            fontSize = 9.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = Color(0xFF475569),
-                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
-                        )
-                    }
                 }
             }
 
-            // Favorite button
+            // Right: Favorite Icon
             IconButton(
                 onClick = onToggleFavorite,
                 modifier = Modifier.size(32.dp)
@@ -1210,18 +1125,10 @@ private fun PolishedCalculatorCard(
                 Icon(
                     imageVector = if (isFavorite) Icons.Default.Star else Icons.Outlined.StarBorder,
                     contentDescription = "Favorite",
-                    tint = if (isFavorite) Color(0xFFF59E0B) else Color(0xFFCBD5E1),
-                    modifier = Modifier.size(19.dp)
+                    tint = if (isFavorite) Color(0xFFF59E0B) else Color(0xFF94A3B8),
+                    modifier = Modifier.size(18.dp)
                 )
             }
-
-            // Arrow
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowForward,
-                contentDescription = "Open",
-                tint = Color(0xFF94A3B8),
-                modifier = Modifier.size(16.dp)
-            )
         }
     }
 }

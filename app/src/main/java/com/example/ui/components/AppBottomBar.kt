@@ -22,6 +22,7 @@ import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.ElectricBolt
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -65,8 +66,7 @@ fun AppBottomBar(
         NavItemData(Screen.Main.route, "Dashboard", Icons.Default.Home, Color(0xFF0284C7), "nav_item_dashboard"),
         NavItemData(Screen.Calculators.route, "Calculators", Icons.Default.Calculate, Color(0xFF0284C7), "nav_item_calculators"),
         NavItemData(Screen.Project.route, "Project", Icons.Default.Assignment, Color(0xFF0284C7), "nav_item_project"),
-        NavItemData(Screen.Reports.route, "Reports", Icons.Default.Description, Color(0xFF0284C7), "nav_item_reports"),
-        NavItemData(Screen.History.route, "History", Icons.Default.History, Color(0xFF0284C7), "nav_item_history"),
+        NavItemData(Screen.Favorites.route, "Favorites", Icons.Default.Star, Color(0xFFD97706), "nav_item_favorites"),
         NavItemData(Screen.Settings.route, "Settings", Icons.Default.Settings, Color(0xFF0F172A), "nav_item_settings")
     )
 
@@ -81,16 +81,20 @@ fun AppBottomBar(
                 .fillMaxWidth()
                 .windowInsetsPadding(WindowInsets.navigationBars)
         ) {
+            // Raised Top Border
             HorizontalDivider(
-                thickness = 0.8.dp,
-                color = Color(0xFFE2E8F0)
+                thickness = 1.dp,
+                color = Color(0xFFCBD5E1)
             )
 
-            // Slim Bottom Bar Row (উচ্চতা ৫০ ডিপি - নিখুঁত ও স্লিম)
+            Spacer(modifier = Modifier.height(3.dp))
+
+            // Bottom Bar Buttons Row (উচ্চতা ৫৪ ডিপি - নিখুঁত স্পেসিং ও এলিভেটেড বর্ডার)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(50.dp),
+                    .height(54.dp)
+                    .padding(bottom = 2.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -101,7 +105,7 @@ fun AppBottomBar(
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .height(50.dp)
+                            .height(54.dp)
                             .clickable(
                                 interactionSource = interactionSource,
                                 indication = null

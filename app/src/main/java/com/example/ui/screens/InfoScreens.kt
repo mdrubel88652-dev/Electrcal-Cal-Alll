@@ -1,6 +1,8 @@
 package com.example.ui.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -103,31 +105,225 @@ fun AboutScreen() {
 
 @Composable
 fun DeveloperScreen() {
+    val context = androidx.compose.ui.platform.LocalContext.current
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
-            .padding(16.dp)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp)
     ) {
+        // Main Developer Profile Card
         Card(
             modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(14.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+            shape = RoundedCornerShape(16.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
+            Column(modifier = Modifier.padding(20.dp)) {
+                // Header with Avatar & Name
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Person, contentDescription = null, tint = ElectricBluePrimary, modifier = Modifier.size(32.dp))
-                    Spacer(modifier = Modifier.width(12.dp))
+                    Box(
+                        modifier = Modifier
+                            .size(60.dp)
+                            .clip(CircleShape)
+                            .background(Color(0xFFE0F2FE)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = "Developer",
+                            tint = Color(0xFF0284C7),
+                            modifier = Modifier.size(34.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(14.dp))
+
                     Column {
-                        Text("Electrical Software Engineering Division", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-                        Text("Specialized in Power Systems & Estimation", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "Engineer Rubel",
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp,
+                                color = MaterialTheme.colorScheme.onSurface
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Surface(
+                                shape = RoundedCornerShape(6.dp),
+                                color = Color(0xFFE0F2FE)
+                            ) {
+                                Text(
+                                    text = "VERIFIED",
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = Color(0xFF0369A1),
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+                        }
+
+                        Text(
+                            text = "Engineer & Developer",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color(0xFF0284C7)
+                        )
+
+                        Text(
+                            text = "Industrial Electrical & Power Engineering",
+                            fontSize = 11.5.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
                 }
-                HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
-                Text("Engineering Focus:", fontWeight = FontWeight.SemiBold, fontSize = 13.sp)
-                Spacer(modifier = Modifier.height(4.dp))
-                Text("Dedicated to providing field electricians, substation engineers, building contractors, and electrical engineering students with verified, standard calculation tools.", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+
+                HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+
+                // Detail Items
+                ProfileDetailItem(
+                    icon = Icons.Default.Person,
+                    label = "Full Name",
+                    value = "Engineer Rubel"
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                ProfileDetailItem(
+                    icon = Icons.Default.Info,
+                    label = "Designation / Bio",
+                    value = "Engineer & Developer"
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                ProfileDetailItem(
+                    icon = Icons.Default.Shield,
+                    label = "Company / Organization",
+                    value = "Industrial Electrical & Power Engineering"
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                ProfileDetailItem(
+                    icon = Icons.Default.CheckCircle,
+                    label = "Division & Department",
+                    value = "Power Systems Engineering Division"
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                ProfileDetailItem(
+                    icon = Icons.Default.NotificationsActive,
+                    label = "Contact Number",
+                    value = "+880 16094-92193"
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                ProfileDetailItem(
+                    icon = Icons.Default.Info,
+                    label = "Official Email",
+                    value = "mdrubel88652@gmail.com"
+                )
+
+                Spacer(modifier = Modifier.height(10.dp))
+
+                ProfileDetailItem(
+                    icon = Icons.Default.Shield,
+                    label = "Office Address",
+                    value = "Power Systems Engineering Division"
+                )
+
+                HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
+
+                // Quick Action Buttons
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    androidx.compose.material3.Button(
+                        onClick = {
+                            try {
+                                val intent = android.content.Intent(android.content.Intent.ACTION_DIAL).apply {
+                                    data = android.net.Uri.parse("tel:+8801609492193")
+                                }
+                                context.startActivity(intent)
+                            } catch (e: Exception) {
+                                android.widget.Toast.makeText(context, "+880 16094-92193", android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = Color(0xFF0284C7))
+                    ) {
+                        Text("Call Now", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+
+                    androidx.compose.material3.Button(
+                        onClick = {
+                            try {
+                                val intent = android.content.Intent(android.content.Intent.ACTION_SENDTO).apply {
+                                    data = android.net.Uri.parse("mailto:mdrubel88652@gmail.com")
+                                }
+                                context.startActivity(intent)
+                            } catch (e: Exception) {
+                                android.widget.Toast.makeText(context, "mdrubel88652@gmail.com", android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(10.dp),
+                        colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = Color(0xFF0F172A))
+                    ) {
+                        Text("Send Email", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    }
+                }
             }
+        }
+    }
+}
+
+@Composable
+private fun ProfileDetailItem(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    value: String
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(34.dp)
+                .clip(RoundedCornerShape(8.dp))
+                .background(Color(0xFFF1F5F9)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = Color(0xFF475569),
+                modifier = Modifier.size(18.dp)
+            )
+        }
+
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Column {
+            Text(
+                text = label,
+                fontSize = 11.sp,
+                color = Color(0xFF64748B),
+                fontWeight = FontWeight.Medium
+            )
+            Text(
+                text = value,
+                fontSize = 13.5.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color(0xFF0F172A)
+            )
         }
     }
 }

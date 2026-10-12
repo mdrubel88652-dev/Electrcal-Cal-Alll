@@ -81,8 +81,7 @@ fun MainAppNavigation() {
         Screen.Main.route,
         Screen.Calculators.route,
         Screen.Project.route,
-        Screen.Reports.route,
-        Screen.History.route,
+        Screen.Favorites.route,
         Screen.Settings.route
     )
 
@@ -119,7 +118,8 @@ fun MainAppNavigation() {
         topBar = {
             if (!isSplashScreen) {
                 AppTopBar(
-                    title = currentTitle,
+                    title = if (currentRoute == Screen.Main.route) "Electrical Calculation All" else currentTitle,
+                    subtitle = if (currentRoute == Screen.Main.route) "Electrical engineering solution" else "Electrical Engineering Calculation & Estimation",
                     canNavigateBack = !isTopLevelRoute,
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateToNotification = { navController.navigate(Screen.Notification.route) },
@@ -187,6 +187,9 @@ fun MainAppNavigation() {
                     },
                     onNavigateToInformation = {
                         navController.navigate(Screen.Information.route)
+                    },
+                    onNavigateToNotification = {
+                        navController.navigate(Screen.Notification.route)
                     },
                     onNavigateToAdvance = {
                         navController.navigate(Screen.Advance.route)
@@ -316,6 +319,7 @@ fun MainAppNavigation() {
             composable(Screen.Settings.route) {
                 SettingsScreen(
                     onNavigateToHistory = { navController.navigate(Screen.History.route) },
+                    onNavigateToReports = { navController.navigate(Screen.Reports.route) },
                     onNavigateToNotification = { navController.navigate(Screen.Notification.route) },
                     onNavigateToAbout = { navController.navigate(Screen.About.route) },
                     onNavigateToDeveloper = { navController.navigate(Screen.Developer.route) },

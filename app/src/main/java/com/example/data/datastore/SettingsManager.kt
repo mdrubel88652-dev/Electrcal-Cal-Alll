@@ -103,6 +103,7 @@ class SettingsManager(private val context: Context) {
         // Favorites & Accent Color
         val FAVORITES = stringPreferencesKey("favorites")
         val ACCENT_COLOR = stringPreferencesKey("accent_color")
+        val LANGUAGE = stringPreferencesKey("app_language")
     }
 
     val themeModeFlow: Flow<String> = context.dataStore.data.map { prefs ->
@@ -270,6 +271,16 @@ class SettingsManager(private val context: Context) {
     suspend fun updateThemeMode(mode: String) {
         context.dataStore.edit { prefs ->
             prefs[Keys.THEME_MODE] = mode
+        }
+    }
+
+    val languageFlow: Flow<String> = context.dataStore.data.map { prefs ->
+        prefs[Keys.LANGUAGE] ?: "BN"
+    }
+
+    suspend fun updateLanguage(lang: String) {
+        context.dataStore.edit { prefs ->
+            prefs[Keys.LANGUAGE] = lang
         }
     }
 }

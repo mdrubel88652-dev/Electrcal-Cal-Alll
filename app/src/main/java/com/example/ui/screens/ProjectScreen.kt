@@ -41,6 +41,14 @@ import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.material.icons.filled.Print
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Warning
+import androidx.compose.material.icons.filled.Save
+import androidx.compose.material.icons.filled.Business
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.PostAdd
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -68,6 +76,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
@@ -944,112 +953,321 @@ private fun AddProjectDialog(
         SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date())
     }
 
-    AlertDialog(
+    Dialog(
         onDismissRequest = onDismiss,
-        title = {
-            Text("নতুন প্রজেক্ট কন্ট্রাক্ট যোগ করুন", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-        },
-        text = {
-            Column(
+        properties = DialogProperties(usePlatformDefaultWidth = false)
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color(0x990A192F))
+                .clickable(onClick = onDismiss),
+            contentAlignment = Alignment.BottomCenter
+        ) {
+            Surface(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 4.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+                    .clickable(enabled = false) {}
+                    .clip(RoundedCornerShape(topStart = 24.dp, topEnd = 24.dp)),
+                color = Color.White
             ) {
-                OutlinedTextField(
-                    value = projectName,
-                    onValueChange = { projectName = it },
-                    label = { Text("প্রজেক্টের নাম * (উদা: ৩ তলা ভবন ওয়্যারিং)") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                OutlinedTextField(
-                    value = clientName,
-                    onValueChange = { clientName = it },
-                    label = { Text("বাড়িওয়ালা / ক্লায়েন্টের নাম") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                OutlinedTextField(
-                    value = location,
-                    onValueChange = { location = it },
-                    label = { Text("লোকেশন / সাইট ঠিকানা") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 20.dp, vertical = 16.dp)
                 ) {
-                    OutlinedTextField(
-                        value = contactPhone,
-                        onValueChange = { contactPhone = it },
-                        label = { Text("মোবাইল নম্বর") },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone),
-                        modifier = Modifier.weight(1f)
+                    // Top Drag Handle
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.CenterHorizontally)
+                            .width(44.dp)
+                            .height(4.dp)
+                            .clip(RoundedCornerShape(2.dp))
+                            .background(Color(0xFFCBD5E1))
                     )
 
-                    OutlinedTextField(
-                        value = contractAmountStr,
-                        onValueChange = { contractAmountStr = it },
-                        label = { Text("চুক্তি টাকা (৳) *") },
-                        singleLine = true,
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                        modifier = Modifier.weight(1f)
-                    )
-                }
+                    Spacer(modifier = Modifier.height(14.dp))
 
-                OutlinedTextField(
-                    value = emailAddress,
-                    onValueChange = { emailAddress = it },
-                    label = { Text("ইমেইল অ্যাড্রেস (ঐচ্ছিক)") },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                    modifier = Modifier.fillMaxWidth()
-                )
+                    // Header Row
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(46.dp)
+                                .clip(CircleShape)
+                                .background(Color(0xFF0284C7)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.PostAdd,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
 
-                OutlinedTextField(
-                    value = notes,
-                    onValueChange = { notes = it },
-                    label = { Text("বিশেষ নোট বা শর্তাবলী (ঐচ্ছিক)") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    val amount = contractAmountStr.toDoubleOrNull() ?: 0.0
-                    if (projectName.isBlank() || amount <= 0.0) {
-                        return@Button
+                        Spacer(modifier = Modifier.width(14.dp))
+
+                        Column {
+                            Text(
+                                text = "নতুন প্রজেক্ট কন্ট্রাক্ট যোগ করুন",
+                                fontSize = 17.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF0F172A)
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "প্রয়োজনীয় তথ্য পূরণ করুন",
+                                fontSize = 12.sp,
+                                color = Color(0xFF64748B)
+                            )
+                        }
                     }
-                    val project = ContractProjectEntity(
-                        projectName = projectName.trim(),
-                        clientName = clientName.trim(),
-                        location = location.trim(),
-                        contactPhone = contactPhone.trim(),
-                        emailAddress = emailAddress.trim(),
-                        contractAmount = amount,
-                        startDate = currentDateStr,
-                        notes = notes.trim()
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // 1. প্রজেক্টের নাম *
+                    ProjectFieldInputCard(
+                        icon = Icons.Default.Business,
+                        label = "প্রজেক্টের নাম",
+                        isRequired = true,
+                        placeholder = "যেমন: ৩ তলা ভবন ওয়্যারিং",
+                        value = projectName,
+                        onValueChange = { projectName = it }
                     )
-                    onSave(project)
-                },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0284C7))
-            ) {
-                Text("সংরক্ষণ করুন")
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("বাতিল")
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // 2. বাড়িওয়ালা / ক্লায়েন্টের নাম
+                    ProjectFieldInputCard(
+                        icon = Icons.Default.Person,
+                        label = "বাড়িওয়ালা / ক্লায়েন্টের নাম",
+                        isRequired = false,
+                        placeholder = "বাড়িওয়ালা বা ক্লায়েন্টের নাম লিখুন",
+                        value = clientName,
+                        onValueChange = { clientName = it }
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // 3. লোকেশন / সাইট ঠিকানা
+                    ProjectFieldInputCard(
+                        icon = Icons.Default.LocationOn,
+                        label = "লোকেশন / সাইট ঠিকানা",
+                        isRequired = false,
+                        placeholder = "সাইটের ঠিকানা লিখুন",
+                        value = location,
+                        onValueChange = { location = it }
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // 4. মোবাইল নম্বর & চুক্তির টাকা (৳) *
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Box(modifier = Modifier.weight(1f)) {
+                            ProjectFieldInputCard(
+                                icon = Icons.Default.Phone,
+                                label = "মোবাইল নম্বর",
+                                isRequired = false,
+                                placeholder = "০১XXXXXXXXX",
+                                value = contactPhone,
+                                onValueChange = { contactPhone = it },
+                                keyboardType = KeyboardType.Phone
+                            )
+                        }
+
+                        Box(modifier = Modifier.weight(1.05f)) {
+                            ProjectFieldInputCard(
+                                icon = Icons.Default.Payments,
+                                label = "চুক্তির টাকা (৳)",
+                                isRequired = true,
+                                placeholder = "টাকার পরিমাণ লিখুন",
+                                value = contractAmountStr,
+                                onValueChange = { contractAmountStr = it },
+                                keyboardType = KeyboardType.Number
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // 5. ইমেইল অ্যাড্রেস (ঐচ্ছিক)
+                    ProjectFieldInputCard(
+                        icon = Icons.Default.Email,
+                        label = "ইমেইল অ্যাড্রেস (ঐচ্ছিক)",
+                        isRequired = false,
+                        placeholder = "example@domain.com",
+                        value = emailAddress,
+                        onValueChange = { emailAddress = it },
+                        keyboardType = KeyboardType.Email
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    // 6. বিশেষ নোট বা শর্তাবলী (ঐচ্ছিক)
+                    ProjectFieldInputCard(
+                        icon = Icons.Default.Description,
+                        label = "বিশেষ নোট বা শর্তাবলী (ঐচ্ছিক)",
+                        isRequired = false,
+                        placeholder = "যেকোনো অতিরিক্ত তথ্য লিখুন...",
+                        value = notes,
+                        onValueChange = { notes = it }
+                    )
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    // Bottom Action Buttons
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        TextButton(
+                            onClick = onDismiss,
+                            modifier = Modifier.padding(horizontal = 8.dp)
+                        ) {
+                            Text(
+                                text = "বাতিল",
+                                fontSize = 14.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF0284C7)
+                            )
+                        }
+
+                        Button(
+                            onClick = {
+                                val amount = contractAmountStr.toDoubleOrNull() ?: 0.0
+                                if (projectName.isBlank() || amount <= 0.0) {
+                                    return@Button
+                                }
+                                val project = ContractProjectEntity(
+                                    projectName = projectName.trim(),
+                                    clientName = clientName.trim(),
+                                    location = location.trim(),
+                                    contactPhone = contactPhone.trim(),
+                                    emailAddress = emailAddress.trim(),
+                                    contractAmount = amount,
+                                    startDate = currentDateStr,
+                                    notes = notes.trim()
+                                )
+                                onSave(project)
+                            },
+                            shape = RoundedCornerShape(10.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0284C7)),
+                            modifier = Modifier.height(44.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Save,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "সংরক্ষণ করুন",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color.White
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
             }
         }
-    )
+    }
+}
+
+@Composable
+private fun ProjectFieldInputCard(
+    icon: ImageVector,
+    label: String,
+    isRequired: Boolean,
+    placeholder: String,
+    value: String,
+    onValueChange: (String) -> Unit,
+    keyboardType: KeyboardType = KeyboardType.Text
+) {
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(10.dp),
+        color = Color.White,
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E8F0))
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 10.dp, vertical = 9.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(34.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(Color(0xFFEFF6FF)),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    imageVector = icon,
+                    contentDescription = null,
+                    tint = Color(0xFF0284C7),
+                    modifier = Modifier.size(18.dp)
+                )
+            }
+
+            Spacer(modifier = Modifier.width(10.dp))
+
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = label,
+                        fontSize = 11.5.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF0F172A)
+                    )
+                    if (isRequired) {
+                        Spacer(modifier = Modifier.width(3.dp))
+                        Text(
+                            text = "*",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFFEF4444)
+                        )
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(2.dp))
+
+                Box {
+                    if (value.isEmpty()) {
+                        Text(
+                            text = placeholder,
+                            fontSize = 11.5.sp,
+                            color = Color(0xFF94A3B8)
+                        )
+                    }
+                    BasicTextField(
+                        value = value,
+                        onValueChange = onValueChange,
+                        singleLine = true,
+                        keyboardOptions = KeyboardOptions(keyboardType = keyboardType),
+                        textStyle = TextStyle(
+                            fontSize = 12.5.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color(0xFF0F172A)
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+            }
+        }
+    }
 }
 
 @Composable
