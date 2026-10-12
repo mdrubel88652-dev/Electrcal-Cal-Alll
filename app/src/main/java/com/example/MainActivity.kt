@@ -29,16 +29,23 @@ import com.example.ui.navigation.Screen
 import com.example.ui.screens.AboutScreen
 import com.example.ui.screens.BuildingMaterialScreen
 import com.example.ui.screens.CalculatorScreen
+import com.example.ui.screens.CalculatorsScreen
 import com.example.ui.screens.DeveloperScreen
+import com.example.ui.screens.FavoritesScreen
 import com.example.ui.screens.HistoryScreen
 import com.example.ui.screens.HomeScreen
+import com.example.ui.screens.InformationScreen
 import com.example.ui.screens.LevelScreen
+import com.example.ui.screens.MaterialEstimateScreen
 import com.example.ui.screens.MaterialListScreen
 import com.example.ui.screens.NotificationScreen
 import com.example.ui.screens.PrivacyPolicyScreen
+import com.example.ui.screens.ProjectScreen
+import com.example.ui.screens.ReportsScreen
 import com.example.ui.screens.SettingsScreen
 import com.example.ui.screens.SplashScreen
 import com.example.ui.screens.TechnicianProfileScreen
+import com.example.ui.screens.ThemeScreen
 import com.example.ui.theme.ElectricalCalculationTheme
 
 class MainActivity : ComponentActivity() {
@@ -72,31 +79,39 @@ fun MainAppNavigation() {
 
     val isTopLevelRoute = currentRoute in listOf(
         Screen.Main.route,
-        Screen.Advance.route,
-        Screen.Basic.route,
-        Screen.Lower.route,
+        Screen.Calculators.route,
+        Screen.Project.route,
+        Screen.Reports.route,
+        Screen.History.route,
         Screen.Settings.route
     )
 
     val currentTitle = when {
-        currentRoute == Screen.Main.route -> "Electrical Cal/Pro"
+        currentRoute == Screen.Main.route -> "Electrical Calculation All"
+        currentRoute == Screen.Calculators.route -> "Calculators (167)"
+        currentRoute == Screen.Project.route -> "Contract Project Manager"
+        currentRoute == Screen.Reports.route -> "Reports"
+        currentRoute == Screen.History.route -> "Calculation History"
+        currentRoute == Screen.Favorites.route -> "Favorites"
+        currentRoute == Screen.Theme.route -> "Theme & Appearance"
+        currentRoute == Screen.MaterialEstimate.route -> "Material Estimate"
         currentRoute == Screen.Advance.route -> "Advance Calculators (55)"
         currentRoute == Screen.Basic.route -> "Basic Calculators (61)"
         currentRoute == Screen.Lower.route -> "Lower Calculators (51)"
         currentRoute == Screen.BuildingMaterialInput.route -> "Building Electrical Material"
         currentRoute == Screen.MaterialList.route -> "Material Requirement List"
-        currentRoute == Screen.History.route -> "Calculation History"
         currentRoute == Screen.Settings.route -> "Settings"
         currentRoute == Screen.About.route -> "About Application"
         currentRoute == Screen.Developer.route -> "Developer Information"
         currentRoute == Screen.PrivacyPolicy.route -> "Privacy Policy"
         currentRoute == Screen.Notification.route -> "Notifications"
+        currentRoute == Screen.Information.route -> "Information • সহায়িকা (167)"
         currentRoute == Screen.TechnicianProfile.route -> "Technician Report Profile"
         currentRoute?.startsWith("calculator/") == true -> {
             val id = navBackStackEntry?.arguments?.getInt("calcId") ?: 0
             CalculatorRegistry.getById(id)?.name ?: "Calculator"
         }
-        else -> "Electrical Cal/Pro"
+        else -> "Electrical Calculation All"
     }
 
     Scaffold(
@@ -107,7 +122,8 @@ fun MainAppNavigation() {
                     title = currentTitle,
                     canNavigateBack = !isTopLevelRoute,
                     onNavigateBack = { navController.popBackStack() },
-                    onNavigateToNotification = { navController.navigate(Screen.Notification.route) }
+                    onNavigateToNotification = { navController.navigate(Screen.Notification.route) },
+                    onNavigateToInformation = { navController.navigate(Screen.Information.route) }
                 )
             }
         },
@@ -152,7 +168,34 @@ fun MainAppNavigation() {
                         navController.navigate(Screen.CalculatorDetail.createRoute(id))
                     },
                     onNavigateToBuildingMaterial = {
-                        navController.navigate(Screen.BuildingMaterialInput.route)
+                        navController.navigate(Screen.MaterialEstimate.route)
+                    },
+                    onNavigateToFavorites = {
+                        navController.navigate(Screen.Favorites.route)
+                    },
+                    onNavigateToHistory = {
+                        navController.navigate(Screen.History.route)
+                    },
+                    onNavigateToCalculatorsList = {
+                        navController.navigate(Screen.Calculators.route)
+                    },
+                    onNavigateToSettings = {
+                        navController.navigate(Screen.Settings.route)
+                    },
+                    onNavigateToProject = {
+                        navController.navigate(Screen.Project.route)
+                    },
+                    onNavigateToInformation = {
+                        navController.navigate(Screen.Information.route)
+                    },
+                    onNavigateToAdvance = {
+                        navController.navigate(Screen.Advance.route)
+                    },
+                    onNavigateToBasic = {
+                        navController.navigate(Screen.Basic.route)
+                    },
+                    onNavigateToLower = {
+                        navController.navigate(Screen.Lower.route)
                     }
                 )
             }
@@ -193,6 +236,10 @@ fun MainAppNavigation() {
                 )
             }
 
+            composable(Screen.Project.route) {
+                ProjectScreen()
+            }
+
             composable(
                 route = Screen.CalculatorDetail.route,
                 arguments = listOf(navArgument("calcId") { type = NavType.IntType })
@@ -224,6 +271,48 @@ fun MainAppNavigation() {
                 )
             }
 
+            composable(Screen.Calculators.route) {
+                CalculatorsScreen(
+                    onNavigateToCalculator = { id ->
+                        navController.navigate(Screen.CalculatorDetail.createRoute(id))
+                    }
+                )
+            }
+
+            composable(Screen.Reports.route) {
+                ReportsScreen(
+                    onNavigateToCalculator = { id ->
+                        navController.navigate(Screen.CalculatorDetail.createRoute(id))
+                    },
+                    onNavigateToMaterialEstimate = {
+                        navController.navigate(Screen.MaterialEstimate.route)
+                    },
+                    onNavigateToProject = {
+                        navController.navigate(Screen.Project.route)
+                    }
+                )
+            }
+
+            composable(Screen.Favorites.route) {
+                FavoritesScreen(
+                    onNavigateToCalculator = { id ->
+                        navController.navigate(Screen.CalculatorDetail.createRoute(id))
+                    }
+                )
+            }
+
+            composable(Screen.Theme.route) {
+                ThemeScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(Screen.MaterialEstimate.route) {
+                MaterialEstimateScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
             composable(Screen.Settings.route) {
                 SettingsScreen(
                     onNavigateToHistory = { navController.navigate(Screen.History.route) },
@@ -231,7 +320,10 @@ fun MainAppNavigation() {
                     onNavigateToAbout = { navController.navigate(Screen.About.route) },
                     onNavigateToDeveloper = { navController.navigate(Screen.Developer.route) },
                     onNavigateToPrivacy = { navController.navigate(Screen.PrivacyPolicy.route) },
-                    onNavigateToTechnicianProfile = { navController.navigate(Screen.TechnicianProfile.route) }
+                    onNavigateToTechnicianProfile = { navController.navigate(Screen.TechnicianProfile.route) },
+                    onNavigateToTheme = { navController.navigate(Screen.Theme.route) },
+                    onNavigateToFavorites = { navController.navigate(Screen.Favorites.route) },
+                    onNavigateToMaterialEstimate = { navController.navigate(Screen.MaterialEstimate.route) }
                 )
             }
 
@@ -255,6 +347,15 @@ fun MainAppNavigation() {
 
             composable(Screen.Notification.route) {
                 NotificationScreen()
+            }
+
+            composable(Screen.Information.route) {
+                InformationScreen(
+                    onNavigateToCalculator = { id ->
+                        navController.navigate(Screen.CalculatorDetail.createRoute(id))
+                    },
+                    onNavigateBack = { navController.popBackStack() }
+                )
             }
         }
     }

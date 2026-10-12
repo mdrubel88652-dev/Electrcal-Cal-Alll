@@ -11,6 +11,8 @@ import android.graphics.RectF
 import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
 import com.example.R
+import com.example.data.database.ContractProjectEntity
+import com.example.data.database.ProjectPaymentEntity
 import com.example.data.datastore.DeveloperReportSettings
 import com.example.data.datastore.EngineerReportProfile
 import com.example.data.datastore.PdfPrintSettings
@@ -793,6 +795,211 @@ object PdfReportGenerator {
 
         val outputDir = File(context.cacheDir, "material_reports").apply { mkdirs() }
         val outputFile = File(outputDir, "Material_List_${System.currentTimeMillis()}.pdf")
+        FileOutputStream(outputFile).use { out ->
+            document.writeTo(out)
+        }
+        document.close()
+        return outputFile
+    }
+
+    fun generateProjectContractPdf(
+        context: Context,
+        project: ContractProjectEntity,
+        payments: List<ProjectPaymentEntity>,
+        techProfile: TechnicianReportProfile = TechnicianReportProfile()
+    ): File {
+        val document = PdfDocument()
+        val pageWidth = A4_PORTRAIT_WIDTH
+        val pageHeight = A4_PORTRAIT_HEIGHT
+
+        val contentStartX = MARGIN_LEFT
+        val contentEndX = pageWidth - MARGIN_RIGHT
+
+        val logoBitmap: Bitmap? = try {
+            BitmapFactory.decodeResource(context.resources, R.drawable.ic_app_logo)
+                ?: BitmapFactory.decodeResource(context.resources, R.drawable.img_app_icon)
+        } catch (_: Exception) {
+            null
+        }
+
+        val paint = Paint().apply { isAntiAlias = true }
+
+        val pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, 1).create()
+        val page = document.startPage(pageInfo)
+        val canvas = page.canvas
+
+        var y = MARGIN_TOP
+
+        // Top Header
+        y = drawTopHeader(canvas, paint, logoBitmap, contentStartX, contentEndX, y)
+
+        if (techProfile.isNotEmpty()) {
+            y = drawTechnicianProfile(canvas, paint, techProfile, contentStartX, contentEndX, y)
+        }
+
+        // Project Title Banner
+        y += 8f
+        paint.color = Color.rgb(2, 132, 199)
+        paint.strokeWidth = 2.5f
+        canvas.drawLine(contentStartX, y, contentEndX, y, paint)
+
+        y += 16f
+        paint.color = Color.rgb(15, 23, 42)
+        paint.textSize = 15f
+        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        canvas.drawText("ELECTRICAL CONTRACT & PAYMENT STATEMENT", contentStartX, y, paint)
+
+        y += 14f
+        paint.color = Color.rgb(100, 116, 139)
+        paint.textSize = 9f
+        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
+        val dateStr = SimpleDateFormat("dd MMMM yyyy, hh:mm a", Locale.getDefault()).format(Date())
+        canvas.drawText("Generated on: $dateStr • Contract ID: #PRJ-${project.id}", contentStartX, y, paint)
+
+        y += 16f
+        // Project Overview Box
+        val boxHeight = 72f
+        paint.color = Color.rgb(241, 245, 249)
+        paint.style = Paint.Style.FILL
+        canvas.drawRoundRect(RectF(contentStartX, y, contentEndX, y + boxHeight), 6f, 6f, paint)
+
+        paint.color = Color.rgb(203, 213, 225)
+        paint.style = Paint.Style.STROKE
+        paint.strokeWidth = 1f
+        canvas.drawRoundRect(RectF(contentStartX, y, contentEndX, y + boxHeight), 6f, 6f, paint)
+
+        paint.style = Paint.Style.FILL
+        paint.color = Color.rgb(15, 23, 42)
+        paint.textSize = 10.5f
+        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        canvas.drawText("Project: ${project.projectName}", contentStartX + 12f, y + 18f, paint)
+
+        paint.textSize = 9.5f
+        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
+        paint.color = Color.rgb(71, 85, 105)
+        canvas.drawText("Client: ${if (project.clientName.isNotBlank()) project.clientName else "N/A"}", contentStartX + 12f, y + 34f, paint)
+        canvas.drawText("Location: ${if (project.location.isNotBlank()) project.location else "N/A"}", contentStartX + 12f, y + 48f, paint)
+        canvas.drawText("Contact: ${if (project.contactPhone.isNotBlank()) project.contactPhone else "N/A"}  |  Email: ${if (project.emailAddress.isNotBlank()) project.emailAddress else "N/A"}", contentStartX + 12f, y + 62f, paint)
+
+        // Financial Summary on Right Side of Box
+        val totalReceived = payments.sumOf { it.amount }
+        val remainingDue = project.contractAmount - totalReceived
+        val isPaidInFull = remainingDue <= 0
+
+        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        paint.color = Color.rgb(15, 23, 42)
+        paint.textSize = 10f
+        canvas.drawText("Contract Total: BDT ${String.format(Locale.US, "%,.2f", project.contractAmount)}", contentStartX + 290f, y + 18f, paint)
+
+        paint.color = Color.rgb(16, 185, 129)
+        canvas.drawText("Total Received: BDT ${String.format(Locale.US, "%,.2f", totalReceived)}", contentStartX + 290f, y + 34f, paint)
+
+        paint.color = if (isPaidInFull) Color.rgb(16, 185, 129) else Color.rgb(220, 38, 38)
+        canvas.drawText(
+            if (isPaidInFull) "Status: COMPLETED (FULLY PAID)" else "Due Balance: BDT ${String.format(Locale.US, "%,.2f", remainingDue)}",
+            contentStartX + 290f,
+            y + 50f,
+            paint
+        )
+
+        y += boxHeight + 18f
+
+        // Payment History Section
+        paint.color = Color.rgb(15, 23, 42)
+        paint.textSize = 12f
+        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        canvas.drawText("PAYMENT & INSTALLMENT HISTORY", contentStartX, y, paint)
+
+        y += 10f
+        // Table Header
+        paint.color = Color.rgb(15, 23, 42)
+        paint.style = Paint.Style.FILL
+        canvas.drawRect(RectF(contentStartX, y, contentEndX, y + 20f), paint)
+
+        paint.color = Color.WHITE
+        paint.textSize = 9f
+        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        val colSl = contentStartX + 8f
+        val colDate = contentStartX + 35f
+        val colNote = contentStartX + 115f
+        val colAmount = contentStartX + 330f
+        val colBal = contentStartX + 410f
+
+        canvas.drawText("SL", colSl, y + 14f, paint)
+        canvas.drawText("DATE", colDate, y + 14f, paint)
+        canvas.drawText("DESCRIPTION / PURPOSE", colNote, y + 14f, paint)
+        canvas.drawText("RECEIVED (BDT)", colAmount, y + 14f, paint)
+        canvas.drawText("RUNNING DUE", colBal, y + 14f, paint)
+
+        y += 20f
+
+        // Rows
+        var runningBal = project.contractAmount
+        val sortedPayments = payments.sortedBy { it.timestamp }
+
+        if (sortedPayments.isEmpty()) {
+            paint.color = Color.rgb(148, 163, 184)
+            paint.textSize = 9.5f
+            paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.ITALIC)
+            canvas.drawText("No installment payments recorded yet.", contentStartX + 16f, y + 18f, paint)
+            y += 26f
+        } else {
+            sortedPayments.forEachIndexed { index, pmt ->
+                runningBal -= pmt.amount
+                paint.color = if (index % 2 == 0) Color.rgb(248, 250, 252) else Color.WHITE
+                paint.style = Paint.Style.FILL
+                canvas.drawRect(RectF(contentStartX, y, contentEndX, y + 18f), paint)
+
+                paint.color = Color.rgb(71, 85, 105)
+                paint.textSize = 9f
+                paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
+
+                canvas.drawText("${index + 1}", colSl, y + 13f, paint)
+                canvas.drawText(pmt.paymentDate, colDate, y + 13f, paint)
+                canvas.drawText(pmt.note.take(36), colNote, y + 13f, paint)
+
+                paint.color = Color.rgb(5, 150, 105)
+                paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                canvas.drawText(String.format(Locale.US, "%,.2f", pmt.amount), colAmount, y + 13f, paint)
+
+                paint.color = if (runningBal <= 0) Color.rgb(16, 185, 129) else Color.rgb(220, 38, 38)
+                canvas.drawText(String.format(Locale.US, "%,.2f", maxOf(0.0, runningBal)), colBal, y + 13f, paint)
+
+                y += 18f
+            }
+        }
+
+        // Table bottom border
+        paint.color = Color.rgb(203, 213, 225)
+        paint.strokeWidth = 1f
+        canvas.drawLine(contentStartX, y, contentEndX, y, paint)
+
+        // Signatures Block at bottom
+        val sigY = pageHeight - MARGIN_BOTTOM - 60f
+        paint.color = Color.rgb(203, 213, 225)
+        paint.strokeWidth = 1f
+        canvas.drawLine(contentStartX, sigY, contentEndX, sigY, paint)
+
+        paint.color = Color.rgb(71, 85, 105)
+        paint.textSize = 9.5f
+        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        canvas.drawText("Client / Homeowner Signature", contentStartX + 10f, sigY + 36f, paint)
+        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
+        canvas.drawLine(contentStartX + 10f, sigY + 22f, contentStartX + 180f, sigY + 22f, paint)
+
+        paint.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        canvas.drawText("Technician / Contractor Signature", contentEndX - 190f, sigY + 36f, paint)
+        canvas.drawLine(contentEndX - 190f, sigY + 22f, contentEndX - 10f, sigY + 22f, paint)
+
+        // Footer note
+        paint.textSize = 8f
+        paint.color = Color.rgb(148, 163, 184)
+        canvas.drawText("Electrical Pro Suite • Official Contract & Payment Record • 100% Verified", contentStartX, pageHeight - MARGIN_BOTTOM + 15f, paint)
+
+        document.finishPage(page)
+
+        val outputDir = File(context.cacheDir, "project_reports").apply { mkdirs() }
+        val outputFile = File(outputDir, "Project_Contract_${project.id}_${System.currentTimeMillis()}.pdf")
         FileOutputStream(outputFile).use { out ->
             document.writeTo(out)
         }

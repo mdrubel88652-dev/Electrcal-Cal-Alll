@@ -9,6 +9,7 @@ sealed class Screen(val route: String) {
     object Advance : Screen("advance")
     object Basic : Screen("basic")
     object Lower : Screen("lower")
+    object Project : Screen("project")
 
     // Sub-screens
     object CalculatorDetail : Screen("calculator/{calcId}") {
@@ -22,5 +23,11 @@ sealed class Screen(val route: String) {
     object Developer : Screen("developer")
     object PrivacyPolicy : Screen("privacy_policy")
     object Notification : Screen("notification")
+    object Information : Screen("information")
     object TechnicianProfile : Screen("technician_profile")
+    object Calculators : Screen("calculators")
+    object Reports : Screen("reports")
+    object Favorites : Screen("favorites")
+    object Theme : Screen("theme")
+    object MaterialEstimate : Screen("material_estimate")
 }

@@ -99,6 +99,10 @@ class SettingsManager(private val context: Context) {
         val TECH_PHONE = stringPreferencesKey("tech_phone")
         val TECH_EMAIL = stringPreferencesKey("tech_email")
         val TECH_ADDRESS = stringPreferencesKey("tech_address")
+
+        // Favorites & Accent Color
+        val FAVORITES = stringPreferencesKey("favorites")
+        val ACCENT_COLOR = stringPreferencesKey("accent_color")
     }
 
     val themeModeFlow: Flow<String> = context.dataStore.data.map { prefs ->
@@ -232,6 +236,40 @@ class SettingsManager(private val context: Context) {
             prefs.remove(Keys.TECH_PHONE)
             prefs.remove(Keys.TECH_EMAIL)
             prefs.remove(Keys.TECH_ADDRESS)
+        }
+    }
+
+    val favoritesFlow: Flow<Set<Int>> = context.dataStore.data.map { prefs ->
+        val raw = prefs[Keys.FAVORITES] ?: "1,2,3,4,13,25"
+        raw.split(",").mapNotNull { it.trim().toIntOrNull() }.toSet()
+    }
+
+    suspend fun toggleFavorite(calcId: Int) {
+        context.dataStore.edit { prefs ->
+            val raw = prefs[Keys.FAVORITES] ?: "1,2,3,4,13,25"
+            val set = raw.split(",").mapNotNull { it.trim().toIntOrNull() }.toMutableSet()
+            if (set.contains(calcId)) {
+                set.remove(calcId)
+            } else {
+                set.add(calcId)
+            }
+            prefs[Keys.FAVORITES] = set.joinToString(",")
+        }
+    }
+
+    val accentColorFlow: Flow<String> = context.dataStore.data.map { prefs ->
+        prefs[Keys.ACCENT_COLOR] ?: "#0284C7"
+    }
+
+    suspend fun updateAccentColor(colorHex: String) {
+        context.dataStore.edit { prefs ->
+            prefs[Keys.ACCENT_COLOR] = colorHex
+        }
+    }
+
+    suspend fun updateThemeMode(mode: String) {
+        context.dataStore.edit { prefs ->
+            prefs[Keys.THEME_MODE] = mode
         }
     }
 }

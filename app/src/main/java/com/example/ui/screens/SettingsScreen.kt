@@ -78,7 +78,10 @@ fun SettingsScreen(
     onNavigateToAbout: () -> Unit = {},
     onNavigateToDeveloper: () -> Unit = {},
     onNavigateToPrivacy: () -> Unit = {},
-    onNavigateToTechnicianProfile: () -> Unit = {}
+    onNavigateToTechnicianProfile: () -> Unit = {},
+    onNavigateToTheme: () -> Unit = {},
+    onNavigateToFavorites: () -> Unit = {},
+    onNavigateToMaterialEstimate: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -442,15 +445,31 @@ fun SettingsScreen(
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = Modifier
                                 .clickable {
-                                    coroutineScope.launch { app.settingsManager.setThemeMode(mode) }
+                                    coroutineScope.launch { app.settingsManager.updateThemeMode(mode) }
                                 }
                                 .padding(end = 12.dp)
                         ) {
                             RadioButton(selected = currentTheme == mode, onClick = {
-                                coroutineScope.launch { app.settingsManager.setThemeMode(mode) }
+                                coroutineScope.launch { app.settingsManager.updateThemeMode(mode) }
                             })
                             Text(label, fontSize = 12.sp)
                         }
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Surface(
+                    onClick = onNavigateToTheme,
+                    shape = RoundedCornerShape(8.dp),
+                    color = Color(0xFFE0F2FE),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Row(
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("Customize Colors & Previews (Screen 11)", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0284C7))
+                        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = Color(0xFF0284C7), modifier = Modifier.size(18.dp))
                     }
                 }
             }

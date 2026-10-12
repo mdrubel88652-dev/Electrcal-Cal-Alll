@@ -38,3 +38,45 @@ interface BuildingProjectDao {
     @Query("DELETE FROM building_projects")
     suspend fun clearAll()
 }
+
+@Dao
+interface ContractProjectDao {
+    @Query("SELECT * FROM contract_projects ORDER BY timestamp DESC")
+    fun getAllProjects(): Flow<List<ContractProjectEntity>>
+
+    @Query("SELECT * FROM contract_projects WHERE id = :id")
+    suspend fun getProjectById(id: Long): ContractProjectEntity?
+
+    @Query("SELECT COUNT(*) FROM contract_projects")
+    fun getProjectCount(): Flow<Int>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertOrUpdateProject(project: ContractProjectEntity): Long
+
+    @Query("DELETE FROM contract_projects WHERE id = :id")
+    suspend fun deleteProject(id: Long)
+
+    @Query("DELETE FROM contract_projects")
+    suspend fun clearAll()
+}
+
+@Dao
+interface ProjectPaymentDao {
+    @Query("SELECT * FROM project_payments WHERE projectId = :projectId ORDER BY timestamp DESC")
+    fun getPaymentsForProject(projectId: Long): Flow<List<ProjectPaymentEntity>>
+
+    @Query("SELECT * FROM project_payments WHERE projectId = :projectId ORDER BY timestamp ASC")
+    suspend fun getPaymentsListForProject(projectId: Long): List<ProjectPaymentEntity>
+
+    @Query("SELECT * FROM project_payments ORDER BY timestamp DESC")
+    fun getAllPayments(): Flow<List<ProjectPaymentEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertPayment(payment: ProjectPaymentEntity): Long
+
+    @Query("DELETE FROM project_payments WHERE id = :id")
+    suspend fun deletePayment(id: Long)
+
+    @Query("DELETE FROM project_payments WHERE projectId = :projectId")
+    suspend fun deletePaymentsForProject(projectId: Long)
+}

@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Assignment
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.ElectricBolt
 import androidx.compose.material.icons.filled.Home
@@ -44,6 +45,9 @@ import com.example.ui.theme.LevelAdvanceColor
 import com.example.ui.theme.LevelBasicColor
 import com.example.ui.theme.LevelLowerColor
 
+import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.History
+
 private data class NavItemData(
     val route: String,
     val title: String,
@@ -58,10 +62,11 @@ fun AppBottomBar(
     onNavigate: (String) -> Unit
 ) {
     val items = listOf(
-        NavItemData(Screen.Main.route, "Main", Icons.Default.Home, Color(0xFF0D47A1), "nav_item_main"),
-        NavItemData(Screen.Advance.route, "Advance", Icons.Default.ElectricBolt, LevelAdvanceColor, "nav_item_advance"),
-        NavItemData(Screen.Basic.route, "Basic", Icons.Default.Tune, LevelBasicColor, "nav_item_basic"),
-        NavItemData(Screen.Lower.route, "Lower", Icons.Default.Calculate, LevelLowerColor, "nav_item_lower"),
+        NavItemData(Screen.Main.route, "Dashboard", Icons.Default.Home, Color(0xFF0284C7), "nav_item_dashboard"),
+        NavItemData(Screen.Calculators.route, "Calculators", Icons.Default.Calculate, Color(0xFF0284C7), "nav_item_calculators"),
+        NavItemData(Screen.Project.route, "Project", Icons.Default.Assignment, Color(0xFF0284C7), "nav_item_project"),
+        NavItemData(Screen.Reports.route, "Reports", Icons.Default.Description, Color(0xFF0284C7), "nav_item_reports"),
+        NavItemData(Screen.History.route, "History", Icons.Default.History, Color(0xFF0284C7), "nav_item_history"),
         NavItemData(Screen.Settings.route, "Settings", Icons.Default.Settings, Color(0xFF0F172A), "nav_item_settings")
     )
 

@@ -35,13 +35,16 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.R
 
+import androidx.compose.material.icons.outlined.Info
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppTopBar(
     title: String = "Electrical Cal/Pro",
     canNavigateBack: Boolean = false,
     onNavigateBack: () -> Unit = {},
-    onNavigateToNotification: () -> Unit = {}
+    onNavigateToNotification: () -> Unit = {},
+    onNavigateToInformation: () -> Unit = {}
 ) {
     TopAppBar(
         modifier = Modifier.shadow(2.dp),
@@ -91,7 +94,18 @@ fun AppTopBar(
             }
         },
         actions = {
-            // Three-dot menu removed; replaced with direct Notification button on the top right
+            // "information" option on the left of notification
+            IconButton(
+                onClick = onNavigateToInformation,
+                modifier = Modifier.testTag("top_bar_information_button")
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.Info,
+                    contentDescription = "information",
+                    tint = Color(0xFF0284C7),
+                    modifier = Modifier.size(24.dp)
+                )
+            }
             IconButton(
                 onClick = onNavigateToNotification,
                 modifier = Modifier.testTag("top_bar_notification_button")

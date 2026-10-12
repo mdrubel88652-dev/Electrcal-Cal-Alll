@@ -41,3 +41,30 @@ data class BuildingProjectEntity(
     val materialsJson: String,
     val timestamp: Long = System.currentTimeMillis()
 )
+
+@Entity(tableName = "contract_projects")
+data class ContractProjectEntity(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
+    val projectName: String,
+    val clientName: String = "",
+    val location: String = "",
+    val contactPhone: String = "",
+    val emailAddress: String = "",
+    val contractAmount: Double,
+    val startDate: String,
+    val notes: String = "",
+    val isCompleted: Boolean = false,
+    val timestamp: Long = System.currentTimeMillis()
+)
+
+@Entity(tableName = "project_payments")
+data class ProjectPaymentEntity(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
+    val projectId: Long,
+    val amount: Double,
+    val paymentDate: String,
+    val note: String = "",
+    val timestamp: Long = System.currentTimeMillis()
+)

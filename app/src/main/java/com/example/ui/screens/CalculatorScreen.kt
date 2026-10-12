@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -583,152 +584,254 @@ fun CalculatorScreen(
             }
         }
 
-        // 3. Result Presentation Card
+        // 3. Result Presentation (Exact Match Screen 4 in reference image)
         result?.let { res ->
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
+            // Vibrant Emerald Green Hero Card (Screen 4)
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
                     .testTag("result_card"),
-                shape = RoundedCornerShape(6.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ),
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.Transparent),
                 elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
             ) {
-                Column(modifier = Modifier.padding(18.dp)) {
-                    Text(
-                        text = "FINAL RESULT",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = ElectricBlueSecondary,
-                        letterSpacing = 1.sp
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Row(verticalAlignment = Alignment.Bottom) {
-                        Text(
-                            text = res.primaryValue,
-                            fontSize = 32.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            color = MaterialTheme.colorScheme.primary
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            androidx.compose.ui.graphics.Brush.linearGradient(
+                                listOf(Color(0xFF047857), Color(0xFF10B981))
+                            )
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = res.primaryUnit,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(bottom = 4.dp)
-                        )
-                    }
-
-                    // Secondary results
-                    if (res.secondaryResults.isNotEmpty()) {
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
-                        for ((label, value) in res.secondaryResults) {
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 3.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(
-                                    text = label,
-                                    fontSize = 13.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                                Text(
-                                    text = value,
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onSurface
-                                )
-                            }
-                        }
-                    }
-
-                    // Formula
-                    if (res.formulaUsed.isNotEmpty()) {
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
-                        Text(
-                            text = "Formula:",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Surface(
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                            shape = RoundedCornerShape(8.dp),
+                        .padding(18.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(top = 4.dp)
+                                .size(50.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(Color.White.copy(alpha = 0.2f)),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Text(
-                                text = res.formulaUsed,
-                                fontFamily = FontFamily.Monospace,
-                                fontSize = 12.sp,
-                                modifier = Modifier.padding(10.dp),
-                                color = MaterialTheme.colorScheme.onSurface
+                            Icon(
+                                imageVector = Icons.Default.ElectricBolt,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(28.dp)
                             )
                         }
-                    }
 
-                    // Steps
-                    if (res.steps.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Text(
-                            text = "Step-by-Step Solution:",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Column(modifier = Modifier.padding(top = 4.dp)) {
-                            res.steps.forEach { step ->
-                                Text(
-                                    text = "${step.stepNumber}. ${step.title}: ${step.equation} = ${step.result}",
-                                    fontSize = 12.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.padding(vertical = 2.dp)
-                                )
-                            }
+                        Spacer(modifier = Modifier.width(14.dp))
+
+                        Column {
+                            Text(
+                                text = calculator.name,
+                                fontSize = 13.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFD1FAE5)
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "${res.primaryValue} ${res.primaryUnit}",
+                                fontSize = 28.sp,
+                                fontWeight = FontWeight.Black,
+                                color = Color.White
+                            )
+                            Text(
+                                text = res.primaryUnit.uppercase(),
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFA7F3D0),
+                                letterSpacing = 1.sp
+                            )
                         }
-                    }
-
-                    // Standard & Notes
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Text(
-                        text = "Standard / Basis: ${res.standardBasis}",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    res.notes.forEach { note ->
-                        Text(
-                            text = "• $note",
-                            fontSize = 11.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // 4. Action Buttons Bar
+            // Section "Input Data >" (Screen 4)
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(6.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                border = BorderStroke(1.dp, Color(0xFFE2E8F0))
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                Column(modifier = Modifier.padding(14.dp)) {
+                    Text(
+                        text = "Input Data >",
+                        fontSize = 13.5.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF0F172A)
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    inputValues.forEach { (key, value) ->
+                        val inputDef = calculator.inputs.find { it.id == key }
+                        val label = inputDef?.label ?: key
+                        val unit = unitSelections[key] ?: ""
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 2.5.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(text = "$label :", fontSize = 12.sp, color = Color(0xFF64748B))
+                            Text(text = "$value $unit".trim(), fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF0F172A))
+                        }
+                    }
+                }
+            }
+
+            // Section "Formula" (Screen 4)
+            if (res.formulaUsed.isNotBlank()) {
+                Spacer(modifier = Modifier.height(10.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    border = BorderStroke(1.dp, Color(0xFFE2E8F0))
                 ) {
-                    // Save to History
-                    IconButton(
+                    Column(modifier = Modifier.padding(14.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(Icons.Default.Calculate, contentDescription = null, tint = Color(0xFF0284C7), modifier = Modifier.size(16.dp))
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Formula", fontSize = 13.5.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Surface(
+                            modifier = Modifier.fillMaxWidth(),
+                            color = Color(0xFFF8FAFC),
+                            shape = RoundedCornerShape(8.dp),
+                            border = BorderStroke(1.dp, Color(0xFFE2E8F0))
+                        ) {
+                            Text(
+                                text = res.formulaUsed,
+                                fontFamily = FontFamily.Monospace,
+                                fontSize = 13.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF0F172A),
+                                modifier = Modifier.padding(12.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
+            // Section "Step-by-Step Solution >" (Screen 4)
+            if (res.steps.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(10.dp))
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    colors = CardDefaults.cardColors(containerColor = Color.White),
+                    border = BorderStroke(1.dp, Color(0xFFE2E8F0))
+                ) {
+                    Column(modifier = Modifier.padding(14.dp)) {
+                        Text(
+                            text = "Step-by-Step Solution >",
+                            fontSize = 13.5.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF0F172A)
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        res.steps.forEachIndexed { idx, step ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 3.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(20.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(0xFF0284C7)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "${idx + 1}",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = "${step.equation} = ${step.result}",
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = Color(0xFF334155)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Section "Result >" (Screen 4)
+            Spacer(modifier = Modifier.height(10.dp))
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                border = BorderStroke(1.dp, Color(0xFFE2E8F0))
+            ) {
+                Column(modifier = Modifier.padding(14.dp)) {
+                    Text("Result >", fontSize = 13.5.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "• ${calculator.name} = ${res.primaryValue} ${res.primaryUnit}",
+                            fontSize = 13.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF059669)
+                        )
+                        Surface(
+                            shape = RoundedCornerShape(4.dp),
+                            color = Color(0xFFE0F2FE)
+                        ) {
+                            Text(
+                                text = res.standardBasis.ifEmpty { "IEC" },
+                                fontSize = 10.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF0284C7),
+                                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                            )
+                        }
+                    }
+                    if (res.notes.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        res.notes.forEach { note ->
+                            Text(text = "• $note", fontSize = 11.sp, color = Color(0xFF64748B))
+                        }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
+
+            // 2-Row Action Buttons Grid (Exact Match Screen 4 in Reference Image)
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                // Row 1: [💾 Save] [📋 Copy] [🔗 Share]
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Save Button
+                    Surface(
                         onClick = {
                             coroutineScope.launch {
                                 val dateStr = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault()).format(Date())
@@ -749,62 +852,72 @@ fun CalculatorScreen(
                                 Toast.makeText(context, "Saved to history", Toast.LENGTH_SHORT).show()
                             }
                         },
-                        modifier = Modifier.testTag("action_save")
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color(0xFF0284C7),
+                        modifier = Modifier.weight(1f)
                     ) {
-                        Icon(
-                            imageVector = if (isSaved) Icons.Default.Check else Icons.Default.BookmarkBorder,
-                            contentDescription = "Save",
-                            tint = if (isSaved) Color(0xFF2E7D32) else MaterialTheme.colorScheme.primary
-                        )
+                        Row(
+                            modifier = Modifier.padding(vertical = 10.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(15.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Save", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        }
                     }
 
-                    // Copy
-                    IconButton(
+                    // Copy Button
+                    Surface(
                         onClick = {
                             val copyText = "${calculator.name}\nResult: ${res.primaryValue} ${res.primaryUnit}\nFormula: ${res.formulaUsed}"
                             ShareUtils.copyToClipboard(context, calculator.name, copyText)
+                            Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
                         },
-                        modifier = Modifier.testTag("action_copy")
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color(0xFF0284C7),
+                        modifier = Modifier.weight(1f)
                     ) {
-                        Icon(Icons.Default.ContentCopy, contentDescription = "Copy")
+                        Row(
+                            modifier = Modifier.padding(vertical = 10.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Default.ContentCopy, contentDescription = null, tint = Color.White, modifier = Modifier.size(15.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Copy", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        }
                     }
 
-                    // Share
-                    IconButton(
+                    // Share Button
+                    Surface(
                         onClick = {
                             val shareText = "${calculator.name}\nResult: ${res.primaryValue} ${res.primaryUnit}\nFormula: ${res.formulaUsed}\nStandard: ${res.standardBasis}\nCalculated with ELECTRICAL CALCULATION ALL"
                             ShareUtils.shareText(context, calculator.name, shareText)
                         },
-                        modifier = Modifier.testTag("action_share")
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color(0xFF0284C7),
+                        modifier = Modifier.weight(1f)
                     ) {
-                        Icon(Icons.Default.Share, contentDescription = "Share")
+                        Row(
+                            modifier = Modifier.padding(vertical = 10.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Default.Share, contentDescription = null, tint = Color.White, modifier = Modifier.size(15.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Share", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        }
                     }
+                }
 
-                    // PDF
-                    IconButton(
-                        onClick = {
-                            try {
-                                val pdf = PdfReportGenerator.generateCalculationPdf(
-                                    context,
-                                    calculator,
-                                    inputValues,
-                                    res,
-                                    devSettings,
-                                    pdfSettings,
-                                    techProfile
-                                )
-                                ShareUtils.sharePdf(context, pdf, "${calculator.name} Report")
-                            } catch (e: Exception) {
-                                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-                            }
-                        },
-                        modifier = Modifier.testTag("action_pdf")
-                    ) {
-                        Icon(Icons.Default.PictureAsPdf, contentDescription = "PDF Report", tint = Color(0xFFC62828))
-                    }
-
-                    // Print
-                    IconButton(
+                // Row 2: [🖨️ Print] [📄 PDF] [📤 Share PDF]
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Print Button
+                    Surface(
                         onClick = {
                             try {
                                 val pdf = PdfReportGenerator.generateCalculationPdf(
@@ -821,9 +934,86 @@ fun CalculatorScreen(
                                 Toast.makeText(context, "Print error: ${e.message}", Toast.LENGTH_SHORT).show()
                             }
                         },
-                        modifier = Modifier.testTag("action_print")
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color(0xFF0D9488),
+                        modifier = Modifier.weight(1f)
                     ) {
-                        Icon(Icons.Default.Print, contentDescription = "Print", tint = ElectricBluePrimary)
+                        Row(
+                            modifier = Modifier.padding(vertical = 10.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Default.Print, contentDescription = null, tint = Color.White, modifier = Modifier.size(15.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Print", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+
+                    // PDF Button
+                    Surface(
+                        onClick = {
+                            try {
+                                val pdf = PdfReportGenerator.generateCalculationPdf(
+                                    context,
+                                    calculator,
+                                    inputValues,
+                                    res,
+                                    devSettings,
+                                    pdfSettings,
+                                    techProfile
+                                )
+                                Toast.makeText(context, "PDF generated: ${pdf.name}", Toast.LENGTH_SHORT).show()
+                                ShareUtils.sharePdf(context, pdf, "${calculator.name} Report")
+                            } catch (e: Exception) {
+                                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color(0xFFDC2626),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(vertical = 10.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Default.PictureAsPdf, contentDescription = null, tint = Color.White, modifier = Modifier.size(15.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("PDF", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                        }
+                    }
+
+                    // Share PDF Button
+                    Surface(
+                        onClick = {
+                            try {
+                                val pdf = PdfReportGenerator.generateCalculationPdf(
+                                    context,
+                                    calculator,
+                                    inputValues,
+                                    res,
+                                    devSettings,
+                                    pdfSettings,
+                                    techProfile
+                                )
+                                ShareUtils.sharePdf(context, pdf, "${calculator.name} PDF Report")
+                            } catch (e: Exception) {
+                                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color(0xFF7C3AED),
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(vertical = 10.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(Icons.Default.Share, contentDescription = null, tint = Color.White, modifier = Modifier.size(15.dp))
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Share PDF", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                        }
                     }
                 }
             }

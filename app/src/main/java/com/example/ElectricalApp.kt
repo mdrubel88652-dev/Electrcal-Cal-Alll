@@ -16,6 +16,10 @@ class ElectricalApp : Application() {
         HistoryRepository(database.historyDao(), database.buildingProjectDao())
     }
 
+    val projectRepository: com.example.data.repository.ProjectRepository by lazy {
+        com.example.data.repository.ProjectRepository(database.contractProjectDao(), database.projectPaymentDao())
+    }
+
     val settingsManager: SettingsManager by lazy {
         SettingsManager(this)
     }
