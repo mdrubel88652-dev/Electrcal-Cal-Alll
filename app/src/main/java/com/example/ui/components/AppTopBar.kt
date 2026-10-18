@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -52,7 +53,8 @@ fun AppTopBar(
     canNavigateBack: Boolean = false,
     onNavigateBack: () -> Unit = {},
     onNavigateToNotification: () -> Unit = {},
-    onNavigateToInformation: () -> Unit = {}
+    onNavigateToInformation: () -> Unit = {},
+    onOpenMenu: () -> Unit = {}
 ) {
     TopAppBar(
         title = {
@@ -61,9 +63,8 @@ fun AppTopBar(
                     // User Picture Avatar - Tapping opens Information Screen
                     Box(
                         modifier = Modifier
-                            .size(38.dp)
+                            .size(36.dp)
                             .clip(CircleShape)
-                            .border(1.5.dp, Color(0xFF0284C7), CircleShape)
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = ripple(bounded = true),
@@ -79,7 +80,7 @@ fun AppTopBar(
                             contentScale = ContentScale.Crop
                         )
                     }
-                    Spacer(modifier = Modifier.width(10.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
                 }
                 Column(
                     verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(0.dp),
@@ -90,8 +91,8 @@ fun AppTopBar(
                         style = MaterialTheme.typography.titleMedium.copy(
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 0.1.sp,
-                            fontSize = 16.sp,
-                            lineHeight = 18.sp
+                            fontSize = 15.sp,
+                            lineHeight = 17.sp
                         ),
                         color = Color(0xFF0F172A),
                         maxLines = 1,
@@ -100,9 +101,9 @@ fun AppTopBar(
                     Text(
                         text = subtitle,
                         style = MaterialTheme.typography.bodySmall.copy(
-                            fontSize = 11.sp,
+                            fontSize = 10.5.sp,
                             fontWeight = FontWeight.Medium,
-                            lineHeight = 13.sp
+                            lineHeight = 12.sp
                         ),
                         color = Color(0xFF0284C7),
                         maxLines = 1,
@@ -116,44 +117,66 @@ fun AppTopBar(
                 IconButton(
                     onClick = onNavigateBack,
                     modifier = Modifier
-                        .size(44.dp)
+                        .size(40.dp)
                         .testTag("top_bar_back_button")
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Navigate back",
                         tint = Color(0xFF0F172A),
-                        modifier = Modifier.size(24.dp)
+                        modifier = Modifier.size(22.dp)
                     )
                 }
             }
         },
         actions = {
-            IconButton(
-                onClick = onNavigateToInformation,
-                modifier = Modifier
-                    .size(44.dp)
-                    .testTag("top_bar_information_button")
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(0.dp)
             ) {
-                Icon(
-                    imageVector = Icons.Outlined.Info,
-                    contentDescription = "Information",
-                    tint = Color(0xFF0284C7),
-                    modifier = Modifier.size(26.dp)
-                )
-            }
-            IconButton(
-                onClick = onNavigateToNotification,
-                modifier = Modifier
-                    .size(44.dp)
-                    .testTag("top_bar_notification_button")
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Notifications,
-                    contentDescription = "Notification",
-                    tint = Color(0xFF0F172A),
-                    modifier = Modifier.size(26.dp)
-                )
+                // Information Icon (moved further left)
+                IconButton(
+                    onClick = onNavigateToInformation,
+                    modifier = Modifier
+                        .size(38.dp)
+                        .testTag("top_bar_information_button")
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.Info,
+                        contentDescription = "Information",
+                        tint = Color(0xFF0284C7),
+                        modifier = Modifier.size(23.dp)
+                    )
+                }
+                // Notification Icon
+                IconButton(
+                    onClick = onNavigateToNotification,
+                    modifier = Modifier
+                        .size(38.dp)
+                        .testTag("top_bar_notification_button")
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Notifications,
+                        contentDescription = "Notification",
+                        tint = Color(0xFF0F172A),
+                        modifier = Modifier.size(23.dp)
+                    )
+                }
+                // Three Lines Menu Icon (to the right of Notification)
+                IconButton(
+                    onClick = onOpenMenu,
+                    modifier = Modifier
+                        .size(40.dp)
+                        .padding(end = 4.dp)
+                        .testTag("top_bar_menu_button")
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Menu,
+                        contentDescription = "Technician Hub & Wallet Menu",
+                        tint = Color(0xFF0F172A),
+                        modifier = Modifier.size(26.dp)
+                    )
+                }
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(

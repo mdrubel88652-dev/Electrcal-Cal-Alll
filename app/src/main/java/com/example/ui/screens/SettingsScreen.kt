@@ -90,6 +90,7 @@ fun SettingsScreen(
     var selectedStandard by remember(calcDefaults.standard) { mutableStateOf(calcDefaults.standard) }
     var selectedThemeMode by remember(currentTheme) { mutableStateOf(currentTheme) }
     var selectedLanguage by remember(currentLanguage) { mutableStateOf(currentLanguage) }
+    val isEn = selectedLanguage == "EN"
 
     // Dialog visibility states for user-requested interactive pickers
     var showLanguageDialog by remember { mutableStateOf(false) }
@@ -111,7 +112,7 @@ fun SettingsScreen(
             onDismissRequest = { showLanguageDialog = false },
             title = {
                 Text(
-                    text = if (selectedLanguage == "EN") "Select Language" else "ভাষা নির্বাচন করুন (Select Language)",
+                    text = if (isEn) "Select Language" else "ভাষা নির্বাচন করুন (Select Language)",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF0F172A)
@@ -169,7 +170,7 @@ fun SettingsScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showLanguageDialog = false }) {
-                    Text(if (selectedLanguage == "EN") "Close" else "বন্ধ করুন", color = Color(0xFF0284C7), fontWeight = FontWeight.Bold)
+                    Text(if (isEn) "Close" else "বন্ধ করুন", color = Color(0xFF0284C7), fontWeight = FontWeight.Bold)
                 }
             },
             containerColor = Color.White,
@@ -185,7 +186,7 @@ fun SettingsScreen(
             onDismissRequest = { showStandardDialog = false },
             title = {
                 Text(
-                    text = "Selected Default Standard Man IEC, NEC, BNBC",
+                    text = if (isEn) "Select Default Standard (IEC, NEC, BNBC)" else "ডিফল্ট স্ট্যান্ডার্ড নির্বাচন করুন",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF0F172A)
@@ -208,7 +209,7 @@ fun SettingsScreen(
                                     selectedStandard = std
                                     coroutineScope.launch {
                                         app.settingsManager.updateCalculationDefaults(calcDefaults.copy(standard = std))
-                                        Toast.makeText(context, "স্ট্যান্ডার্ড নির্বাচন: $std", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, if (isEn) "Standard selected: $std" else "স্ট্যান্ডার্ড নির্বাচন: $std", Toast.LENGTH_SHORT).show()
                                     }
                                     showStandardDialog = false
                                 }
@@ -221,7 +222,7 @@ fun SettingsScreen(
                                     selectedStandard = std
                                     coroutineScope.launch {
                                         app.settingsManager.updateCalculationDefaults(calcDefaults.copy(standard = std))
-                                        Toast.makeText(context, "স্ট্যান্ডার্ড নির্বাচন: $std", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, if (isEn) "Standard selected: $std" else "স্ট্যান্ডার্ড নির্বাচন: $std", Toast.LENGTH_SHORT).show()
                                     }
                                     showStandardDialog = false
                                 },
@@ -247,7 +248,7 @@ fun SettingsScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showStandardDialog = false }) {
-                    Text("বন্ধ করুন", color = Color(0xFF0284C7), fontWeight = FontWeight.Bold)
+                    Text(if (isEn) "Close" else "বন্ধ করুন", color = Color(0xFF0284C7), fontWeight = FontWeight.Bold)
                 }
             },
             containerColor = Color.White,
@@ -263,7 +264,7 @@ fun SettingsScreen(
             onDismissRequest = { showThemeDialog = false },
             title = {
                 Text(
-                    text = "Appearance Theme নির্বাচন করুন",
+                    text = if (isEn) "Select Appearance Theme" else "Appearance Theme নির্বাচন করুন",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
                     color = Color(0xFF0F172A)
@@ -271,7 +272,11 @@ fun SettingsScreen(
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    val themes = listOf(
+                    val themes = if (isEn) listOf(
+                        "LIGHT" to "Light (Clean Theme • Default)",
+                        "DARK" to "Dark (Deep Black Theme)",
+                        "SYSTEM" to "System Default (Follow Device)"
+                    ) else listOf(
                         "LIGHT" to "Light (হালকা থিম • ডিফল্ট)",
                         "DARK" to "Dark (গাঢ় ব্ল্যাক থিম)",
                         "SYSTEM" to "System Default (ডিভাইসের নিয়ম অনুযায়ী)"
@@ -285,7 +290,7 @@ fun SettingsScreen(
                                     selectedThemeMode = mode
                                     coroutineScope.launch {
                                         app.settingsManager.updateThemeMode(mode)
-                                        Toast.makeText(context, "থিম মোড: $label", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, if (isEn) "Theme mode: $label" else "থিম মোড: $label", Toast.LENGTH_SHORT).show()
                                     }
                                     showThemeDialog = false
                                 }
@@ -298,7 +303,7 @@ fun SettingsScreen(
                                     selectedThemeMode = mode
                                     coroutineScope.launch {
                                         app.settingsManager.updateThemeMode(mode)
-                                        Toast.makeText(context, "থিম মোড: $label", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, if (isEn) "Theme mode: $label" else "থিম মোড: $label", Toast.LENGTH_SHORT).show()
                                     }
                                     showThemeDialog = false
                                 },
@@ -317,7 +322,7 @@ fun SettingsScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showThemeDialog = false }) {
-                    Text("বন্ধ করুন", color = Color(0xFF0284C7), fontWeight = FontWeight.Bold)
+                    Text(if (isEn) "Close" else "বন্ধ করুন", color = Color(0xFF0284C7), fontWeight = FontWeight.Bold)
                 }
             },
             containerColor = Color.White,
@@ -340,7 +345,7 @@ fun SettingsScreen(
         // SECTION 1: CORE PREFERENCES (REQUESTED)
         // ------------------------------------------
         item {
-            SettingsCategoryHeader(title = "মূল পছন্দসমূহ • PREFERENCES")
+            SettingsCategoryHeader(title = if (isEn) "CORE PREFERENCES" else "মূল পছন্দসমূহ (PREFERENCES)")
         }
 
         item {
@@ -348,8 +353,8 @@ fun SettingsScreen(
                 icon = Icons.Default.Language,
                 iconTint = Color(0xFF0284C7),
                 iconBg = Color(0xFFE0F2FE),
-                title = "Language",
-                subtitle = "অ্যাপের ভাষা নির্বাচন করুন / Select language",
+                title = if (isEn) "Language" else "ভাষা (Language)",
+                subtitle = if (isEn) "Select app display language" else "অ্যাপের ভাষা পরিবর্তন করুন",
                 valueBadge = if (selectedLanguage == "BN") "বাংলা" else "English",
                 onClick = { showLanguageDialog = true }
             )
@@ -360,8 +365,8 @@ fun SettingsScreen(
                 icon = Icons.Default.FormatListNumbered,
                 iconTint = Color(0xFF7C3AED),
                 iconBg = Color(0xFFF5F3FF),
-                title = "Selected Default Standard Man IEC,NEC, BNBC",
-                subtitle = "আন্তর্জাতিক ও জাতীয় ইলেকট্রিক্যাল স্ট্যান্ডার্ড",
+                title = if (isEn) "Default Standards (IEC, NEC, BNBC)" else "ইলেকট্রিক্যাল স্ট্যান্ডার্ড (Standards)",
+                subtitle = if (isEn) "International & national electrical engineering standards" else "আন্তর্জাতিক ও জাতীয় ইলেকট্রিক্যাল স্ট্যান্ডার্ড",
                 valueBadge = selectedStandard,
                 onClick = { showStandardDialog = true }
             )
@@ -372,12 +377,12 @@ fun SettingsScreen(
                 icon = Icons.Default.LightMode,
                 iconTint = Color(0xFFEA580C),
                 iconBg = Color(0xFFFFF7ED),
-                title = "Appearance Theme",
-                subtitle = "লাইট, ডার্ক বা সিস্টেম থিম মোড নির্বাচন করুন",
+                title = if (isEn) "Appearance Theme" else "থিম ও ডিসপ্লে (Appearance Theme)",
+                subtitle = if (isEn) "Choose light, dark, or system theme mode" else "লাইট, ডার্ক বা সিস্টেম থিম মোড নির্বাচন করুন",
                 valueBadge = when (selectedThemeMode) {
-                    "DARK" -> "Dark"
-                    "SYSTEM" -> "System"
-                    else -> "Light"
+                    "DARK" -> if (isEn) "Dark" else "ডার্ক"
+                    "SYSTEM" -> if (isEn) "System" else "সিস্টেম"
+                    else -> if (isEn) "Light" else "লাইট"
                 },
                 onClick = { showThemeDialog = true }
             )
@@ -387,7 +392,7 @@ fun SettingsScreen(
         // SECTION 2: PROFILES & ACCOUNTS
         // ------------------------------------------
         item {
-            SettingsCategoryHeader(title = "প্রোফাইল ও রিপোর্ট খতিয়ান")
+            SettingsCategoryHeader(title = if (isEn) "PROFILES & TECHNICIAN RECORD" else "প্রোফাইল ও রিপোর্ট খতিয়ান")
         }
 
         item {
@@ -407,10 +412,10 @@ fun SettingsScreen(
                 icon = Icons.Default.Person,
                 iconTint = Color(0xFF2563EB),
                 iconBg = Color(0xFFEFF6FF),
-                title = "Technician Report Profile",
+                title = if (isEn) "Technician Report Profile" else "টেকনিশিয়ান রিপোর্ট প্রোফাইল",
                 subtitle = if (techProfile.isNotEmpty()) "Technician: ${techProfile.name} • ${techProfile.company}"
-                           else "Configure technician profile for PDF reports",
-                valueBadge = if (techProfile.isNotEmpty()) "Configured" else "Empty",
+                           else (if (isEn) "Configure technician profile for PDF reports" else "PDF রিপোর্টের জন্য টেকনিশিয়ান প্রোফাইল সেট করুন"),
+                valueBadge = if (techProfile.isNotEmpty()) (if (isEn) "Configured" else "সেট করা") else (if (isEn) "Empty" else "খালি"),
                 onClick = onNavigateToTechnicianProfile
             )
         }
@@ -419,7 +424,7 @@ fun SettingsScreen(
         // SECTION 3: RECORDS & REPORTS
         // ------------------------------------------
         item {
-            SettingsCategoryHeader(title = "হিসাবের ইতিহাস ও রিপোর্ট")
+            SettingsCategoryHeader(title = if (isEn) "CALCULATION HISTORY & REPORTS" else "হিসাবের ইতিহাস ও রিপোর্ট")
         }
 
         item {
@@ -427,8 +432,8 @@ fun SettingsScreen(
                 icon = Icons.Default.History,
                 iconTint = Color(0xFF0284C7),
                 iconBg = Color(0xFFE0F2FE),
-                title = "Calculation History (হিসাবের ইতিহাস)",
-                subtitle = "পূর্বে সংরক্ষিত সকল ক্যালকুলেশন রেকর্ড ও শেয়ারিং",
+                title = if (isEn) "Calculation History" else "Calculation History (হিসাবের ইতিহাস)",
+                subtitle = if (isEn) "All saved calculation records and sharing" else "পূর্বে সংরক্ষিত সকল ক্যালকুলেশন রেকর্ড ও শেয়ারিং",
                 onClick = onNavigateToHistory
             )
         }
@@ -438,8 +443,8 @@ fun SettingsScreen(
                 icon = Icons.Default.Description,
                 iconTint = Color(0xFF7C3AED),
                 iconBg = Color(0xFFF5F3FF),
-                title = "Reports & Project Summary (রিপোর্ট ও সামারি)",
-                subtitle = "প্রজেক্ট রিপোর্ট, ম্যাটেরিয়াল লিস্ট ও টেকনিশিয়ান শিট PDF",
+                title = if (isEn) "Reports & Project Summary" else "Reports & Project Summary (রিপোর্ট ও সামারি)",
+                subtitle = if (isEn) "Project reports, material lists & technician PDF sheets" else "প্রজেক্ট রিপোর্ট, ম্যাটেরিয়াল লিস্ট ও টেকনিশিয়ান শিট PDF",
                 onClick = onNavigateToReports
             )
         }
@@ -448,7 +453,7 @@ fun SettingsScreen(
         // SECTION 4: APPLICATION INFO
         // ------------------------------------------
         item {
-            SettingsCategoryHeader(title = "অ্যাপ্লিকেশন তথ্য ও নিরাপত্তা")
+            SettingsCategoryHeader(title = if (isEn) "APPLICATION INFO & SECURITY" else "অ্যাপ্লিকেশন তথ্য ও নিরাপত্তা")
         }
 
         item {
@@ -456,8 +461,8 @@ fun SettingsScreen(
                 icon = Icons.Default.Info,
                 iconTint = Color(0xFF059669),
                 iconBg = Color(0xFFECFDF5),
-                title = "About Application",
-                subtitle = "ভার্সন, ১৬৭টি ক্যালকুলেটরের উদ্দেশ্য ও বিবরণ",
+                title = if (isEn) "About Application" else "অ্যাপ্লিকেশন তথ্য (About)",
+                subtitle = if (isEn) "Version, 167 calculators scope and details" else "ভার্সন, ১৬৭টি ক্যালকুলেটরের উদ্দেশ্য ও বিবরণ",
                 onClick = onNavigateToAbout
             )
         }
@@ -467,8 +472,8 @@ fun SettingsScreen(
                 icon = Icons.Default.Shield,
                 iconTint = Color(0xFF059669),
                 iconBg = Color(0xFFECFDF5),
-                title = "Privacy Policy",
-                subtitle = "ডাটা নিরাপত্তা, অফলাইন সুবিধা ও পলিসি",
+                title = if (isEn) "Privacy Policy" else "প্রাইভেসি পলিসি (Privacy Policy)",
+                subtitle = if (isEn) "Data security, offline usage and privacy policy" else "ডাটা নিরাপত্তা, অফলাইন সুবিধা ও পলিসি",
                 onClick = onNavigateToPrivacy
             )
         }
@@ -478,13 +483,13 @@ fun SettingsScreen(
                 icon = Icons.Default.Share,
                 iconTint = Color(0xFF059669),
                 iconBg = Color(0xFFECFDF5),
-                title = "Share Application",
-                subtitle = "প্রকৌশলী, ইলেকট্রিশিয়ান ও শিক্ষার্থীদের সাথে শেয়ার করুন",
+                title = if (isEn) "Share Application" else "অ্যাপ্লিকেশন শেয়ার করুন (Share)",
+                subtitle = if (isEn) "Share with engineers, electricians & students" else "প্রকৌশলী, ইলেকট্রিশিয়ান ও শিক্ষার্থীদের সাথে শেয়ার করুন",
                 onClick = {
                     ShareUtils.shareText(
                         context,
-                        "Electrical Cal/Pro",
-                        "Download Electrical Cal/Pro - The professional electrical engineering calculation & estimation app with 167 calculators!"
+                        "Electrical Calculation All",
+                        "Download Electrical Calculation All - The professional electrical engineering calculation & estimation app with 167 calculators!"
                     )
                 }
             )
@@ -494,13 +499,13 @@ fun SettingsScreen(
         // SECTION 5: PDF REPORT CONTROLS
         // ------------------------------------------
         item {
-            SettingsCategoryHeader(title = "PDF রিপোর্ট এক্সপোর্ট সেটিংস")
+            SettingsCategoryHeader(title = if (isEn) "PDF REPORT EXPORT SETTINGS" else "PDF রিপোর্ট এক্সপোর্ট সেটিংস")
         }
 
         item {
             BorderlessSwitchItem(
-                title = "Show App Logo in Header",
-                subtitle = "Display app logo on top header",
+                title = if (isEn) "Show App Logo in Header" else "হেডারে অ্যাপ লোগো দেখান",
+                subtitle = if (isEn) "Display app logo on top header" else "টপ হেডারে অ্যাপের লোগো প্রিন্ট করুন",
                 checked = showLogo,
                 onCheckedChange = {
                     showLogo = it
@@ -513,8 +518,8 @@ fun SettingsScreen(
 
         item {
             BorderlessSwitchItem(
-                title = "Show Technician Profile in Footer",
-                subtitle = "Show technician profile in footer",
+                title = if (isEn) "Show Technician Profile in Footer" else "ফুটার এ টেকনিশিয়ান প্রোফাইল দেখান",
+                subtitle = if (isEn) "Show technician profile in footer" else "রিপোর্ট ফুটারে টেকনিশিয়ানের তথ্য প্রদর্শন",
                 checked = showDevInfo,
                 onCheckedChange = {
                     showDevInfo = it
@@ -527,8 +532,8 @@ fun SettingsScreen(
 
         item {
             BorderlessSwitchItem(
-                title = "Show Date & Time",
-                subtitle = "Show current date and time on export",
+                title = if (isEn) "Show Date & Time" else "তারিখ ও সময় অন্তর্ভুক্ত করুন",
+                subtitle = if (isEn) "Show current date and time on export" else "এক্সপোর্টে বর্তমান তারিখ ও সময় প্রদর্শন",
                 checked = showDateTime,
                 onCheckedChange = {
                     showDateTime = it
@@ -541,8 +546,8 @@ fun SettingsScreen(
 
         item {
             BorderlessSwitchItem(
-                title = "Show Formula",
-                subtitle = "Display calculation formula in report",
+                title = if (isEn) "Show Formula" else "হিসাবের সূত্র প্রদর্শন",
+                subtitle = if (isEn) "Display calculation formula in report" else "রিপোর্টে ব্যবহৃত সমীকরণ ও সূত্র প্রদর্শন",
                 checked = showFormula,
                 onCheckedChange = {
                     showFormula = it
@@ -555,8 +560,8 @@ fun SettingsScreen(
 
         item {
             BorderlessSwitchItem(
-                title = "Show Step-by-Step Solution",
-                subtitle = "Show detailed step by step solution",
+                title = if (isEn) "Show Step-by-Step Solution" else "ধাপে ধাপে সমাধান দেখান",
+                subtitle = if (isEn) "Show detailed step by step solution" else "বিস্তারিত সমীকরণ ও সমাধান ধাপ প্রদর্শন",
                 checked = showSteps,
                 onCheckedChange = {
                     showSteps = it
@@ -569,8 +574,8 @@ fun SettingsScreen(
 
         item {
             BorderlessSwitchItem(
-                title = "Show Notes & Assumptions",
-                subtitle = "Display notes and engineering assumptions",
+                title = if (isEn) "Show Notes & Assumptions" else "নোট ও পূর্বানুমান দেখান",
+                subtitle = if (isEn) "Display notes and engineering assumptions" else "ইঞ্জিনিয়ারিং নোট ও স্ট্যান্ডার্ড অনুমান প্রদর্শন",
                 checked = showNotes,
                 onCheckedChange = {
                     showNotes = it

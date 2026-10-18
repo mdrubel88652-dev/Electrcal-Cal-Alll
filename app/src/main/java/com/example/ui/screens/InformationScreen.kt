@@ -52,12 +52,14 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -83,6 +85,11 @@ fun InformationScreen(
     onNavigateToCalculator: (Int) -> Unit = {},
     onNavigateBack: () -> Unit = {}
 ) {
+    val context = LocalContext.current
+    val app = com.example.ElectricalApp.getApp(context)
+    val currentLanguage by app.settingsManager.languageFlow.collectAsState(initial = "EN")
+    val isEn = currentLanguage == "EN"
+
     var searchQuery by remember { mutableStateOf("") }
     var selectedFilterTier by remember { mutableStateOf("ALL") } // ALL, ADVANCE, BASIC, LOWER, PHASE
     var selectedCategory by remember { mutableStateOf<CalculatorCategory?>(null) }
@@ -121,7 +128,9 @@ fun InformationScreen(
                     guide.description.lowercase().contains(query) ||
                     guide.formula.lowercase().contains(query) ||
                     guide.howToWorkBn.lowercase().contains(query) ||
-                    guide.howToCalculateBn.lowercase().contains(query)
+                    guide.howToCalculateBn.lowercase().contains(query) ||
+                    guide.howToWorkEn.lowercase().contains(query) ||
+                    guide.howToCalculateEn.lowercase().contains(query)
                 }
 
                 matchesTier && matchesCategory && matchesSearch
@@ -185,13 +194,13 @@ fun InformationScreen(
 
                                 Column {
                                     Text(
-                                        text = "Information • প্রকৌশল সহায়িকা",
+                                        text = if (isEn) "Information Guide" else "Information • প্রকৌশল সহায়িকা",
                                         fontSize = 15.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = Color(0xFF0F172A)
                                     )
                                     Text(
-                                        text = "১৬৭টি ক্যালকুলেটরের হিসাব ও কাজের নিয়মাবলী",
+                                        text = if (isEn) "Engineering calculation rules & operations for 167 tools" else "১৬৭টি ক্যালকুলেটরের হিসাব ও কাজের নিয়মাবলী",
                                         fontSize = 11.sp,
                                         fontWeight = FontWeight.Medium,
                                         color = Color(0xFF64748B)
@@ -212,10 +221,10 @@ fun InformationScreen(
                             horizontalArrangement = Arrangement.SpaceAround,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            MetricBadge(label = "মোট ক্যালকুলেটর", value = "১৬৭টি", color = Color(0xFF0284C7))
-                            MetricBadge(label = "১φ ও ৩φ মোড", value = "৬০টি", color = Color(0xFFD97706))
-                            MetricBadge(label = "মানক স্ট্যান্ডার্ড", value = "IEC / IEEE", color = Color(0xFF059669))
-                            MetricBadge(label = "অফলাইন রেডি", value = "১০০%", color = Color(0xFF7C3AED))
+                            MetricBadge(label = if (isEn) "Total Tools" else "মোট ক্যালকুলেটর", value = if (isEn) "167 Tools" else "১৬৭টি", color = Color(0xFF0284C7))
+                            MetricBadge(label = if (isEn) "1φ & 3φ" else "১φ ও ৩φ মোড", value = if (isEn) "60 Modes" else "৬০টি", color = Color(0xFFD97706))
+                            MetricBadge(label = if (isEn) "Standards" else "মানক স্ট্যান্ডার্ড", value = "IEC / IEEE", color = Color(0xFF059669))
+                            MetricBadge(label = if (isEn) "Offline Ready" else "অফলাইন রেডি", value = "100%", color = Color(0xFF7C3AED))
                         }
                     }
                 }
@@ -250,7 +259,7 @@ fun InformationScreen(
                         Box(modifier = Modifier.weight(1f)) {
                             if (searchQuery.isEmpty()) {
                                 Text(
-                                    text = "ক্যালকুলেটরের নাম, নম্বর (#1-167) বা সূত্র খুঁজুন...",
+                                    text = if (isEn) "Search calculator name, #id or formula..." else "ক্যালকুলেটরের নাম, নম্বর (#1-167) বা সূত্র খুঁজুন...",
                                     fontSize = 12.5.sp,
                                     color = Color(0xFF94A3B8)
                                 )
@@ -299,7 +308,7 @@ fun InformationScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     TierChip(
-                        label = "সকল (১৬৭)",
+                        label = if (isEn) "All (167)" else "সকল (১৬৭)",
                         selected = selectedFilterTier == "ALL" && selectedCategory == null,
                         onClick = {
                             selectedFilterTier = "ALL"
@@ -307,22 +316,22 @@ fun InformationScreen(
                         }
                     )
                     TierChip(
-                        label = "Advance (৫৫)",
+                        label = if (isEn) "Advance (55)" else "Advance (৫৫)",
                         selected = selectedFilterTier == "ADVANCE",
                         onClick = { selectedFilterTier = "ADVANCE" }
                     )
                     TierChip(
-                        label = "Basic (৬১)",
+                        label = if (isEn) "Basic (61)" else "Basic (৬১)",
                         selected = selectedFilterTier == "BASIC",
                         onClick = { selectedFilterTier = "BASIC" }
                     )
                     TierChip(
-                        label = "Lower (৫১)",
+                        label = if (isEn) "Lower (51)" else "Lower (৫১)",
                         selected = selectedFilterTier == "LOWER",
                         onClick = { selectedFilterTier = "LOWER" }
                     )
                     TierChip(
-                        label = "⚡ ১-ফেজ ও ৩-ফেজ (৬০)",
+                        label = if (isEn) "⚡ 1-Phase & 3-Phase (60)" else "⚡ ১-ফেজ ও ৩-ফেজ (৬০)",
                         selected = selectedFilterTier == "PHASE",
                         onClick = { selectedFilterTier = "PHASE" }
                     )
@@ -352,7 +361,7 @@ fun InformationScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "প্রদর্শিত হচ্ছে: ${filteredGuides.size} টি সহায়িকা",
+                        text = if (isEn) "Displaying: ${filteredGuides.size} Guides" else "প্রদর্শিত হচ্ছে: ${filteredGuides.size} টি সহায়িকা",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color(0xFF475569)
@@ -360,7 +369,7 @@ fun InformationScreen(
 
                     if (searchQuery.isNotEmpty() || selectedFilterTier != "ALL" || selectedCategory != null) {
                         Text(
-                            text = "রিসেট ফিল্টার",
+                            text = if (isEn) "Reset Filter" else "রিসেট ফিল্টার",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF0284C7),
@@ -382,6 +391,7 @@ fun InformationScreen(
                 CalculatorGuideCard(
                     guide = guide,
                     isExpanded = isExpanded,
+                    isEn = isEn,
                     onToggleExpand = {
                         expandedStates[guide.id] = !isExpanded
                     },
@@ -414,7 +424,7 @@ fun InformationScreen(
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = "সকল ১৬৭টি ক্যালকুলেটরের সূত্রাবলী আন্তর্জাতিক IEC 60364, IEEE Std ও NEC কোড অনুসারে পরীক্ষিত ও প্রমাণিত।",
+                            text = if (isEn) "All 167 calculation formulas are verified and compliant with international IEC 60364, IEEE Std & NEC standards." else "সকল ১৬৭টি ক্যালকুলেটরের সূত্রাবলী আন্তর্জাতিক IEC 60364, IEEE Std ও NEC কোড অনুসারে পরীক্ষিত ও প্রমাণিত।",
                             fontSize = 11.sp,
                             color = Color(0xFF64748B),
                             textAlign = TextAlign.Center
@@ -431,6 +441,7 @@ fun InformationScreen(
 private fun CalculatorGuideCard(
     guide: CalculatorGuide,
     isExpanded: Boolean,
+    isEn: Boolean = true,
     onToggleExpand: () -> Unit,
     onOpenCalculator: () -> Unit
 ) {
@@ -551,8 +562,11 @@ private fun CalculatorGuideCard(
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // SECTION 1: কিভাবে কাজ করতে হবে
-                    SectionTitle(icon = Icons.Default.Settings, title = "১. কিভাবে কাজ করতে হবে (ব্যবহার প্রণালী)")
+                    // SECTION 1: How it works
+                    SectionTitle(
+                        icon = Icons.Default.Settings,
+                        title = if (isEn) "1. How It Works (Operating Procedure)" else "১. কিভাবে কাজ করতে হবে (ব্যবহার প্রণালী)"
+                    )
 
                     Spacer(modifier = Modifier.height(6.dp))
 
@@ -563,7 +577,7 @@ private fun CalculatorGuideCard(
                     ) {
                         Column(modifier = Modifier.padding(10.dp)) {
                             Text(
-                                text = guide.howToWorkBn,
+                                text = if (isEn) guide.howToWorkEn else guide.howToWorkBn,
                                 fontSize = 12.sp,
                                 color = Color(0xFF1E293B),
                                 lineHeight = 18.sp
@@ -587,7 +601,7 @@ private fun CalculatorGuideCard(
                                         )
                                         Spacer(modifier = Modifier.width(6.dp))
                                         Text(
-                                            text = guide.phaseGuideBn,
+                                            text = if (isEn) guide.phaseGuideEn else guide.phaseGuideBn,
                                             fontSize = 11.5.sp,
                                             fontWeight = FontWeight.Medium,
                                             color = Color(0xFF92400E),
@@ -601,8 +615,11 @@ private fun CalculatorGuideCard(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // SECTION 2: কিভাবে হিসাব করতে হবে (সূত্র ও মেথড)
-                    SectionTitle(icon = Icons.Default.Functions, title = "২. কিভাবে হিসাব করতে হবে (সূত্র ও গাণিতিক নীতি)")
+                    // SECTION 2: How to calculate
+                    SectionTitle(
+                        icon = Icons.Default.Functions,
+                        title = if (isEn) "2. How to Calculate (Formula & Theory)" else "২. কিভাবে হিসাব করতে হবে (সূত্র ও গাণিতিক নীতি)"
+                    )
 
                     Spacer(modifier = Modifier.height(6.dp))
 
@@ -641,7 +658,7 @@ private fun CalculatorGuideCard(
                     ) {
                         Column(modifier = Modifier.padding(10.dp)) {
                             Text(
-                                text = guide.howToCalculateBn,
+                                text = if (isEn) guide.howToCalculateEn else guide.howToCalculateBn,
                                 fontSize = 12.sp,
                                 color = Color(0xFF1E293B),
                                 lineHeight = 18.sp
@@ -664,7 +681,7 @@ private fun CalculatorGuideCard(
                         )
                         Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "ব্যবহারক্ষেত্র: ${guide.practicalApplicationBn}",
+                            text = if (isEn) "Field Application: ${guide.practicalApplicationEn}" else "ব্যবহারক্ষেত্র: ${guide.practicalApplicationBn}",
                             fontSize = 11.5.sp,
                             color = Color(0xFF475569)
                         )
@@ -692,7 +709,7 @@ private fun CalculatorGuideCard(
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "#${guide.id} ${guide.name} গণনা করুন",
+                            text = if (isEn) "Open #${guide.id} ${guide.name}" else "#${guide.id} ${guide.name} গণনা করুন",
                             fontSize = 13.sp,
                             fontWeight = FontWeight.Bold
                         )

@@ -86,13 +86,22 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.material.icons.filled.AccountBalanceWallet
+import androidx.compose.material.icons.filled.Work
+import androidx.compose.material3.Tab
+import androidx.compose.material3.TabRow
+import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
+import androidx.compose.runtime.mutableIntStateOf
 import com.example.ElectricalApp
 import com.example.data.database.ContractProjectEntity
 import com.example.data.database.ProjectPaymentEntity
+import com.example.data.database.QuickTaskEntity
 import com.example.pdf.PdfReportGenerator
 import com.example.print.PrintManagerHelper
 import com.example.utils.ShareUtils
 import kotlinx.coroutines.launch
+import java.text.NumberFormat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -223,12 +232,16 @@ fun ProjectScreen() {
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(
-                                    text = if (isSlotFull) "সর্বোচ্চ ৫টি প্রজেক্ট স্লট পূর্ণ" else "উপলব্ধ স্লট: ${MAX_PROJECTS - projectCount} টি খালি",
+                                    text = if (isSlotFull) {
+                                        if (isEn) "Max 5 project slots full" else "সর্বোচ্চ ৫টি প্রজেক্ট স্লট পূর্ণ"
+                                    } else {
+                                        if (isEn) "Available slots: ${MAX_PROJECTS - projectCount} remaining" else "উপলব্ধ স্লট: ${MAX_PROJECTS - projectCount} টি খালি"
+                                    },
                                     fontSize = 10.sp,
                                     color = Color(0xFF64748B)
                                 )
                                 Text(
-                                    text = "ধারণক্ষমতা: ৫টি প্রজেক্ট",
+                                    text = if (isEn) "Capacity: 5 Projects" else "ধারণক্ষমতা: ৫টি প্রজেক্ট",
                                     fontSize = 10.sp,
                                     color = Color(0xFF94A3B8)
                                 )
@@ -262,7 +275,7 @@ fun ProjectScreen() {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "আমার প্রজেক্টসমূহ ($projectCount)",
+                        text = if (isEn) "My Projects ($projectCount)" else "আমার প্রজেক্টসমূহ ($projectCount)",
                         fontSize = 13.5.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF0F172A)
@@ -273,7 +286,8 @@ fun ProjectScreen() {
                             if (isSlotFull) {
                                 Toast.makeText(
                                     context,
-                                    "সর্বোচ্চ ৫টি প্রজেক্ট সংরক্ষণ করা যাবে। নতুন প্রজেক্ট যোগ করতে পূর্বের কোনো প্রজেক্ট ডিলিট করুন।",
+                                    if (isEn) "Maximum 5 projects allowed. Delete an existing project to add a new one."
+                                    else "সর্বোচ্চ ৫টি প্রজেক্ট সংরক্ষণ করা যাবে। নতুন প্রজেক্ট যোগ করতে পূর্বের কোনো প্রজেক্ট ডিলিট করুন।",
                                     Toast.LENGTH_LONG
                                 ).show()
                             } else {
@@ -297,7 +311,7 @@ fun ProjectScreen() {
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
-                            text = "নতুন প্রজেক্ট",
+                            text = if (isEn) "New Project" else "নতুন প্রজেক্ট",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -338,7 +352,7 @@ fun ProjectScreen() {
                             Spacer(modifier = Modifier.height(14.dp))
 
                             Text(
-                                text = "এখনও কোনো প্রজেক্ট যুক্ত করা হয়নি",
+                                text = if (isEn) "No projects added yet" else "এখনও কোনো প্রজেক্ট যুক্ত করা হয়নি",
                                 fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF1E293B),
@@ -348,7 +362,8 @@ fun ProjectScreen() {
                             Spacer(modifier = Modifier.height(6.dp))
 
                             Text(
-                                text = "একজন টেকনিশিয়ান হিসেবে বাড়িওয়ালার সাথে আপনার চুক্তিকৃত প্রজেক্ট, মোট টাকার পরিমাণ এবং কিস্তিতে নেওয়া টাকার হিসাব পরিচালনা করতে 'নতুন প্রজেক্ট' বাটনে চাপ দিন (সর্বোচ্চ ৫টি প্রজেক্ট)।",
+                                text = if (isEn) "As an electrical technician/contractor, manage your site projects, total contracts, and installment payments by tapping 'New Project' (up to 5 projects)."
+                                else "একজন টেকনিশিয়ান হিসেবে বাড়িওয়ালার সাথে আপনার চুক্তিকৃত প্রজেক্ট, মোট টাকার পরিমাণ এবং কিস্তিতে নেওয়া টাকার হিসাব পরিচালনা করতে 'নতুন প্রজেক্ট' বাটনে চাপ দিন (সর্বোচ্চ ৫টি প্রজেক্ট)।",
                                 fontSize = 12.sp,
                                 color = Color(0xFF64748B),
                                 textAlign = TextAlign.Center,
@@ -1185,8 +1200,7 @@ private fun ProjectFieldInputCard(
     Surface(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(10.dp),
-        color = Color.White,
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E8F0))
+        color = Color(0xFFEFF4F9)
     ) {
         Row(
             modifier = Modifier

@@ -293,7 +293,7 @@ fun HomeScreen(
                                     modifier = Modifier.size(12.dp)
                                 )
                                 Text(
-                                    text = "${historyList.size} হিস্টোরি",
+                                    text = if (isEn) "${historyList.size} History" else "${historyList.size} হিস্টোরি",
                                     fontSize = 11.5.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFF475569)
@@ -303,7 +303,7 @@ fun HomeScreen(
                     }
 
                     Text(
-                        text = "সব দেখুন ➔",
+                        text = if (isEn) "View All ➔" else "সব দেখুন ➔",
                         fontSize = 11.5.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF0284C7),
@@ -326,13 +326,13 @@ fun HomeScreen(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "সার্চ রেজাল্ট (${filteredList.size} টি ক্যালকুলেটর)",
+                        text = if (isEn) "Search Results (${filteredList.size} Tools)" else "সার্চ রেজাল্ট (${filteredList.size} টি ক্যালকুলেটর)",
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF0F172A)
                     )
                     Text(
-                        text = "রিসেট করুন ✕",
+                        text = if (isEn) "Reset ✕" else "রিসেট করুন ✕",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF0284C7),
@@ -358,14 +358,14 @@ fun HomeScreen(
                             )
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(
-                                text = "কোনো ক্যালকুলেটর পাওয়া যায়নি",
+                                text = if (isEn) "No calculators found" else "কোনো ক্যালকুলেটর পাওয়া যায়নি",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF64748B)
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "অন্য কীওয়ার্ড বা বাংলায় নাম লিখে চেষ্টা করুন",
+                                text = if (isEn) "Try a different keyword or calculator ID" else "অন্য কীওয়ার্ড বা বাংলায় নাম লিখে চেষ্টা করুন",
                                 fontSize = 12.sp,
                                 color = Color(0xFF94A3B8)
                             )
@@ -403,7 +403,7 @@ fun HomeScreen(
                         .padding(horizontal = 16.dp, vertical = 12.dp)
                 ) {
                     Text(
-                        text = "ক্যালকুলেটর লেভেল ও বিশেষ ফিচার",
+                        text = if (isEn) "CALCULATOR TIERS & SPECIAL TOOLS" else "ক্যালকুলেটর লেভেল ও বিশেষ ফিচার",
                         fontSize = 14.5.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF0F172A)
@@ -548,6 +548,7 @@ fun HomeScreen(
                             FeaturedToolCard(
                                 calc = calc,
                                 isFavorite = favoriteIds.contains(calc.id),
+                                isEn = isEn,
                                 onToggleFavorite = {
                                     coroutineScope.launch {
                                         app.settingsManager.toggleFavorite(calc.id)
@@ -575,14 +576,14 @@ fun HomeScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Text(
-                            text = "বিষয়ভিত্তিক ক্যালকুলেটর সমূহ",
+                            text = if (isEn) "CATEGORIES & SPECIALIZED TOOLS" else "বিষয়ভিত্তিক ক্যালকুলেটর সমূহ",
                             fontSize = 14.5.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF0F172A)
                         )
                         if (selectedCategoryFilter != null) {
                             Text(
-                                text = "ফিল্টার রিসেট ✕",
+                                text = if (isEn) "Reset Filter ✕" else "ফিল্টার রিসেট ✕",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF0284C7),
@@ -600,13 +601,13 @@ fun HomeScreen(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         CategoryPill(
-                            title = "সব ক্যালকুলেটর",
+                            title = if (isEn) "All Tools" else "সব ক্যালকুলেটর",
                             icon = Icons.Default.Bolt,
                             isSelected = selectedCategoryFilter == null,
                             onClick = { selectedCategoryFilter = null }
                         )
                         CategoryPill(
-                            title = "ট্রান্সফরমার",
+                            title = if (isEn) "Transformer" else "ট্রান্সফরমার",
                             icon = Icons.Default.Memory,
                             isSelected = selectedCategoryFilter == CalculatorCategory.TRANSFORMER,
                             onClick = {
@@ -614,7 +615,7 @@ fun HomeScreen(
                             }
                         )
                         CategoryPill(
-                            title = "মোটর ও পাম্প",
+                            title = if (isEn) "Motor & Pump" else "মোটর ও পাম্প",
                             icon = Icons.Default.Speed,
                             isSelected = selectedCategoryFilter == CalculatorCategory.MOTOR,
                             onClick = {
@@ -622,7 +623,7 @@ fun HomeScreen(
                             }
                         )
                         CategoryPill(
-                            title = "ক্যাবল ও ওয়্যারিং",
+                            title = if (isEn) "Cable & Wiring" else "ক্যাবল ও ওয়্যারিং",
                             icon = Icons.Default.Cable,
                             isSelected = selectedCategoryFilter == CalculatorCategory.CABLE,
                             onClick = {
@@ -630,7 +631,7 @@ fun HomeScreen(
                             }
                         )
                         CategoryPill(
-                            title = "ফ্যাক্টরি ও পাওয়ার",
+                            title = if (isEn) "Factory & Power" else "ফ্যাক্টরি ও পাওয়ার",
                             icon = Icons.Default.Factory,
                             isSelected = selectedCategoryFilter == CalculatorCategory.FACTORY,
                             onClick = {
@@ -638,7 +639,7 @@ fun HomeScreen(
                             }
                         )
                         CategoryPill(
-                            title = "সোলার ও গ্রিড",
+                            title = if (isEn) "Solar & Grid" else "সোলার ও গ্রিড",
                             icon = Icons.Default.SolarPower,
                             isSelected = selectedCategoryFilter == CalculatorCategory.POWER,
                             onClick = {
@@ -646,7 +647,7 @@ fun HomeScreen(
                             }
                         )
                         CategoryPill(
-                            title = "ব্যাটারি ও UPS",
+                            title = if (isEn) "Battery & UPS" else "ব্যাটারি ও UPS",
                             icon = Icons.Default.BatteryChargingFull,
                             isSelected = selectedCategoryFilter == CalculatorCategory.BATTERY_UPS,
                             onClick = {
@@ -654,7 +655,7 @@ fun HomeScreen(
                             }
                         )
                         CategoryPill(
-                            title = "ব্রেকার ও সুইচগিয়ার",
+                            title = if (isEn) "Breaker & Switchgear" else "ব্রেকার ও সুইচগিয়ার",
                             icon = Icons.Default.Shield,
                             isSelected = selectedCategoryFilter == CalculatorCategory.PROTECTION,
                             onClick = {
@@ -849,6 +850,7 @@ private fun ModernDockButton(
 private fun FeaturedToolCard(
     calc: CalculatorDefinition,
     isFavorite: Boolean,
+    isEn: Boolean = true,
     onToggleFavorite: () -> Unit,
     onClick: () -> Unit
 ) {
@@ -942,7 +944,7 @@ private fun FeaturedToolCard(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "গণনা করুন",
+                        text = if (isEn) "Calculate" else "গণনা করুন",
                         fontSize = 11.5.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White

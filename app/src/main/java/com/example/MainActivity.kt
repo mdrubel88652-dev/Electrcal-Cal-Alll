@@ -26,6 +26,7 @@ import com.example.data.calculator.CalculatorRegistry
 import com.example.data.model.CalculatorLevel
 import com.example.ui.components.AppBottomBar
 import com.example.ui.components.AppTopBar
+import com.example.ui.components.TechnicianHubSheet
 import com.example.ui.navigation.Screen
 import com.example.ui.screens.AboutScreen
 import com.example.ui.screens.BuildingMaterialScreen
@@ -72,9 +73,16 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun MainAppNavigation() {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val app = ElectricalApp.getApp(context)
+    val currentLanguage by app.settingsManager.languageFlow.collectAsState(initial = "EN")
+    val isEn = currentLanguage == "EN"
+
     val navController = rememberNavController()
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
+
+    var showThreeLineMenu by remember { mutableStateOf(false) }
 
     val isSplashScreen = currentRoute == Screen.Splash.route
 
@@ -88,25 +96,25 @@ fun MainAppNavigation() {
 
     val currentTitle = when {
         currentRoute == Screen.Main.route -> "Electrical Calculation All"
-        currentRoute == Screen.Calculators.route -> "Calculators (167)"
-        currentRoute == Screen.Project.route -> "Contract Project Manager"
-        currentRoute == Screen.Reports.route -> "Reports"
-        currentRoute == Screen.History.route -> "Calculation History"
-        currentRoute == Screen.Favorites.route -> "Favorites"
-        currentRoute == Screen.Theme.route -> "Theme & Appearance"
-        currentRoute == Screen.MaterialEstimate.route -> "Material Estimate"
-        currentRoute == Screen.Advance.route -> "Advance Calculators (55)"
-        currentRoute == Screen.Basic.route -> "Basic Calculators (61)"
-        currentRoute == Screen.Lower.route -> "Lower Calculators (51)"
-        currentRoute == Screen.BuildingMaterialInput.route -> "Building Electrical Material"
-        currentRoute == Screen.MaterialList.route -> "Material Requirement List"
-        currentRoute == Screen.Settings.route -> "Settings"
-        currentRoute == Screen.About.route -> "About Application"
-        currentRoute == Screen.Developer.route -> "Developer Information"
-        currentRoute == Screen.PrivacyPolicy.route -> "Privacy Policy"
-        currentRoute == Screen.Notification.route -> "Notifications"
-        currentRoute == Screen.Information.route -> "Information • সহায়িকা (167)"
-        currentRoute == Screen.TechnicianProfile.route -> "Technician Report Profile"
+        currentRoute == Screen.Calculators.route -> if (isEn) "Calculators (167)" else "ক্যালকুলেটর (১৬৭)"
+        currentRoute == Screen.Project.route -> if (isEn) "Contract Project Manager" else "কন্ট্রাক্ট প্রজেক্ট ম্যানেজার"
+        currentRoute == Screen.Reports.route -> if (isEn) "Reports" else "রিপোর্ট"
+        currentRoute == Screen.History.route -> if (isEn) "Calculation History" else "হিসাবের ইতিহাস"
+        currentRoute == Screen.Favorites.route -> if (isEn) "Favorites" else "ফেভারিট"
+        currentRoute == Screen.Theme.route -> if (isEn) "Theme & Appearance" else "থিম ও রূপরেখা"
+        currentRoute == Screen.MaterialEstimate.route -> if (isEn) "Material Estimate" else "ম্যাটেরিয়াল এস্টিমেট"
+        currentRoute == Screen.Advance.route -> if (isEn) "Advance Calculators (55)" else "অ্যাডভান্স ক্যালকুলেটর (৫৫)"
+        currentRoute == Screen.Basic.route -> if (isEn) "Basic Calculators (61)" else "বেসিক ক্যালকুলেটর (৬১)"
+        currentRoute == Screen.Lower.route -> if (isEn) "Lower Calculators (51)" else "লোয়ার ক্যালকুলেটর (৫১)"
+        currentRoute == Screen.BuildingMaterialInput.route -> if (isEn) "Building Electrical Material" else "বিল্ডিং ইলেকট্রিক্যাল ম্যাটেরিয়াল"
+        currentRoute == Screen.MaterialList.route -> if (isEn) "Material Requirement List" else "প্রয়োজনীয় মালামালের তালিকা"
+        currentRoute == Screen.Settings.route -> if (isEn) "Settings" else "সেটিংস"
+        currentRoute == Screen.About.route -> if (isEn) "About Application" else "অ্যাপ্লিকেশন তথ্য"
+        currentRoute == Screen.Developer.route -> if (isEn) "Developer Information" else "ডেভেলপার তথ্য"
+        currentRoute == Screen.PrivacyPolicy.route -> if (isEn) "Privacy Policy" else "প্রাইভেসি পলিসি"
+        currentRoute == Screen.Notification.route -> if (isEn) "Notifications" else "নোটিফিকেশন"
+        currentRoute == Screen.Information.route -> if (isEn) "Information Guide (167)" else "সহায়িকা • Information (167)"
+        currentRoute == Screen.TechnicianProfile.route -> if (isEn) "Technician Report Profile" else "টেকনিশিয়ান রিপোর্ট প্রোফাইল"
         currentRoute?.startsWith("calculator/") == true -> {
             val id = navBackStackEntry?.arguments?.getInt("calcId") ?: 0
             CalculatorRegistry.getById(id)?.name ?: "Calculator"
@@ -125,7 +133,8 @@ fun MainAppNavigation() {
                     canNavigateBack = !isTopLevelRoute,
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateToNotification = { navController.navigate(Screen.Notification.route) },
-                    onNavigateToInformation = { navController.navigate(Screen.Information.route) }
+                    onNavigateToInformation = { navController.navigate(Screen.Information.route) },
+                    onOpenMenu = { showThreeLineMenu = true }
                 )
             }
         },
@@ -208,6 +217,7 @@ fun MainAppNavigation() {
             composable(Screen.Advance.route) {
                 LevelScreen(
                     level = CalculatorLevel.ADVANCE,
+                    isEn = isEn,
                     onNavigateToCalculator = { id ->
                         navController.navigate(Screen.CalculatorDetail.createRoute(id))
                     },
@@ -220,6 +230,7 @@ fun MainAppNavigation() {
             composable(Screen.Basic.route) {
                 LevelScreen(
                     level = CalculatorLevel.BASIC,
+                    isEn = isEn,
                     onNavigateToCalculator = { id ->
                         navController.navigate(Screen.CalculatorDetail.createRoute(id))
                     },
@@ -232,6 +243,7 @@ fun MainAppNavigation() {
             composable(Screen.Lower.route) {
                 LevelScreen(
                     level = CalculatorLevel.LOWER,
+                    isEn = isEn,
                     onNavigateToCalculator = { id ->
                         navController.navigate(Screen.CalculatorDetail.createRoute(id))
                     },
@@ -364,5 +376,23 @@ fun MainAppNavigation() {
                 )
             }
         }
+    }
+
+    if (showThreeLineMenu) {
+        TechnicianHubSheet(
+            onDismiss = { showThreeLineMenu = false },
+            onNavigateToSettingsProfile = {
+                navController.navigate(Screen.TechnicianProfile.route)
+            },
+            onNavigateToProject = {
+                navController.navigate(Screen.Project.route) {
+                    popUpTo(Screen.Main.route) {
+                        saveState = true
+                    }
+                    launchSingleTop = true
+                    restoreState = true
+                }
+            }
+        )
     }
 }

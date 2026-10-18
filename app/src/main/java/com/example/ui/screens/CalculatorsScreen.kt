@@ -324,14 +324,14 @@ fun CalculatorsScreen(
                             )
                             Spacer(modifier = Modifier.height(10.dp))
                             Text(
-                                text = "কোনো ক্যালকুলেটর পাওয়া যায়নি",
+                                text = if (isEn) "No calculators found" else "কোনো ক্যালকুলেটর পাওয়া যায়নি",
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF64748B)
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
-                                text = "সার্চ কীওয়ার্ড পরিবর্তন করুন বা ফিল্টার রিসেট করুন",
+                                text = if (isEn) "Try a different keyword or reset filters" else "সার্চ কীওয়ার্ড পরিবর্তন করুন বা ফিল্টার রিসেট করুন",
                                 fontSize = 12.sp,
                                 color = Color(0xFF94A3B8)
                             )

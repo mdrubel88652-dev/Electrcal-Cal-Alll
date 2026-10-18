@@ -4,14 +4,19 @@ import com.example.data.database.ContractProjectDao
 import com.example.data.database.ContractProjectEntity
 import com.example.data.database.ProjectPaymentDao
 import com.example.data.database.ProjectPaymentEntity
+import com.example.data.database.QuickTaskDao
+import com.example.data.database.QuickTaskEntity
 import kotlinx.coroutines.flow.Flow
 
 class ProjectRepository(
     private val projectDao: ContractProjectDao,
-    private val paymentDao: ProjectPaymentDao
+    private val paymentDao: ProjectPaymentDao,
+    private val quickTaskDao: QuickTaskDao
 ) {
     val allProjects: Flow<List<ContractProjectEntity>> = projectDao.getAllProjects()
     val projectCount: Flow<Int> = projectDao.getProjectCount()
+    val allPayments: Flow<List<ProjectPaymentEntity>> = paymentDao.getAllPayments()
+    val allQuickTasks: Flow<List<QuickTaskEntity>> = quickTaskDao.getAllQuickTasks()
 
     fun getPaymentsForProject(projectId: Long): Flow<List<ProjectPaymentEntity>> {
         return paymentDao.getPaymentsForProject(projectId)
@@ -40,5 +45,21 @@ class ProjectRepository(
 
     suspend fun deletePayment(paymentId: Long) {
         paymentDao.deletePayment(paymentId)
+    }
+
+    fun getQuickTasksForMonth(monthYear: String): Flow<List<QuickTaskEntity>> {
+        return quickTaskDao.getQuickTasksForMonth(monthYear)
+    }
+
+    fun getMonthlyTotal(monthYear: String): Flow<Double?> {
+        return quickTaskDao.getMonthlyTotal(monthYear)
+    }
+
+    suspend fun addQuickTask(task: QuickTaskEntity): Long {
+        return quickTaskDao.insertQuickTask(task)
+    }
+
+    suspend fun deleteQuickTask(taskId: Long) {
+        quickTaskDao.deleteQuickTask(taskId)
     }
 }

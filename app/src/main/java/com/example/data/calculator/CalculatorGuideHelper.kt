@@ -17,7 +17,11 @@ data class CalculatorGuide(
     val howToWorkBn: String,
     val howToCalculateBn: String,
     val phaseGuideBn: String,
-    val practicalApplicationBn: String
+    val practicalApplicationBn: String,
+    val howToWorkEn: String,
+    val howToCalculateEn: String,
+    val phaseGuideEn: String,
+    val practicalApplicationEn: String
 )
 
 object CalculatorGuideHelper {
@@ -33,6 +37,12 @@ object CalculatorGuideHelper {
             "⚡ ফেজ নির্বাচন নির্দেশিকা: এই ক্যালকুলেটরে সিঙ্গেল ফেজ (1-Phase / 230V) ও থ্রি ফেজ (3-Phase / 400V) উভয়ের জন্য স্বয়ংক্রিয় ইঞ্জিন রয়েছে। আপনার লোডের ধরণ অনুযায়ী সঠিক ফেজ বেছে নিন। (কঠোর প্রকৌশল শর্ত: ১-ফেজ ও ৩-ফেজ লোড সর্বদা পৃথকভাবে হিসাব করতে হবে, কোনোভাবেই একসাথে মেশানো যাবে না)।"
         } else {
             "⚡ সাধারণ ফেজ নির্দেশিকা: এই ক্যালকুলেটরটি সার্বজনীন ইলেকট্রিক্যাল সমীকরণ ও স্ট্যান্ডার্ড প্যারামিটারের ভিত্তিতে কাজ করে।"
+        }
+
+        val phaseGuideEn = if (isPhase) {
+            "⚡ Phase Selection Guide: This calculator features an automated dual-engine supporting Single Phase (1-Phase / 230V) and Three Phase (3-Phase / 400V). Select the appropriate phase configuration for your target electrical load. Strictly note: Single-phase and three-phase loads must be calculated separately according to standard electrical engineering codes."
+        } else {
+            "⚡ Standard Phase Guide: This calculator operates based on universal electrical engineering equations and reference standards."
         }
 
         val howToWorkBn = buildString {
@@ -53,6 +63,24 @@ object CalculatorGuideHelper {
             appendLine("৫. প্রয়োজনে 'PDF GENERATE' বা 'PRINT' অপশন ব্যবহার করে প্রফেশনাল রিপোর্ট তৈরি করুন।")
         }.trim()
 
+        val howToWorkEn = buildString {
+            appendLine("1. Enter the required engineering input parameters:")
+            if (inputsDesc.isNotEmpty()) {
+                appendLine("   • Input fields: " + inputsDesc.joinToString(", "))
+            } else {
+                appendLine("   • Enter design values into input fields.")
+            }
+            if (isPhase) {
+                appendLine("2. Select Phase Configuration: Toggle between 'Single Phase' (230V) and 'Three Phase' (400V).")
+                appendLine("3. Confirm units from unit selectors (V, A, kW, HP, kVA, meters, etc.).")
+                appendLine("4. Tap 'CALCULATE' to instantly compute full engineering solutions, derating, and breaker/cable recommendations.")
+            } else {
+                appendLine("2. Confirm measurement units from dropdown pickers.")
+                appendLine("3. Tap 'CALCULATE' for instantaneous results with step-by-step mathematical breakdown.")
+            }
+            appendLine("5. Generate professional PDF engineering calculation sheets via 'PDF GENERATE'.")
+        }.trim()
+
         val howToCalculateBn = buildString {
             appendLine("📐 মূল প্রকৌশল সূত্র:")
             appendLine("   ${calc.formula}")
@@ -67,6 +95,22 @@ object CalculatorGuideHelper {
                 appendLine("• ওহমস ল, জুলস ল, ফ্যারাডের সূত্র বা সার্কিট নেটওয়ার্ক থিওরেম অনুযায়ী নিখুঁত গাণিতিক ফলাফল পাওয়া যায়।")
             }
             appendLine("• স্ট্যান্ডার্ড ভিত্তি: ${calc.standard} অনুসারে সেফটি মার্জিন ও সহনশীলতা হিসাবভুক্ত।")
+        }.trim()
+
+        val howToCalculateEn = buildString {
+            appendLine("📐 Governing Engineering Formula:")
+            appendLine("   ${calc.formula}")
+            appendLine("")
+            appendLine("🔬 Theory & Engineering Principles:")
+            if (isPhase) {
+                appendLine("• Three Phase (3-Phase): Uses line voltage VL = 400V and √3 (≈ 1.732) factor: P = √3 × VL × IL × cosφ.")
+                appendLine("• Single Phase (1-Phase): Uses phase voltage Vph = 230V: P = Vph × I × cosφ.")
+                appendLine("• Power Factor (cosφ): Compensates for reactive component to determine true real power and kVA.")
+            } else {
+                appendLine("• Inputs are normalized into base SI electrical units and applied to standard governing electrical theorems.")
+                appendLine("• Solved precisely using Ohm's Law, Joule's heating laws, Kirchhoff's laws, or IEC/NEC lookup curves.")
+            }
+            appendLine("• Standard Foundation: Designed in full compliance with ${calc.standard} safety margins and tolerances.")
         }.trim()
 
         val practicalApplicationBn = when (calc.category) {
@@ -84,6 +128,21 @@ object CalculatorGuideHelper {
             CalculatorCategory.BASIC_ELEC -> "সার্কিট বিশ্লেষণ, রেজিসট্যান্স, ইন্ডাকট্যান্স, ক্যাপাসিট্যান্স ও বেসিক ওহমস ল ক্যালকুলেশনে।"
         }
 
+        val practicalApplicationEn = when (calc.category) {
+            CalculatorCategory.FACTORY -> "Used for industrial substations, main switchboards, distribution panels, factory load demands, and busbar trunking systems."
+            CalculatorCategory.TRANSFORMER -> "Essential for transformer capacity sizing, full load currents, percentage impedance, short circuit MVA, and substation engineering."
+            CalculatorCategory.GENERATOR -> "Utilized for diesel/gas generator sizing, starting kVA surges, alternator derating, and emergency standby power."
+            CalculatorCategory.MOTOR -> "Calculates induction motor full load current (FLC), starting current, torque, star-delta switching, and thermal overload protection."
+            CalculatorCategory.CABLE -> "Determines conductor cross-sectional area, current carrying capacity, continuous thermal ratings, and voltage drop compliance (<3%)."
+            CalculatorCategory.BUILDING -> "Residential and commercial building conduit wiring, load distribution schedules, lighting lux, and complete bill of materials."
+            CalculatorCategory.POWER -> "Power system stability, symmetrical fault currents, short circuit capacity, busbar sizing, and utility grid parameters."
+            CalculatorCategory.BATTERY_UPS -> "Calculates true battery bank Ah ratings, discharge duration curves, UPS efficiency, and invertor sizing."
+            CalculatorCategory.PFI -> "Power Factor Improvement (PFI), automatic capacitor bank sizing (kVAR), penalty avoidance, and harmonic resonance prevention."
+            CalculatorCategory.PROTECTION -> "Sizing and coordination for MCBs, MCCBs, ACBs, VCBs, thermal-magnetic trip curves, and earthing pit safety resistance."
+            CalculatorCategory.CONVERSION -> "Rapid engineering conversions between electrical power (kW, HP, kVA), current, voltage, frequency, and energy."
+            CalculatorCategory.BASIC_ELEC -> "Fundamental DC/AC circuit network analysis, Ohm's law, impedance triangles, resonance, and capacitive/inductive reactance."
+        }
+
         return CalculatorGuide(
             id = calc.id,
             name = calc.name,
@@ -97,7 +156,11 @@ object CalculatorGuideHelper {
             howToWorkBn = howToWorkBn,
             howToCalculateBn = howToCalculateBn,
             phaseGuideBn = phaseGuideBn,
-            practicalApplicationBn = practicalApplicationBn
+            practicalApplicationBn = practicalApplicationBn,
+            howToWorkEn = howToWorkEn,
+            howToCalculateEn = howToCalculateEn,
+            phaseGuideEn = phaseGuideEn,
+            practicalApplicationEn = practicalApplicationEn
         )
     }
 }

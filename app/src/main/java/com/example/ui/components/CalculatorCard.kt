@@ -68,19 +68,15 @@ fun CalculatorCard(
         )
     }
 
-    Card(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 4.dp)
+            .padding(horizontal = 14.dp, vertical = 4.dp)
             .clip(RoundedCornerShape(12.dp))
             .clickable { onClick() }
             .testTag("calculator_card_${calculator.id}"),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        ),
-        border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+        color = Color(0xFFEFF4F9)
     ) {
         Row(
             modifier = Modifier

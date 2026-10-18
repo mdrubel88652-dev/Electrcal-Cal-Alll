@@ -80,3 +80,24 @@ interface ProjectPaymentDao {
     @Query("DELETE FROM project_payments WHERE projectId = :projectId")
     suspend fun deletePaymentsForProject(projectId: Long)
 }
+
+@Dao
+interface QuickTaskDao {
+    @Query("SELECT * FROM quick_tasks ORDER BY timestamp DESC")
+    fun getAllQuickTasks(): Flow<List<QuickTaskEntity>>
+
+    @Query("SELECT * FROM quick_tasks WHERE monthYear = :monthYear ORDER BY timestamp DESC")
+    fun getQuickTasksForMonth(monthYear: String): Flow<List<QuickTaskEntity>>
+
+    @Query("SELECT SUM(amount) FROM quick_tasks WHERE monthYear = :monthYear")
+    fun getMonthlyTotal(monthYear: String): Flow<Double?>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertQuickTask(task: QuickTaskEntity): Long
+
+    @Query("DELETE FROM quick_tasks WHERE id = :id")
+    suspend fun deleteQuickTask(id: Long)
+
+    @Query("DELETE FROM quick_tasks")
+    suspend fun clearAll()
+}

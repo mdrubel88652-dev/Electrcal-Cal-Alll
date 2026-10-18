@@ -68,3 +68,18 @@ data class ProjectPaymentEntity(
     val note: String = "",
     val timestamp: Long = System.currentTimeMillis()
 )
+
+@Entity(tableName = "quick_tasks")
+data class QuickTaskEntity(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
+    val taskTitle: String, // কি কাজ করছে (e.g. Substation Maintenance, Board Wiring)
+    val clientName: String = "", // ক্লায়েন্ট / কাস্টমার
+    val contactPhone: String = "",
+    val location: String = "",
+    val amount: Double, // কত টাকা পেমেন্ট পেয়েছেন
+    val taskDate: String, // কাজের তারিখ (e.g. "18 Oct 2026")
+    val monthYear: String, // মাস ও বছর (e.g. "2026-10") for 50,000 monthly limit
+    val note: String = "",
+    val timestamp: Long = System.currentTimeMillis()
+)
