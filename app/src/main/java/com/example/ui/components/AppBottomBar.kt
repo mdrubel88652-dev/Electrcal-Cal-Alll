@@ -71,30 +71,22 @@ fun AppBottomBar(
     )
 
     Surface(
-        modifier = Modifier
-            .fillMaxWidth()
-            .shadow(6.dp),
-        color = Color.White
+        modifier = Modifier.fillMaxWidth(),
+        color = Color(0xFFF8FAFC),
+        shadowElevation = 0.dp,
+        tonalElevation = 0.dp
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .windowInsetsPadding(WindowInsets.navigationBars)
         ) {
-            // Raised Top Border
-            HorizontalDivider(
-                thickness = 1.dp,
-                color = Color(0xFFCBD5E1)
-            )
-
-            Spacer(modifier = Modifier.height(3.dp))
-
-            // Bottom Bar Buttons Row (উচ্চতা ৫৪ ডিপি - নিখুঁত স্পেসিং ও এলিভেটেড বর্ডার)
+            // Bottom Bar Buttons Row (একই অবিচ্ছিন্ন ব্যাকগ্রাউন্ড)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(54.dp)
-                    .padding(bottom = 2.dp),
+                    .padding(vertical = 2.dp),
                 horizontalArrangement = Arrangement.SpaceEvenly,
                 verticalAlignment = Alignment.CenterVertically
             ) {

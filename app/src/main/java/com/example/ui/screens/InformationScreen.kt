@@ -61,9 +61,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -85,15 +87,8 @@ fun InformationScreen(
     var selectedFilterTier by remember { mutableStateOf("ALL") } // ALL, ADVANCE, BASIC, LOWER, PHASE
     var selectedCategory by remember { mutableStateOf<CalculatorCategory?>(null) }
 
-    // Map to track expanded cards. By default, first 3 cards are expanded.
-    val expandedStates = remember {
-        mutableStateMapOf<Int, Boolean>().apply {
-            put(1, true)
-            put(3, true)
-            put(5, true)
-        }
-    }
-    var expandAllMode by remember { mutableStateOf(false) }
+    // Map to track expanded cards. All cards start closed by default as requested.
+    val expandedStates = remember { mutableStateMapOf<Int, Boolean>() }
 
     val allCalculators = remember { CalculatorRegistry.allCalculators }
 
@@ -136,260 +131,253 @@ fun InformationScreen(
 
     val listState = rememberLazyListState()
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF8FAFC))
             .testTag("information_screen_root")
     ) {
-        // High-Tech Header Banner
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = Color(0xFF0F172A),
-            shadowElevation = 4.dp
-        ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 14.dp)
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(
-                                    Brush.linearGradient(
-                                        listOf(Color(0xFF0284C7), Color(0xFF00E5FF))
-                                    )
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(22.dp)
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.width(10.dp))
-
-                        Column {
-                            Text(
-                                text = "Information • প্রকৌশল সহায়িকা",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = Color.White
-                            )
-                            Text(
-                                text = "১৬৭টি ক্যালকুলেটরের হিসাব ও কাজের নিয়মাবলী",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = Color(0xFF94A3B8)
-                            )
-                        }
-                    }
-
-                    // Expand All / Collapse All Toggle Button
-                    Surface(
-                        onClick = {
-                            val newMode = !expandAllMode
-                            expandAllMode = newMode
-                            allGuides.forEach { expandedStates[it.id] = newMode }
-                        },
-                        shape = RoundedCornerShape(20.dp),
-                        color = Color(0xFF1E293B),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF334155))
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = if (expandAllMode) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                                contentDescription = null,
-                                tint = Color(0xFF38BDF8),
-                                modifier = Modifier.size(16.dp)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = if (expandAllMode) "সব বন্ধ" else "সব খুলুন",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFFE2E8F0)
-                            )
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                // Stats Metrics Pill
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    MetricBadge(label = "মোট ক্যালকুলেটর", value = "১৬৭টি", color = Color(0xFF38BDF8))
-                    MetricBadge(label = "১φ ও ৩φ মোড", value = "৬০টি", color = Color(0xFFF59E0B))
-                    MetricBadge(label = "মানক স্ট্যান্ডার্ড", value = "IEC / IEEE", color = Color(0xFF10B981))
-                    MetricBadge(label = "অফলাইন রেডি", value = "১০০%", color = Color(0xFFA855F7))
-                }
-            }
-        }
-
-        // Search Bar
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 10.dp)
-        ) {
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag("information_search_input"),
-                placeholder = {
-                    Text(
-                        "ক্যালকুলেটরের নাম, নম্বর (#1-167) বা সূত্র খুঁজুন...",
-                        fontSize = 13.sp,
-                        color = Color(0xFF94A3B8)
-                    )
-                },
-                leadingIcon = {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = "Search",
-                        tint = Color(0xFF0284C7),
-                        modifier = Modifier.size(20.dp)
-                    )
-                },
-                trailingIcon = {
-                    if (searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { searchQuery = "" }) {
-                            Icon(
-                                imageVector = Icons.Default.Clear,
-                                contentDescription = "Clear",
-                                tint = Color(0xFF64748B),
-                                modifier = Modifier.size(18.dp)
-                            )
-                        }
-                    }
-                },
-                singleLine = true,
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF0284C7),
-                    unfocusedBorderColor = Color(0xFFCBD5E1),
-                    focusedContainerColor = Color.White,
-                    unfocusedContainerColor = Color.White
-                )
-            )
-        }
-
-        // Filter Chips Row
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 2.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            TierChip(
-                label = "সকল (১৬৭)",
-                selected = selectedFilterTier == "ALL" && selectedCategory == null,
-                onClick = {
-                    selectedFilterTier = "ALL"
-                    selectedCategory = null
-                }
-            )
-            TierChip(
-                label = "Advance (৫৫)",
-                selected = selectedFilterTier == "ADVANCE",
-                onClick = { selectedFilterTier = "ADVANCE" }
-            )
-            TierChip(
-                label = "Basic (৬১)",
-                selected = selectedFilterTier == "BASIC",
-                onClick = { selectedFilterTier = "BASIC" }
-            )
-            TierChip(
-                label = "Lower (৫১)",
-                selected = selectedFilterTier == "LOWER",
-                onClick = { selectedFilterTier = "LOWER" }
-            )
-            TierChip(
-                label = "⚡ ১-ফেজ ও ৩-ফেজ (৬০)",
-                selected = selectedFilterTier == "PHASE",
-                onClick = { selectedFilterTier = "PHASE" }
-            )
-
-            // Category Chips
-            CalculatorCategory.values().forEach { cat ->
-                TierChip(
-                    label = cat.displayName,
-                    selected = selectedCategory == cat,
-                    onClick = {
-                        selectedCategory = if (selectedCategory == cat) null else cat
-                    }
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(6.dp))
-
-        // Result Count Row
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 4.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "প্রদর্শিত হচ্ছে: ${filteredGuides.size} টি ক্যালকুলেটর সহায়িকা",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF475569)
-            )
-
-            if (searchQuery.isNotEmpty() || selectedFilterTier != "ALL" || selectedCategory != null) {
-                Text(
-                    text = "রিসেট ফিল্টার",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF0284C7),
-                    modifier = Modifier.clickable {
-                        searchQuery = ""
-                        selectedFilterTier = "ALL"
-                        selectedCategory = null
-                    }
-                )
-            }
-        }
-
-        // List of 167 Calculator Guide Cards
+        // List of 167 Calculator Guide Cards with Scrollable Banner & Search
         LazyColumn(
             state = listState,
             modifier = Modifier
                 .fillMaxSize()
                 .testTag("information_guide_list"),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
+            // ==========================================
+            // 1. SCROLLABLE CLEAN HEADER BANNER (NO DARK BLUE)
+            // ==========================================
+            item {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(14.dp),
+                    color = Color(0xFFEFF4F9)
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(Color(0xFFE0F2FE)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Info,
+                                        contentDescription = null,
+                                        tint = Color(0xFF0284C7),
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.width(10.dp))
+
+                                Column {
+                                    Text(
+                                        text = "Information • প্রকৌশল সহায়িকা",
+                                        fontSize = 15.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF0F172A)
+                                    )
+                                    Text(
+                                        text = "১৬৭টি ক্যালকুলেটরের হিসাব ও কাজের নিয়মাবলী",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = Color(0xFF64748B)
+                                    )
+                                }
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(10.dp))
+
+                        // Stats Metrics Row (Light, readable, unified)
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(Color(0xFFF8FAFC))
+                                .padding(vertical = 8.dp, horizontal = 4.dp),
+                            horizontalArrangement = Arrangement.SpaceAround,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            MetricBadge(label = "মোট ক্যালকুলেটর", value = "১৬৭টি", color = Color(0xFF0284C7))
+                            MetricBadge(label = "১φ ও ৩φ মোড", value = "৬০টি", color = Color(0xFFD97706))
+                            MetricBadge(label = "মানক স্ট্যান্ডার্ড", value = "IEC / IEEE", color = Color(0xFF059669))
+                            MetricBadge(label = "অফলাইন রেডি", value = "১০০%", color = Color(0xFF7C3AED))
+                        }
+                    }
+                }
+            }
+
+            // ==========================================
+            // 2. SCROLLABLE SEARCH BAR
+            // ==========================================
+            item {
+                Surface(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(46.dp),
+                    shape = RoundedCornerShape(23.dp),
+                    color = Color(0xFFEFF4F9)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Search",
+                            tint = Color(0xFF0284C7),
+                            modifier = Modifier.size(20.dp)
+                        )
+
+                        Spacer(modifier = Modifier.width(10.dp))
+
+                        Box(modifier = Modifier.weight(1f)) {
+                            if (searchQuery.isEmpty()) {
+                                Text(
+                                    text = "ক্যালকুলেটরের নাম, নম্বর (#1-167) বা সূত্র খুঁজুন...",
+                                    fontSize = 12.5.sp,
+                                    color = Color(0xFF94A3B8)
+                                )
+                            }
+                            androidx.compose.foundation.text.BasicTextField(
+                                value = searchQuery,
+                                onValueChange = { searchQuery = it },
+                                singleLine = true,
+                                textStyle = TextStyle(
+                                    fontSize = 13.5.sp,
+                                    color = Color(0xFF0F172A),
+                                    fontWeight = FontWeight.Medium
+                                ),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .testTag("information_search_input")
+                            )
+                        }
+
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(
+                                onClick = { searchQuery = "" },
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Clear,
+                                    contentDescription = "Clear",
+                                    tint = Color(0xFF64748B),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ==========================================
+            // 3. SCROLLABLE CATEGORY & TIER FILTER PILLS
+            // ==========================================
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState()),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    TierChip(
+                        label = "সকল (১৬৭)",
+                        selected = selectedFilterTier == "ALL" && selectedCategory == null,
+                        onClick = {
+                            selectedFilterTier = "ALL"
+                            selectedCategory = null
+                        }
+                    )
+                    TierChip(
+                        label = "Advance (৫৫)",
+                        selected = selectedFilterTier == "ADVANCE",
+                        onClick = { selectedFilterTier = "ADVANCE" }
+                    )
+                    TierChip(
+                        label = "Basic (৬১)",
+                        selected = selectedFilterTier == "BASIC",
+                        onClick = { selectedFilterTier = "BASIC" }
+                    )
+                    TierChip(
+                        label = "Lower (৫১)",
+                        selected = selectedFilterTier == "LOWER",
+                        onClick = { selectedFilterTier = "LOWER" }
+                    )
+                    TierChip(
+                        label = "⚡ ১-ফেজ ও ৩-ফেজ (৬০)",
+                        selected = selectedFilterTier == "PHASE",
+                        onClick = { selectedFilterTier = "PHASE" }
+                    )
+
+                    // Category Chips
+                    CalculatorCategory.values().forEach { cat ->
+                        TierChip(
+                            label = cat.displayName,
+                            selected = selectedCategory == cat,
+                            onClick = {
+                                selectedCategory = if (selectedCategory == cat) null else cat
+                            }
+                        )
+                    }
+                }
+            }
+
+            // ==========================================
+            // 4. RESULT COUNT SUMMARY
+            // ==========================================
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 2.dp, vertical = 2.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "প্রদর্শিত হচ্ছে: ${filteredGuides.size} টি সহায়িকা",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF475569)
+                    )
+
+                    if (searchQuery.isNotEmpty() || selectedFilterTier != "ALL" || selectedCategory != null) {
+                        Text(
+                            text = "রিসেট ফিল্টার",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color(0xFF0284C7),
+                            modifier = Modifier.clickable {
+                                searchQuery = ""
+                                selectedFilterTier = "ALL"
+                                selectedCategory = null
+                            }
+                        )
+                    }
+                }
+            }
             items(
                 items = filteredGuides,
                 key = { it.id }
             ) { guide ->
-                val isExpanded = expandedStates[guide.id] ?: expandAllMode
+                val isExpanded = expandedStates[guide.id] ?: false
 
                 CalculatorGuideCard(
                     guide = guide,
@@ -409,8 +397,9 @@ fun InformationScreen(
                 Surface(
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    color = Color(0xFFF1F5F9),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E8F0))
+                    color = Color(0xFFEFF4F9),
+                    shadowElevation = 0.dp,
+                    tonalElevation = 0.dp
                 ) {
                     Column(
                         modifier = Modifier.padding(16.dp),
@@ -445,18 +434,17 @@ private fun CalculatorGuideCard(
     onToggleExpand: () -> Unit,
     onOpenCalculator: () -> Unit
 ) {
-    Card(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
             .testTag("guide_card_${guide.id}")
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(onClick = onToggleExpand)
             .animateContentSize(animationSpec = tween(250)),
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        border = androidx.compose.foundation.BorderStroke(
-            1.dp,
-            if (isExpanded) Color(0xFF38BDF8) else Color(0xFFE2E8F0)
-        )
+        shape = RoundedCornerShape(12.dp),
+        color = Color(0xFFEFF4F9),
+        shadowElevation = 0.dp,
+        tonalElevation = 0.dp
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
             // Header clickable row
@@ -570,9 +558,8 @@ private fun CalculatorGuideCard(
 
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
-                        color = Color(0xFFF8FAFC),
-                        shape = RoundedCornerShape(8.dp),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E8F0))
+                        color = Color.White,
+                        shape = RoundedCornerShape(8.dp)
                     ) {
                         Column(modifier = Modifier.padding(10.dp)) {
                             Text(
@@ -586,8 +573,7 @@ private fun CalculatorGuideCard(
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Surface(
                                     color = Color(0xFFFFFBEB),
-                                    shape = RoundedCornerShape(6.dp),
-                                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFDE68A))
+                                    shape = RoundedCornerShape(6.dp)
                                 ) {
                                     Row(
                                         modifier = Modifier.padding(8.dp),
@@ -624,8 +610,7 @@ private fun CalculatorGuideCard(
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
                         color = Color(0xFF0F172A),
-                        shape = RoundedCornerShape(8.dp),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF1E293B))
+                        shape = RoundedCornerShape(8.dp)
                     ) {
                         Column(modifier = Modifier.padding(12.dp)) {
                             Text(
@@ -651,9 +636,8 @@ private fun CalculatorGuideCard(
                     // Math Details Text
                     Surface(
                         modifier = Modifier.fillMaxWidth(),
-                        color = Color(0xFFF8FAFC),
-                        shape = RoundedCornerShape(8.dp),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E8F0))
+                        color = Color.White,
+                        shape = RoundedCornerShape(8.dp)
                     ) {
                         Column(modifier = Modifier.padding(10.dp)) {
                             Text(

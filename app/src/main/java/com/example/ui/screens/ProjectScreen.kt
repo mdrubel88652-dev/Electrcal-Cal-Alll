@@ -103,6 +103,8 @@ private const val MAX_PROJECTS = 5
 fun ProjectScreen() {
     val context = LocalContext.current
     val app = remember { ElectricalApp.getApp(context) }
+    val currentLanguage by app.settingsManager.languageFlow.collectAsState(initial = "EN")
+    val isEn = currentLanguage == "EN"
     val repository = remember { app.projectRepository }
     val scope = rememberCoroutineScope()
 
@@ -122,245 +124,241 @@ fun ProjectScreen() {
             .background(Color(0xFFF8FAFC))
             .testTag("project_screen_root")
     ) {
-        // High-Tech Header Banner
-        Surface(
-            modifier = Modifier.fillMaxWidth(),
-            color = Color(0xFF0F172A),
-            shadowElevation = 4.dp
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .testTag("projects_list"),
+            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 14.dp)
-            ) {
-                Row(
+            // ==========================================
+            // 1. SCROLLABLE PROJECT HEADER CARD (CLEAN APP THEME)
+            // ==========================================
+            item {
+                Surface(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    shape = RoundedCornerShape(12.dp),
+                    color = Color(0xFFEFF4F9),
+                    shadowElevation = 0.dp,
+                    tonalElevation = 0.dp
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Box(
-                            modifier = Modifier
-                                .size(38.dp)
-                                .clip(RoundedCornerShape(10.dp))
-                                .background(
-                                    Brush.linearGradient(
-                                        listOf(Color(0xFF0284C7), Color(0xFF00E5FF))
-                                    )
-                                ),
-                            contentAlignment = Alignment.Center
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(14.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Assignment,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(22.dp)
-                            )
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .clip(RoundedCornerShape(8.dp))
+                                        .background(Color(0xFFE0F2FE)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Assignment,
+                                        contentDescription = null,
+                                        tint = Color(0xFF0284C7),
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.width(10.dp))
+
+                                Column {
+                                    Text(
+                                        text = "Contract Project Manager",
+                                        fontSize = 15.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF0F172A)
+                                    )
+                                    Text(
+                                        text = if (isEn) "Site Wiring, Quotations & Payment Receipts" else "সাইট ওয়্যারিং, কোটেশন ও কিস্তি রসিদ",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Medium,
+                                        color = Color(0xFF64748B)
+                                    )
+                                }
+                            }
+
+                            // Project Slot Counter Pill
+                            Surface(
+                                shape = RoundedCornerShape(16.dp),
+                                color = if (isSlotFull) Color(0xFFFEE2E2) else Color(0xFFE0F2FE)
+                            ) {
+                                Row(
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(6.dp)
+                                            .background(
+                                                if (isSlotFull) Color(0xFFEF4444) else Color(0xFF10B981),
+                                                CircleShape
+                                            )
+                                    )
+                                    Spacer(modifier = Modifier.width(5.dp))
+                                    Text(
+                                        text = "$projectCount/$MAX_PROJECTS ${if (isEn) "Slots" else "স্লট"}",
+                                        fontSize = 10.5.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (isSlotFull) Color(0xFFDC2626) else Color(0xFF0284C7)
+                                    )
+                                }
+                            }
                         }
 
-                        Spacer(modifier = Modifier.width(10.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
 
+                        // Progress Bar of Slots
                         Column {
-                            Text(
-                                text = "Contract Project Manager",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.ExtraBold,
-                                color = Color.White
-                            )
-                            Text(
-                                text = "টেকনিশিয়ান প্রজেক্ট ও কিস্তির হিসাব",
-                                fontSize = 11.5.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = Color(0xFF94A3B8)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Text(
+                                    text = if (isSlotFull) "সর্বোচ্চ ৫টি প্রজেক্ট স্লট পূর্ণ" else "উপলব্ধ স্লট: ${MAX_PROJECTS - projectCount} টি খালি",
+                                    fontSize = 10.sp,
+                                    color = Color(0xFF64748B)
+                                )
+                                Text(
+                                    text = "ধারণক্ষমতা: ৫টি প্রজেক্ট",
+                                    fontSize = 10.sp,
+                                    color = Color(0xFF94A3B8)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            LinearProgressIndicator(
+                                progress = { projectCount.toFloat() / MAX_PROJECTS.toFloat() },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(4.dp)
+                                    .clip(RoundedCornerShape(2.dp)),
+                                color = if (isSlotFull) Color(0xFFEF4444) else Color(0xFF0284C7),
+                                trackColor = Color(0xFFF1F5F9)
                             )
                         }
                     }
+                }
+            }
 
-                    // Project Slot Counter Pill
-                    Surface(
-                        shape = RoundedCornerShape(20.dp),
-                        color = if (isSlotFull) Color(0xFFDC2626).copy(alpha = 0.2f) else Color(0xFF0284C7).copy(alpha = 0.2f),
-                        border = androidx.compose.foundation.BorderStroke(
-                            1.dp,
-                            if (isSlotFull) Color(0xFFEF4444) else Color(0xFF38BDF8)
-                        )
+            // ==========================================
+            // 2. ACTION ROW (SCROLLABLE)
+            // ==========================================
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 2.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = "আমার প্রজেক্টসমূহ ($projectCount)",
+                        fontSize = 13.5.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF0F172A)
+                    )
+
+                    Button(
+                        onClick = {
+                            if (isSlotFull) {
+                                Toast.makeText(
+                                    context,
+                                    "সর্বোচ্চ ৫টি প্রজেক্ট সংরক্ষণ করা যাবে। নতুন প্রজেক্ট যোগ করতে পূর্বের কোনো প্রজেক্ট ডিলিট করুন।",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            } else {
+                                showAddProjectDialog = true
+                            }
+                        },
+                        modifier = Modifier
+                            .height(36.dp)
+                            .testTag("add_project_button"),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (isSlotFull) Color(0xFF94A3B8) else Color(0xFF0284C7),
+                            contentColor = Color.White
+                        ),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 0.dp)
                     ) {
-                        Row(
-                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "নতুন প্রজেক্ট",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
+            }
+
+            // ==========================================
+            // 3. PROJECT ITEMS OR EMPTY STATE
+            // ==========================================
+            if (projects.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 32.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .size(7.dp)
-                                    .background(
-                                        if (isSlotFull) Color(0xFFEF4444) else Color(0xFF10B981),
-                                        CircleShape
-                                    )
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
+                                    .size(64.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFFE0F2FE)),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Assignment,
+                                    contentDescription = null,
+                                    tint = Color(0xFF0284C7),
+                                    modifier = Modifier.size(32.dp)
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(14.dp))
+
                             Text(
-                                text = "স্লট: $projectCount/$MAX_PROJECTS",
-                                fontSize = 11.sp,
+                                text = "এখনও কোনো প্রজেক্ট যুক্ত করা হয়নি",
+                                fontSize = 15.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = if (isSlotFull) Color(0xFFFCA5A5) else Color(0xFFE0F2FE)
+                                color = Color(0xFF1E293B),
+                                textAlign = TextAlign.Center
+                            )
+
+                            Spacer(modifier = Modifier.height(6.dp))
+
+                            Text(
+                                text = "একজন টেকনিশিয়ান হিসেবে বাড়িওয়ালার সাথে আপনার চুক্তিকৃত প্রজেক্ট, মোট টাকার পরিমাণ এবং কিস্তিতে নেওয়া টাকার হিসাব পরিচালনা করতে 'নতুন প্রজেক্ট' বাটনে চাপ দিন (সর্বোচ্চ ৫টি প্রজেক্ট)।",
+                                fontSize = 12.sp,
+                                color = Color(0xFF64748B),
+                                textAlign = TextAlign.Center,
+                                lineHeight = 17.sp,
+                                modifier = Modifier.padding(horizontal = 24.dp)
                             )
                         }
                     }
                 }
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                // Progress Bar of Slots
-                Column {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Text(
-                            text = if (isSlotFull) "সর্বোচ্চ ৫টি প্রজেক্ট স্লট পূর্ণ" else "উপলব্ধ স্লট: ${MAX_PROJECTS - projectCount} টি খালি",
-                            fontSize = 10.sp,
-                            color = Color(0xFF94A3B8)
-                        )
-                        Text(
-                            text = "ধারণক্ষমতা: ৫টি প্রজেক্ট",
-                            fontSize = 10.sp,
-                            color = Color(0xFF94A3B8)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    LinearProgressIndicator(
-                        progress = { projectCount.toFloat() / MAX_PROJECTS.toFloat() },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(4.dp)
-                            .clip(RoundedCornerShape(2.dp)),
-                        color = if (isSlotFull) Color(0xFFEF4444) else Color(0xFF0284C7),
-                        trackColor = Color(0xFF1E293B)
-                    )
-                }
-            }
-        }
-
-        // Add Project Action Row
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 10.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "আমার প্রজেক্টসমূহ ($projectCount)",
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF0F172A)
-            )
-
-            Button(
-                onClick = {
-                    if (isSlotFull) {
-                        Toast.makeText(
-                            context,
-                            "সর্বোচ্চ ৫টি প্রজেক্ট সংরক্ষণ করা যাবে। নতুন প্রজেক্ট যোগ করতে পূর্বের কোনো প্রজেক্ট ডিলিট করুন।",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    } else {
-                        showAddProjectDialog = true
-                    }
-                },
-                modifier = Modifier
-                    .height(38.dp)
-                    .testTag("add_project_button"),
-                shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = if (isSlotFull) Color(0xFF64748B) else Color(0xFF0284C7),
-                    contentColor = Color.White
-                )
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = "নতুন প্রজেক্ট",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold
-                )
-            }
-        }
-
-        // Project List or Empty State
-        if (projects.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(32.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(72.dp)
-                            .clip(CircleShape)
-                            .background(Color(0xFFE0F2FE)),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Assignment,
-                            contentDescription = null,
-                            tint = Color(0xFF0284C7),
-                            modifier = Modifier.size(36.dp)
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Text(
-                        text = "এখনও কোনো প্রজেক্ট যুক্ত করা হয়নি",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF1E293B),
-                        textAlign = TextAlign.Center
-                    )
-
-                    Spacer(modifier = Modifier.height(6.dp))
-
-                    Text(
-                        text = "একজন টেকনিশিয়ান হিসেবে বাড়িওয়ালার সাথে আপনার চুক্তিকৃত প্রজেক্ট, মোট টাকার পরিমাণ এবং কিস্তিতে নেওয়া টাকার হিসাব পরিচালনা করতে 'নতুন প্রজেক্ট' বাটনে চাপ দিন (সর্বোচ্চ ৫টি প্রজেক্ট)।",
-                        fontSize = 12.5.sp,
-                        color = Color(0xFF64748B),
-                        textAlign = TextAlign.Center,
-                        lineHeight = 18.sp
-                    )
-
-                    Spacer(modifier = Modifier.height(20.dp))
-
-                    Button(
-                        onClick = { showAddProjectDialog = true },
-                        shape = RoundedCornerShape(8.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0284C7))
-                    ) {
-                        Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("প্রথম প্রজেক্ট যোগ করুন", fontWeight = FontWeight.Bold)
-                    }
-                }
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .testTag("projects_list"),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 6.dp),
-                verticalArrangement = Arrangement.spacedBy(14.dp)
-            ) {
+            } else {
                 items(
                     items = projects,
                     key = { it.id }
@@ -533,18 +531,16 @@ private fun ProjectCard(
 
     var showHistory by remember { mutableStateOf(false) }
 
-    Card(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
             .testTag("project_card_${project.id}")
+            .clip(RoundedCornerShape(12.dp))
             .animateContentSize(animationSpec = tween(200)),
-        shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-        border = androidx.compose.foundation.BorderStroke(
-            1.dp,
-            if (isPaidInFull) Color(0xFF10B981) else Color(0xFFE2E8F0)
-        )
+        shape = RoundedCornerShape(12.dp),
+        color = Color(0xFFEFF4F9),
+        shadowElevation = 0.dp,
+        tonalElevation = 0.dp
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
             // Header Row: Project Title & Status Badge
@@ -580,11 +576,7 @@ private fun ProjectCard(
                 // Completed or Running Badge
                 Surface(
                     shape = RoundedCornerShape(20.dp),
-                    color = if (isPaidInFull) Color(0xFFD1FAE5) else Color(0xFFFEF3C7),
-                    border = androidx.compose.foundation.BorderStroke(
-                        1.dp,
-                        if (isPaidInFull) Color(0xFF10B981) else Color(0xFFF59E0B)
-                    )
+                    color = if (isPaidInFull) Color(0xFFD1FAE5) else Color(0xFFFEF3C7)
                 ) {
                     Row(
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
@@ -614,7 +606,7 @@ private fun ProjectCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
-                        .background(Color(0xFFF8FAFC))
+                        .background(Color.White)
                         .padding(horizontal = 10.dp, vertical = 6.dp),
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
@@ -647,7 +639,7 @@ private fun ProjectCard(
             // Financial Metrics Card
             Surface(
                 modifier = Modifier.fillMaxWidth(),
-                color = Color(0xFFF1F5F9),
+                color = Color.White,
                 shape = RoundedCornerShape(10.dp)
             ) {
                 Row(
@@ -801,8 +793,7 @@ private fun ProjectCard(
                                 Surface(
                                     modifier = Modifier.fillMaxWidth(),
                                     shape = RoundedCornerShape(6.dp),
-                                    color = Color(0xFFF8FAFC),
-                                    border = androidx.compose.foundation.BorderStroke(0.8.dp, Color(0xFFE2E8F0))
+                                    color = Color.White
                                 ) {
                                     Row(
                                         modifier = Modifier
@@ -871,8 +862,7 @@ private fun ProjectCard(
                     Surface(
                         onClick = onGeneratePdf,
                         shape = RoundedCornerShape(6.dp),
-                        color = Color(0xFFF0FDF4),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF86EFAC))
+                        color = Color(0xFFF0FDF4)
                     ) {
                         Row(
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
@@ -888,8 +878,7 @@ private fun ProjectCard(
                     Surface(
                         onClick = onPrint,
                         shape = RoundedCornerShape(6.dp),
-                        color = Color(0xFFEFF6FF),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF93C5FD))
+                        color = Color(0xFFEFF6FF)
                     ) {
                         Row(
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
@@ -905,8 +894,7 @@ private fun ProjectCard(
                     Surface(
                         onClick = onShare,
                         shape = RoundedCornerShape(6.dp),
-                        color = Color(0xFFF8FAFC),
-                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFCBD5E1))
+                        color = Color.White
                     ) {
                         Row(
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),

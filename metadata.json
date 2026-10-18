@@ -1,5 +1,5 @@
 {
-  "name": "Electrical Calculation All",
+  "name": "Electrical",
   "description": "Electrical engineering solution with 167 professional engineering calculators and project management.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

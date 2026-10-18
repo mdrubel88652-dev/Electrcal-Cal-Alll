@@ -102,6 +102,8 @@ fun HomeScreen(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val app = remember { ElectricalApp.getApp(context) }
+    val currentLanguage by app.settingsManager.languageFlow.collectAsState(initial = "EN")
+    val isEn = currentLanguage == "EN"
     val historyList by app.database.historyDao().getAllHistory().collectAsState(initial = emptyList())
     val favoriteIds by app.settingsManager.favoritesFlow.collectAsState(initial = emptySet())
 
@@ -159,18 +161,16 @@ fun HomeScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color.White)
-                    .padding(horizontal = 16.dp, vertical = 12.dp)
+                    .background(Color(0xFFF8FAFC))
+                    .padding(horizontal = 16.dp, vertical = 10.dp)
             ) {
-                // Sleek Search Bar
+                // Sleek Search Bar directly on background
                 Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(48.dp)
-                        .shadow(2.dp, RoundedCornerShape(24.dp)),
+                        .height(48.dp),
                     shape = RoundedCornerShape(24.dp),
-                    color = Color(0xFFF1F5F9),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E8F0))
+                    color = Color(0xFFEFF4F9)
                 ) {
                     Row(
                         modifier = Modifier
@@ -190,7 +190,7 @@ fun HomeScreen(
                         Box(modifier = Modifier.weight(1f)) {
                             if (searchQuery.isEmpty()) {
                                 Text(
-                                    text = "১৬৭টি ক্যালকুলেটরের যেকোনোটি সার্চ করুন...",
+                                    text = if (isEn) "Search any of 167 electrical calculators..." else "১৬৭টি ক্যালকুলেটরের যেকোনোটি সার্চ করুন...",
                                     fontSize = 13.sp,
                                     color = Color(0xFF94A3B8)
                                 )
@@ -228,7 +228,7 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                // Quick Metric Bar
+                // Quick Metric Bar directly on background
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -240,11 +240,10 @@ fun HomeScreen(
                     ) {
                         Surface(
                             shape = RoundedCornerShape(12.dp),
-                            color = Color(0xFFE0F2FE),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFBAE6FD))
+                            color = Color(0xFFE0F2FE)
                         ) {
                             Text(
-                                text = "১৬৭ ক্যালকুলেটর",
+                                text = if (isEn) "167 Tools" else "১৬৭ ক্যালকুলেটর",
                                 fontSize = 11.5.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF0369A1),
@@ -255,7 +254,6 @@ fun HomeScreen(
                         Surface(
                             shape = RoundedCornerShape(12.dp),
                             color = Color(0xFFFEF3C7),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFDE68A)),
                             modifier = Modifier.clickable { onNavigateToFavorites() }
                         ) {
                             Row(
@@ -270,7 +268,7 @@ fun HomeScreen(
                                     modifier = Modifier.size(12.dp)
                                 )
                                 Text(
-                                    text = "${favoriteIds.size} প্রিয়",
+                                    text = if (isEn) "${favoriteIds.size} Favorites" else "${favoriteIds.size} প্রিয়",
                                     fontSize = 11.5.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = Color(0xFFB45309)
@@ -280,8 +278,7 @@ fun HomeScreen(
 
                         Surface(
                             shape = RoundedCornerShape(12.dp),
-                            color = Color(0xFFF1F5F9),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E8F0)),
+                            color = Color(0xFFEFF4F9),
                             modifier = Modifier.clickable { onNavigateToHistory() }
                         ) {
                             Row(
@@ -420,9 +417,9 @@ fun HomeScreen(
                     ) {
                         ModernDockButton(
                             modifier = Modifier.weight(1f),
-                            title = "অ্যাডভান্স",
-                            count = "৫৫ টি",
-                            badge = "ইন্ডাস্ট্রিয়াল",
+                            title = if (isEn) "Advance" else "অ্যাডভান্স",
+                            count = if (isEn) "55 Tools" else "৫৫ টি",
+                            badge = if (isEn) "Industrial" else "ইন্ডাস্ট্রিয়াল",
                             icon = Icons.Default.ElectricBolt,
                             iconBg = Color(0xFF4338CA),
                             cardBg = Color(0xFFEEF2FF),
@@ -432,9 +429,9 @@ fun HomeScreen(
 
                         ModernDockButton(
                             modifier = Modifier.weight(1f),
-                            title = "বেসিক",
-                            count = "৬১ টি",
-                            badge = "সার্কিট ও লোড",
+                            title = if (isEn) "Basic" else "বেসিক",
+                            count = if (isEn) "61 Tools" else "৬১ টি",
+                            badge = if (isEn) "Circuit & Load" else "সার্কিট ও লোড",
                             icon = Icons.Default.Speed,
                             iconBg = Color(0xFF0284C7),
                             cardBg = Color(0xFFF0F9FF),
@@ -444,9 +441,9 @@ fun HomeScreen(
 
                         ModernDockButton(
                             modifier = Modifier.weight(1f),
-                            title = "লোয়ার",
-                            count = "৫১ টি",
-                            badge = "একক ও সূত্র",
+                            title = if (isEn) "Lower" else "লোয়ার",
+                            count = if (isEn) "51 Tools" else "৫১ টি",
+                            badge = if (isEn) "Units & Laws" else "একক ও সূত্র",
                             icon = Icons.Default.Cable,
                             iconBg = Color(0xFFD97706),
                             cardBg = Color(0xFFFFFBEB),
@@ -464,9 +461,9 @@ fun HomeScreen(
                     ) {
                         ModernDockButton(
                             modifier = Modifier.weight(1f),
-                            title = "বিল্ডিং BOQ",
-                            count = "এস্টিমেশন",
-                            badge = "ম্যাটেরিয়াল",
+                            title = if (isEn) "Building BOQ" else "বিল্ডিং BOQ",
+                            count = if (isEn) "Estimation" else "এস্টিমেশন",
+                            badge = if (isEn) "Materials" else "ম্যাটেরিয়াল",
                             icon = Icons.Default.Home,
                             iconBg = Color(0xFF059669),
                             cardBg = Color(0xFFECFDF5),
@@ -476,9 +473,9 @@ fun HomeScreen(
 
                         ModernDockButton(
                             modifier = Modifier.weight(1f),
-                            title = "প্রজেক্ট খতিয়ান",
-                            count = "৫ টি সাইট",
-                            badge = "রিপোর্ট PDF",
+                            title = if (isEn) "Project Hub" else "প্রজেক্ট খতিয়ান",
+                            count = if (isEn) "5 Sites" else "৫ টি সাইট",
+                            badge = if (isEn) "PDF Report" else "রিপোর্ট PDF",
                             icon = Icons.Default.Assignment,
                             iconBg = Color(0xFF0F172A),
                             cardBg = Color(0xFFF1F5F9),
@@ -488,14 +485,14 @@ fun HomeScreen(
 
                         ModernDockButton(
                             modifier = Modifier.weight(1f),
-                            title = "সহায়িকা গাইড",
-                            count = "১৬৭ সহায়িকা",
-                            badge = "সূত্র ও নিয়ম",
-                            icon = Icons.Outlined.Info,
-                            iconBg = Color(0xFFE11D48),
-                            cardBg = Color(0xFFFFF1F2),
-                            border = Color(0xFFFECDD3),
-                            onClick = onNavigateToInformation
+                            title = if (isEn) "History" else "হিস্টোরি রেকর্ড",
+                            count = if (isEn) "${historyList.size} Saved" else "${historyList.size} টি সেভড",
+                            badge = if (isEn) "Logs" else "লগ ও রিপোর্ট",
+                            icon = Icons.Default.History,
+                            iconBg = Color(0xFF475569),
+                            cardBg = Color(0xFFF1F5F9),
+                            border = Color(0xFFCBD5E1),
+                            onClick = onNavigateToHistory
                         )
                     }
                 }
@@ -519,14 +516,14 @@ fun HomeScreen(
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
-                                text = "🔥 সর্বাধিক ব্যবহৃত ক্যালকুলেটর",
+                                text = if (isEn) "🔥 Most Used Calculators" else "🔥 সর্বাধিক ব্যবহৃত ক্যালকুলেটর",
                                 fontSize = 14.5.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = Color(0xFF0F172A)
                             )
                         }
                         Text(
-                            text = "সব ক্যালকুলেটর ➔",
+                            text = if (isEn) "All Calculators ➔" else "সব ক্যালকুলেটর ➔",
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color(0xFF0284C7),
@@ -694,15 +691,14 @@ fun HomeScreen(
             // 7. CONTRACT PROJECT PRO BANNER (BOTTOM)
             // ==========================================
             item {
-                Card(
+                Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 14.dp)
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
                         .clickable { onNavigateToProject() }
                         .testTag("home_contract_project_card"),
                     shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = Color(0xFF0F172A)),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+                    color = Color(0xFFEFF4F9)
                 ) {
                     Row(
                         modifier = Modifier
@@ -719,13 +715,13 @@ fun HomeScreen(
                                 modifier = Modifier
                                     .size(44.dp)
                                     .clip(RoundedCornerShape(12.dp))
-                                    .background(Color(0xFF0284C7)),
+                                    .background(Color(0xFFE0F2FE)),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Icon(
                                     imageVector = Icons.Default.Assignment,
                                     contentDescription = null,
-                                    tint = Color.White,
+                                    tint = Color(0xFF0284C7),
                                     modifier = Modifier.size(24.dp)
                                 )
                             }
@@ -735,14 +731,14 @@ fun HomeScreen(
                             Column {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     Text(
-                                        text = "কন্ট্রাক্ট প্রজেক্ট ও হিসাব",
+                                        text = if (isEn) "Contract Project & Billing" else "কন্ট্রাক্ট প্রজেক্ট ও হিসাব",
                                         fontSize = 14.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color.White
+                                        color = Color(0xFF0F172A)
                                     )
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Surface(
-                                        color = Color(0xFF0369A1),
+                                        color = Color(0xFF0284C7),
                                         shape = RoundedCornerShape(6.dp)
                                     ) {
                                         Text(
@@ -755,21 +751,21 @@ fun HomeScreen(
                                     }
                                 }
                                 Text(
-                                    text = "ওয়ার্ক অর্ডার, সাইট হিসাব ও প্রফেশনাল রিপোর্ট PDF",
+                                    text = if (isEn) "Work orders, site estimation & professional PDF reports" else "ওয়ার্ক অর্ডার, সাইট হিসাব ও প্রফেশনাল রিপোর্ট PDF",
                                     fontSize = 11.sp,
-                                    color = Color(0xFF94A3B8)
+                                    color = Color(0xFF64748B)
                                 )
                             }
                         }
 
                         Surface(
                             shape = CircleShape,
-                            color = Color(0xFF1E293B)
+                            color = Color(0xFFF1F5F9)
                         ) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowForward,
                                 contentDescription = "Open",
-                                tint = Color(0xFF38BDF8),
+                                tint = Color(0xFF0284C7),
                                 modifier = Modifier
                                     .padding(8.dp)
                                     .size(16.dp)
@@ -798,13 +794,12 @@ private fun ModernDockButton(
     border: Color,
     onClick: () -> Unit
 ) {
-    Card(
+    Surface(
         modifier = modifier
-            .clickable(onClick = onClick)
-            .shadow(1.dp, RoundedCornerShape(14.dp)),
+            .clip(RoundedCornerShape(14.dp))
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(14.dp),
-        colors = CardDefaults.cardColors(containerColor = cardBg),
-        border = androidx.compose.foundation.BorderStroke(1.dp, border)
+        color = Color(0xFFEFF4F9)
     ) {
         Column(
             modifier = Modifier
@@ -857,14 +852,13 @@ private fun FeaturedToolCard(
     onToggleFavorite: () -> Unit,
     onClick: () -> Unit
 ) {
-    Card(
+    Surface(
         modifier = Modifier
             .width(220.dp)
-            .clickable(onClick = onClick)
-            .shadow(2.dp, RoundedCornerShape(16.dp)),
+            .clip(RoundedCornerShape(16.dp))
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E8F0))
+        color = Color(0xFFEFF4F9)
     ) {
         Column(
             modifier = Modifier
@@ -975,11 +969,7 @@ private fun CategoryPill(
 ) {
     Surface(
         shape = RoundedCornerShape(20.dp),
-        color = if (isSelected) Color(0xFF0284C7) else Color.White,
-        border = androidx.compose.foundation.BorderStroke(
-            1.dp,
-            if (isSelected) Color(0xFF0284C7) else Color(0xFFE2E8F0)
-        ),
+        color = if (isSelected) Color(0xFF0284C7) else Color(0xFFEFF4F9),
         modifier = Modifier.clickable(onClick = onClick)
     ) {
         Row(
@@ -1010,14 +1000,13 @@ private fun ModernCalculatorRowCard(
     onToggleFavorite: () -> Unit,
     onClick: () -> Unit
 ) {
-    Card(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .shadow(1.dp, RoundedCornerShape(12.dp)),
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E8F0))
+        color = Color(0xFFEFF4F9)
     ) {
         Row(
             modifier = Modifier

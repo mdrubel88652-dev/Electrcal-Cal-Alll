@@ -105,6 +105,7 @@ fun SolarSystemCalculatorView(
     var designResult by remember { mutableStateOf<SolarDesignResult?>(null) }
     var calculationResult by remember { mutableStateOf<CalculationResult?>(null) }
     var isSaved by remember { mutableStateOf(false) }
+    var showFormulaSolution by remember { mutableStateOf(false) }
 
     fun runCalculation() {
         val dailyEnergy = dailyEnergyStr.toDoubleOrNull() ?: 10.0
@@ -1229,77 +1230,100 @@ fun SolarSystemCalculatorView(
                 }
 
                 // ==========================================
-                // 10. STEP-BY-STEP CALCULATION BREAKDOWN
+                // 10. STEP-BY-STEP & FORMULAS TOGGLE BUTTON
                 // ==========================================
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                OutlinedButton(
+                    onClick = { showFormulaSolution = !showFormulaSolution },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(44.dp),
+                    shape = RoundedCornerShape(8.dp)
                 ) {
-                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        Text(
-                            text = "STEP-BY-STEP ENGINEERING SOLUTION",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                        )
-
-                        res.steps.forEach { stepText ->
-                            Surface(
-                                modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(8.dp),
-                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
-                            ) {
-                                Text(
-                                    text = stepText,
-                                    fontFamily = FontFamily.Monospace,
-                                    fontSize = 12.sp,
-                                    modifier = Modifier.padding(10.dp),
-                                    lineHeight = 18.sp
-                                )
-                            }
-                        }
-                    }
+                    Icon(
+                        if (showFormulaSolution) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = if (showFormulaSolution) "Hide Formula & Step-by-Step Solution" else "Show Formula & Step-by-Step Solution",
+                        fontSize = 12.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
 
-                // ==========================================
-                // 11. FORMULAS & ASSUMPTIONS
-                // ==========================================
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Text(
-                            text = "FORMULAS & ENGINEERING STANDARDS",
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
-                        )
+                AnimatedVisibility(visible = showFormulaSolution) {
+                    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                        // STEP-BY-STEP CALCULATION BREAKDOWN
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                Text(
+                                    text = "STEP-BY-STEP ENGINEERING SOLUTION",
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                                )
 
-                        res.formulas.forEach { (name, formula) ->
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween
-                            ) {
-                                Text(name, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                                res.steps.forEach { stepText ->
+                                    Surface(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        shape = RoundedCornerShape(8.dp),
+                                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+                                    ) {
+                                        Text(
+                                            text = stepText,
+                                            fontFamily = FontFamily.Monospace,
+                                            fontSize = 12.sp,
+                                            modifier = Modifier.padding(10.dp),
+                                            lineHeight = 18.sp
+                                        )
+                                    }
+                                }
                             }
-                            Text(
-                                formula,
-                                fontFamily = FontFamily.Monospace,
-                                fontSize = 11.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(bottom = 6.dp)
-                            )
                         }
 
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                        // FORMULAS & ASSUMPTIONS
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                        ) {
+                            Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                                Text(
+                                    text = "FORMULAS & ENGINEERING STANDARDS",
+                                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold)
+                                )
 
-                        Text("DESIGN ASSUMPTIONS:", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                        res.assumptions.forEach { ass ->
-                            Text("• $ass", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
+                                res.formulas.forEach { (name, formula) ->
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.SpaceBetween
+                                    ) {
+                                        Text(name, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                                    }
+                                    Text(
+                                        formula,
+                                        fontFamily = FontFamily.Monospace,
+                                        fontSize = 11.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.padding(bottom = 6.dp)
+                                    )
+                                }
 
-                        if (res.warnings.isNotEmpty()) {
-                            HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
-                            Text("ENGINEERING WARNINGS:", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFFC62828))
-                            res.warnings.forEach { w ->
-                                Text("⚠ $w", fontSize = 11.sp, color = Color(0xFFC62828))
+                                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+                                Text("DESIGN ASSUMPTIONS:", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                                res.assumptions.forEach { ass ->
+                                    Text("• $ass", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+
+                                if (res.warnings.isNotEmpty()) {
+                                    HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                                    Text("ENGINEERING WARNINGS:", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFFC62828))
+                                    res.warnings.forEach { w ->
+                                        Text("⚠ $w", fontSize = 11.sp, color = Color(0xFFC62828))
+                                    }
+                                }
                             }
                         }
                     }

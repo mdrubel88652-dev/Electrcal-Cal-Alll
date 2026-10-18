@@ -11,11 +11,9 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -27,30 +25,29 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
+import androidx.compose.ui.graphics.drawscope.Fill
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -58,10 +55,7 @@ import androidx.compose.ui.unit.sp
 import com.example.R
 import kotlinx.coroutines.delay
 
-/**
- * Modern High-Tech Cinematic Startup Duration
- */
-const val SPLASH_DURATION_MS = 3600L
+const val SPLASH_DURATION_MS = 2800L
 
 @Composable
 fun SplashScreen(
@@ -70,82 +64,24 @@ fun SplashScreen(
 ) {
     val progressAnim = remember { Animatable(0f) }
 
-    // Infinite transitions for dynamic high-tech animations
-    val infiniteTransition = rememberInfiniteTransition(label = "SplashAnimations")
-
-    // Breathing pulse for emblem
-    val pulseScale by infiniteTransition.animateFloat(
-        initialValue = 0.97f,
-        targetValue = 1.03f,
+    val infiniteTransition = rememberInfiniteTransition(label = "BulbGlow")
+    val bulbPulse by infiniteTransition.animateFloat(
+        initialValue = 0.94f,
+        targetValue = 1.06f,
         animationSpec = infiniteRepeatable(
-            animation = tween(1200, easing = FastOutSlowInEasing),
+            animation = tween(1000, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         ),
-        label = "PulseScale"
-    )
-
-    // Outer cyber ring rotation (clockwise)
-    val ringRotationClockwise by infiniteTransition.animateFloat(
-        initialValue = 0f,
-        targetValue = 360f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(8000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "ClockwiseRing"
-    )
-
-    // Inner cyber ring rotation (counter-clockwise)
-    val ringRotationCounterClockwise by infiniteTransition.animateFloat(
-        initialValue = 360f,
-        targetValue = 0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(6000, easing = LinearEasing),
-            repeatMode = RepeatMode.Restart
-        ),
-        label = "CounterClockwiseRing"
-    )
-
-    // Glowing LED pulse
-    val ledAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.35f,
-        targetValue = 1.0f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(700, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "LedBlink"
-    )
-
-    // Ambient radial aura glow
-    val ambientAlpha by infiniteTransition.animateFloat(
-        initialValue = 0.30f,
-        targetValue = 0.65f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(1400, easing = FastOutSlowInEasing),
-            repeatMode = RepeatMode.Reverse
-        ),
-        label = "AmbientAlpha"
+        label = "BulbPulse"
     )
 
     LaunchedEffect(Unit) {
         progressAnim.animateTo(
             targetValue = 1f,
-            animationSpec = tween(durationMillis = (durationMs - 350).toInt(), easing = LinearEasing)
+            animationSpec = tween(durationMillis = (durationMs - 200).toInt(), easing = LinearEasing)
         )
-        delay(300)
+        delay(150)
         onLoadingFinished()
-    }
-
-    val progressVal = progressAnim.value
-    val percentInt = (progressVal * 100).toInt().coerceIn(0, 100)
-
-    val currentStepText = when {
-        progressVal < 0.20f -> "INITIALIZING CORE • ১৬৭টি ইলেকট্রিক্যাল ইঞ্জিন সক্রিয় হচ্ছে..."
-        progressVal < 0.45f -> "LOADING ENGINES • ইন্ডাস্ট্রিয়াল ও ডোমেস্টিক ক্যালকুলেটর লোড..."
-        progressVal < 0.70f -> "CALIBRATING STANDARDS • IEC 60364 ও IEEE 1561 ক্যালিব্রেশন..."
-        progressVal < 0.90f -> "PHASE MATRIX • ১-ফেজ ও ৩-ফেজ আইসোলেশন প্রোটোকল..."
-        else -> "SYSTEM READY • সকল ১৬৭টি প্রকৌশল ক্যালকুলেটর প্রস্তুত!"
     }
 
     Box(
@@ -154,433 +90,407 @@ fun SplashScreen(
             .background(
                 Brush.verticalGradient(
                     listOf(
-                        Color(0xFF060B18),
-                        Color(0xFF040813),
-                        Color(0xFF02040A)
+                        Color(0xFFF6FAFF),
+                        Color(0xFFEBF3FE),
+                        Color(0xFFF3F8FF),
+                        Color(0xFFF8FAFC)
                     )
                 )
             )
+            .statusBarsPadding()
+            .navigationBarsPadding()
             .testTag("splash_screen_root")
     ) {
-        // High-Tech Cyber Circuit Canvas Background
+        // Subtle decorative background cloud/wave accents
         Canvas(modifier = Modifier.fillMaxSize()) {
-            val width = size.width
-            val height = size.height
+            val w = size.width
+            val h = size.height
 
-            // Horizontal & vertical circuit grid lines
-            val lineColor = Color(0xFF00E5FF).copy(alpha = 0.05f)
-            val strokeWidth = 1.5f
-
-            // Circuit Grid Lines
-            val spacing = 80f
-            var x = spacing
-            while (x < width) {
-                drawLine(
-                    color = lineColor,
-                    start = Offset(x, 0f),
-                    end = Offset(x, height),
-                    strokeWidth = strokeWidth
-                )
-                x += spacing
-            }
-
-            var y = spacing
-            while (y < height) {
-                drawLine(
-                    color = lineColor,
-                    start = Offset(0f, y),
-                    end = Offset(width, y),
-                    strokeWidth = strokeWidth
-                )
-                y += spacing
-            }
-
-            // Circuit corner tech lines
-            val cyanGlow = Color(0xFF00E5FF).copy(alpha = 0.18f)
-            drawLine(
-                color = cyanGlow,
-                start = Offset(40f, 100f),
-                end = Offset(140f, 100f),
-                strokeWidth = 2f
+            // Top-right soft ambient aura
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(Color(0xFFDCEAFE).copy(alpha = 0.45f), Color.Transparent),
+                    center = Offset(w * 0.9f, h * 0.12f),
+                    radius = w * 0.45f
+                ),
+                radius = w * 0.45f,
+                center = Offset(w * 0.9f, h * 0.12f)
             )
-            drawLine(
-                color = cyanGlow,
-                start = Offset(140f, 100f),
-                end = Offset(180f, 140f),
-                strokeWidth = 2f
-            )
-            drawCircle(color = Color(0xFF00E5FF).copy(alpha = 0.3f), radius = 4f, center = Offset(180f, 140f))
 
-            drawLine(
-                color = cyanGlow,
-                start = Offset(width - 40f, height - 120f),
-                end = Offset(width - 140f, height - 120f),
-                strokeWidth = 2f
+            // Bottom-left soft ambient aura
+            drawCircle(
+                brush = Brush.radialGradient(
+                    colors = listOf(Color(0xFFE0EDFD).copy(alpha = 0.5f), Color.Transparent),
+                    center = Offset(w * 0.15f, h * 0.88f),
+                    radius = w * 0.55f
+                ),
+                radius = w * 0.55f,
+                center = Offset(w * 0.15f, h * 0.88f)
             )
-            drawLine(
-                color = cyanGlow,
-                start = Offset(width - 140f, height - 120f),
-                end = Offset(width - 180f, height - 160f),
-                strokeWidth = 2f
-            )
-            drawCircle(color = Color(0xFFFFC107).copy(alpha = 0.35f), radius = 4f, center = Offset(width - 180f, height - 160f))
         }
 
-        // Background Electrical Graphic Art
-        Image(
-            painter = painterResource(id = R.drawable.img_splash_bg),
-            contentDescription = null,
-            modifier = Modifier
-                .fillMaxSize()
-                .scale(1.05f),
-            contentScale = ContentScale.Crop,
-            alpha = 0.30f
-        )
-
-        // Radial Cyan Aura Glow behind emblem
-        Box(
-            modifier = Modifier
-                .align(Alignment.Center)
-                .size(360.dp)
-                .scale(pulseScale)
-                .blur(95.dp)
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(
-                            Color(0xFF00E5FF).copy(alpha = ambientAlpha * 0.45f),
-                            Color(0xFF0284C7).copy(alpha = ambientAlpha * 0.22f),
-                            Color.Transparent
-                        )
-                    ),
-                    shape = CircleShape
-                )
-        )
-
-        // Main Content Column
+        // Main Splash Content Column (faithful reproduction of uploaded image)
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .statusBarsPadding()
-                .navigationBarsPadding()
-                .padding(horizontal = 24.dp),
+                .padding(horizontal = 24.dp, vertical = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            // Top App Bar Branding Pill
-            Box(
-                modifier = Modifier
-                    .padding(top = 22.dp)
-                    .clip(RoundedCornerShape(20.dp))
-                    .background(Color(0xFF0B162E).copy(alpha = 0.88f))
-                    .border(1.dp, Color(0xFF1E293B), RoundedCornerShape(20.dp))
-                    .padding(horizontal = 14.dp, vertical = 6.dp)
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(
-                        modifier = Modifier
-                            .size(8.dp)
-                            .background(Color(0xFF10B981).copy(alpha = ledAlpha), CircleShape)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "ELECTRICAL PRO SUITE v1.0 • 167 CALCS ONLINE",
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF94A3B8),
-                        letterSpacing = 1.sp
-                    )
-                }
-            }
+            Spacer(modifier = Modifier.height(10.dp))
 
-            // Center: Rotating Cybernetic Rings + Luxury Emblem + Title
+            // 1. TOP SECTION: App Icon + Typography
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-                modifier = Modifier.padding(vertical = 12.dp)
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Interactive Reactor Emblem Box
+                // Top App Logo Icon (Dark blue rounded square with glowing lightning)
                 Box(
-                    modifier = Modifier.size(200.dp),
+                    modifier = Modifier
+                        .size(86.dp)
+                        .shadow(8.dp, RoundedCornerShape(22.dp), spotColor = Color(0x330284C7))
+                        .clip(RoundedCornerShape(22.dp))
+                        .background(
+                            Brush.linearGradient(
+                                listOf(Color(0xFF0F2B5C), Color(0xFF081836))
+                            )
+                        ),
                     contentAlignment = Alignment.Center
                 ) {
-                    // Outer Clockwise Rotating Cyber Ring
-                    Canvas(
-                        modifier = Modifier
-                            .size(196.dp)
-                            .rotate(ringRotationClockwise)
-                    ) {
-                        val stroke = 2.dp.toPx()
-                        drawArc(
-                            color = Color(0xFF00E5FF).copy(alpha = 0.85f),
-                            startAngle = 0f,
-                            sweepAngle = 70f,
-                            useCenter = false,
-                            style = Stroke(width = stroke, cap = StrokeCap.Round)
-                        )
-                        drawArc(
-                            color = Color(0xFF0284C7).copy(alpha = 0.45f),
-                            startAngle = 90f,
-                            sweepAngle = 60f,
-                            useCenter = false,
-                            style = Stroke(width = stroke, cap = StrokeCap.Round)
-                        )
-                        drawArc(
-                            color = Color(0xFF00E5FF).copy(alpha = 0.85f),
-                            startAngle = 180f,
-                            sweepAngle = 70f,
-                            useCenter = false,
-                            style = Stroke(width = stroke, cap = StrokeCap.Round)
-                        )
-                        drawArc(
-                            color = Color(0xFF38BDF8).copy(alpha = 0.45f),
-                            startAngle = 270f,
-                            sweepAngle = 60f,
-                            useCenter = false,
-                            style = Stroke(width = stroke, cap = StrokeCap.Round)
-                        )
-                    }
-
-                    // Inner Counter-Clockwise Rotating Amber/Cyan Cyber Ring
-                    Canvas(
-                        modifier = Modifier
-                            .size(168.dp)
-                            .rotate(ringRotationCounterClockwise)
-                    ) {
-                        val stroke = 1.8.dp.toPx()
-                        drawArc(
-                            color = Color(0xFFFFC107).copy(alpha = 0.75f),
-                            startAngle = 30f,
-                            sweepAngle = 50f,
-                            useCenter = false,
-                            style = Stroke(width = stroke, cap = StrokeCap.Round)
-                        )
-                        drawArc(
-                            color = Color(0xFF38BDF8).copy(alpha = 0.50f),
-                            startAngle = 120f,
-                            sweepAngle = 80f,
-                            useCenter = false,
-                            style = Stroke(width = stroke, cap = StrokeCap.Round)
-                        )
-                        drawArc(
-                            color = Color(0xFFFFC107).copy(alpha = 0.75f),
-                            startAngle = 230f,
-                            sweepAngle = 60f,
-                            useCenter = false,
-                            style = Stroke(width = stroke, cap = StrokeCap.Round)
-                        )
-                    }
-
-                    // Luxury App Emblem
-                    Box(
-                        modifier = Modifier
-                            .size(136.dp)
-                            .scale(pulseScale)
-                            .shadow(
-                                elevation = 28.dp,
-                                shape = RoundedCornerShape(32.dp),
-                                ambientColor = Color(0xFF00E5FF),
-                                spotColor = Color(0xFF00E5FF)
-                            )
-                            .clip(RoundedCornerShape(32.dp))
-                            .background(Color(0xFF0A1123))
-                            .border(
-                                width = 2.dp,
-                                brush = Brush.linearGradient(
-                                    listOf(
-                                        Color(0xFF00E5FF),
-                                        Color(0xFF38BDF8),
-                                        Color(0xFF0284C7),
-                                        Color(0xFF0A1123)
-                                    )
-                                ),
-                                shape = RoundedCornerShape(32.dp)
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.ic_app_logo),
-                            contentDescription = "ELECTRICAL CALCULATION ALL",
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .clip(RoundedCornerShape(30.dp)),
-                            contentScale = ContentScale.Crop
-                        )
-                    }
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_app_logo),
+                        contentDescription = "App Logo",
+                        modifier = Modifier.fillMaxSize(),
+                        contentScale = ContentScale.Crop
+                    )
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(20.dp))
 
-                // Typography
+                // ELECTRICAL
                 Text(
                     text = "ELECTRICAL",
-                    fontSize = 32.sp,
+                    fontSize = 28.sp,
                     fontWeight = FontWeight.Black,
-                    letterSpacing = 4.sp,
-                    color = Color.White,
+                    letterSpacing = 1.2.sp,
+                    color = Color(0xFF0F265C),
                     textAlign = TextAlign.Center
                 )
 
+                // CALCULATION ALL
                 Text(
                     text = "CALCULATION ALL",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.ExtraBold,
-                    letterSpacing = 2.sp,
-                    color = Color(0xFFFFC107),
+                    fontSize = 26.sp,
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = 0.6.sp,
+                    color = Color(0xFF1366D9),
                     textAlign = TextAlign.Center
                 )
-
-                Spacer(modifier = Modifier.height(6.dp))
-
-                Text(
-                    text = "Electrical Engineering Calculation & Estimation",
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium,
-                    letterSpacing = 0.5.sp,
-                    color = Color(0xFF94A3B8),
-                    textAlign = TextAlign.Center
-                )
-            }
-
-            // Bottom Section: Digital Substation Telemetry & Progress
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 24.dp)
-            ) {
-                // High-Tech Telemetry HUD Bar
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(10.dp),
-                    color = Color(0xFF0B162E).copy(alpha = 0.85f),
-                    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF1E293B))
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 12.dp, vertical = 7.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Box(
-                                modifier = Modifier
-                                    .size(7.dp)
-                                    .background(Color(0xFF00E5FF).copy(alpha = ledAlpha), CircleShape)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "SYS-STATUS: 400V 3φ / 230V 1φ",
-                                fontSize = 10.sp,
-                                fontFamily = FontFamily.Monospace,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF00E5FF)
-                            )
-                        }
-
-                        Text(
-                            text = "50Hz • PF 0.96",
-                            fontSize = 10.sp,
-                            fontFamily = FontFamily.Monospace,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFFFFC107)
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Progress Percentage & Live Diagnostics Label
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "DIAGNOSTICS INITIALIZATION",
-                        fontSize = 10.5.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF38BDF8),
-                        letterSpacing = 1.sp
-                    )
-
-                    Text(
-                        text = "$percentInt%",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Black,
-                        fontFamily = FontFamily.Monospace,
-                        color = Color.White
-                    )
-                }
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // High-Tech Neon Linear Progress Bar
+                // Subtitle: Electrical Engineering Calculation & Estimation
+                Text(
+                    text = "Electrical Engineering\nCalculation & Estimation",
+                    fontSize = 13.5.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color(0xFF1E3A8A),
+                    lineHeight = 18.sp,
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            // 2. CENTER SECTION: Transmission Tower + Glowing Light Bulb + Calculator + Waves
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(240.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Canvas(
+                    modifier = Modifier
+                        .fillMaxWidth(0.92f)
+                        .height(230.dp)
+                ) {
+                    val cw = size.width
+                    val ch = size.height
+
+                    // ----------------------------------------------------
+                    // Background Cityscape / Grid Silhouette (subtle translucent blue)
+                    // ----------------------------------------------------
+                    val cityColor = Color(0xFFBAE6FD).copy(alpha = 0.40f)
+                    val cityPath = Path().apply {
+                        moveTo(0f, ch * 0.62f)
+                        lineTo(cw * 0.08f, ch * 0.62f)
+                        lineTo(cw * 0.08f, ch * 0.52f)
+                        lineTo(cw * 0.14f, ch * 0.52f)
+                        lineTo(cw * 0.14f, ch * 0.58f)
+                        lineTo(cw * 0.22f, ch * 0.58f)
+                        lineTo(cw * 0.22f, ch * 0.48f)
+                        lineTo(cw * 0.28f, ch * 0.48f)
+                        lineTo(cw * 0.28f, ch * 0.62f)
+                        lineTo(cw * 0.70f, ch * 0.62f)
+                        lineTo(cw * 0.70f, ch * 0.53f)
+                        lineTo(cw * 0.78f, ch * 0.53f)
+                        lineTo(cw * 0.78f, ch * 0.59f)
+                        lineTo(cw * 0.88f, ch * 0.59f)
+                        lineTo(cw * 0.88f, ch * 0.50f)
+                        lineTo(cw * 0.95f, ch * 0.50f)
+                        lineTo(cw * 0.95f, ch * 0.62f)
+                        lineTo(cw, ch * 0.62f)
+                        lineTo(cw, ch)
+                        lineTo(0f, ch)
+                        close()
+                    }
+                    drawPath(cityPath, cityColor)
+
+                    // ----------------------------------------------------
+                    // A. Transmission Tower / Power Pylon (Left)
+                    // ----------------------------------------------------
+                    val pylonX = cw * 0.28f
+                    val pylonTopY = ch * 0.08f
+                    val pylonBaseY = ch * 0.68f
+                    val pylonColor = Color(0xFF1E3A8A)
+                    val pylonStroke = 2.4f
+
+                    // Legs
+                    drawLine(pylonColor, Offset(pylonX, pylonTopY), Offset(pylonX - 42f, pylonBaseY), strokeWidth = pylonStroke)
+                    drawLine(pylonColor, Offset(pylonX, pylonTopY), Offset(pylonX + 42f, pylonBaseY), strokeWidth = pylonStroke)
+
+                    // Cross-arm 1 (Top)
+                    drawLine(pylonColor, Offset(pylonX - 32f, ch * 0.20f), Offset(pylonX + 32f, ch * 0.20f), strokeWidth = pylonStroke)
+                    // Cross-arm 2 (Middle)
+                    drawLine(pylonColor, Offset(pylonX - 44f, ch * 0.32f), Offset(pylonX + 44f, ch * 0.32f), strokeWidth = pylonStroke)
+                    // Cross-arm 3 (Lower)
+                    drawLine(pylonColor, Offset(pylonX - 36f, ch * 0.44f), Offset(pylonX + 36f, ch * 0.44f), strokeWidth = pylonStroke)
+
+                    // Lattice trusses (X bracing)
+                    drawLine(pylonColor, Offset(pylonX - 12f, ch * 0.20f), Offset(pylonX + 18f, ch * 0.32f), strokeWidth = 1.5f)
+                    drawLine(pylonColor, Offset(pylonX + 12f, ch * 0.20f), Offset(pylonX - 18f, ch * 0.32f), strokeWidth = 1.5f)
+                    drawLine(pylonColor, Offset(pylonX - 18f, ch * 0.32f), Offset(pylonX + 24f, ch * 0.44f), strokeWidth = 1.5f)
+                    drawLine(pylonColor, Offset(pylonX + 18f, ch * 0.32f), Offset(pylonX - 24f, ch * 0.44f), strokeWidth = 1.5f)
+                    drawLine(pylonColor, Offset(pylonX - 24f, ch * 0.44f), Offset(pylonX + 32f, ch * 0.56f), strokeWidth = 1.5f)
+                    drawLine(pylonColor, Offset(pylonX + 24f, ch * 0.44f), Offset(pylonX - 32f, ch * 0.56f), strokeWidth = 1.5f)
+
+                    // Top spire & insulators
+                    drawLine(pylonColor, Offset(pylonX, pylonTopY - 14f), Offset(pylonX, pylonTopY), strokeWidth = pylonStroke)
+                    drawCircle(Color(0xFF0284C7), radius = 3.5f, center = Offset(pylonX - 44f, ch * 0.32f))
+                    drawCircle(Color(0xFF0284C7), radius = 3.5f, center = Offset(pylonX + 44f, ch * 0.32f))
+
+                    // ----------------------------------------------------
+                    // B. Glowing Incandescent Light Bulb (Center)
+                    // ----------------------------------------------------
+                    val bulbCenterX = cw * 0.54f
+                    val bulbCenterY = ch * 0.24f
+                    val bulbRadius = 38f * bulbPulse
+
+                    // Glowing Aura
+                    drawCircle(
+                        brush = Brush.radialGradient(
+                            colors = listOf(
+                                Color(0xFFFFD54F).copy(alpha = 0.55f),
+                                Color(0xFFFFEE58).copy(alpha = 0.28f),
+                                Color.Transparent
+                            ),
+                            center = Offset(bulbCenterX, bulbCenterY),
+                            radius = bulbRadius * 1.7f
+                        ),
+                        radius = bulbRadius * 1.7f,
+                        center = Offset(bulbCenterX, bulbCenterY)
+                    )
+
+                    // Glass Bulb Body (Radiant Amber-Yellow)
+                    drawCircle(
+                        brush = Brush.radialGradient(
+                            colors = listOf(Color(0xFFFFF9C4), Color(0xFFFFCA28), Color(0xFFFFA000)),
+                            center = Offset(bulbCenterX - 8f, bulbCenterY - 8f),
+                            radius = bulbRadius
+                        ),
+                        radius = bulbRadius,
+                        center = Offset(bulbCenterX, bulbCenterY)
+                    )
+
+                    // Filament (Warm highlight)
+                    val filamentPath = Path().apply {
+                        moveTo(bulbCenterX - 10f, bulbCenterY + 12f)
+                        lineTo(bulbCenterX - 6f, bulbCenterY - 10f)
+                        lineTo(bulbCenterX, bulbCenterY - 4f)
+                        lineTo(bulbCenterX + 6f, bulbCenterY - 10f)
+                        lineTo(bulbCenterX + 10f, bulbCenterY + 12f)
+                    }
+                    drawPath(
+                        path = filamentPath,
+                        color = Color.White,
+                        style = Stroke(width = 2.4f, cap = StrokeCap.Round, join = StrokeJoin.Round)
+                    )
+
+                    // Bulb Neck & Metallic Screw Base
+                    val neckY = bulbCenterY + bulbRadius * 0.78f
+                    drawRoundRect(
+                        color = Color(0xFF64748B),
+                        topLeft = Offset(bulbCenterX - 14f, neckY),
+                        size = Size(28f, 24f),
+                        cornerRadius = CornerRadius(4f, 4f)
+                    )
+                    // Base contact
+                    drawRoundRect(
+                        color = Color(0xFF334155),
+                        topLeft = Offset(bulbCenterX - 11f, neckY + 18f),
+                        size = Size(22f, 10f),
+                        cornerRadius = CornerRadius(3f, 3f)
+                    )
+                    // Thread ridges
+                    drawLine(Color(0xFF94A3B8), Offset(bulbCenterX - 14f, neckY + 6f), Offset(bulbCenterX + 14f, neckY + 6f), strokeWidth = 1.8f)
+                    drawLine(Color(0xFF94A3B8), Offset(bulbCenterX - 14f, neckY + 12f), Offset(bulbCenterX + 14f, neckY + 12f), strokeWidth = 1.8f)
+
+                    // ----------------------------------------------------
+                    // C. Modern Engineering Calculator (Right)
+                    // ----------------------------------------------------
+                    val calcLeft = cw * 0.69f
+                    val calcTop = ch * 0.28f
+                    val calcW = 62f
+                    val calcH = 88f
+
+                    // Calculator Body (Dark Slate Blue)
+                    drawRoundRect(
+                        color = Color(0xFF1E3A8A),
+                        topLeft = Offset(calcLeft, calcTop),
+                        size = Size(calcW, calcH),
+                        cornerRadius = CornerRadius(10f, 10f)
+                    )
+
+                    // Display Screen (Light Sky Blue / Cyan)
+                    drawRoundRect(
+                        color = Color(0xFFE0F2FE),
+                        topLeft = Offset(calcLeft + 7f, calcTop + 8f),
+                        size = Size(calcW - 14f, 18f),
+                        cornerRadius = CornerRadius(4f, 4f)
+                    )
+                    // Display readout mock
+                    drawLine(
+                        color = Color(0xFF0369A1),
+                        start = Offset(calcLeft + 12f, calcTop + 17f),
+                        end = Offset(calcLeft + calcW - 14f, calcTop + 17f),
+                        strokeWidth = 2.4f
+                    )
+
+                    // Button grid (3 cols x 4 rows)
+                    val btnW = 11f
+                    val btnH = 9f
+                    val btnGapX = 4f
+                    val btnGapY = 4.5f
+                    val btnStartX = calcLeft + 8f
+                    val btnStartY = calcTop + 32f
+
+                    for (r in 0..3) {
+                        for (c in 0..2) {
+                            val bx = btnStartX + c * (btnW + btnGapX)
+                            val by = btnStartY + r * (btnH + btnGapY)
+                            val btnColor = if (r == 3 && c == 2) Color(0xFF0284C7) else Color(0xFF3B82F6)
+                            drawRoundRect(
+                                color = btnColor,
+                                topLeft = Offset(bx, by),
+                                size = Size(btnW, btnH),
+                                cornerRadius = CornerRadius(2.5f, 2.5f)
+                            )
+                        }
+                    }
+
+                    // ----------------------------------------------------
+                    // D. Flowing Cyan-Blue & Golden Energy Wave Swooshes
+                    // ----------------------------------------------------
+                    // Upper Electric Blue Swoosh
+                    val blueWavePath = Path().apply {
+                        moveTo(cw * 0.08f, ch * 0.68f)
+                        cubicTo(
+                            cw * 0.28f, ch * 0.60f,
+                            cw * 0.45f, ch * 0.72f,
+                            cw * 0.78f, ch * 0.62f
+                        )
+                        cubicTo(
+                            cw * 0.60f, ch * 0.76f,
+                            cw * 0.35f, ch * 0.72f,
+                            cw * 0.08f, ch * 0.68f
+                        )
+                        close()
+                    }
+                    drawPath(
+                        path = blueWavePath,
+                        brush = Brush.horizontalGradient(
+                            listOf(Color(0xFF0284C7), Color(0xFF0EA5E9), Color(0xFF38BDF8))
+                        )
+                    )
+
+                    // Lower Golden Yellow Sweeping Wave
+                    val yellowWavePath = Path().apply {
+                        moveTo(cw * 0.22f, ch * 0.69f)
+                        cubicTo(
+                            cw * 0.50f, ch * 0.68f,
+                            cw * 0.76f, ch * 0.64f,
+                            cw * 0.94f, ch * 0.56f
+                        )
+                        cubicTo(
+                            cw * 0.88f, ch * 0.74f,
+                            cw * 0.58f, ch * 0.78f,
+                            cw * 0.22f, ch * 0.69f
+                        )
+                        close()
+                    }
+                    drawPath(
+                        path = yellowWavePath,
+                        brush = Brush.horizontalGradient(
+                            listOf(Color(0xFFF59E0B), Color(0xFFFBBF24), Color(0xFFFDE047))
+                        )
+                    )
+                }
+            }
+
+            // 3. BOTTOM SECTION: Smooth Loading Bar + Slogans
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(bottom = 12.dp)
+            ) {
+                // Sleek Pill-shaped Progress Bar (faithful to screenshot)
                 Box(
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .width(200.dp)
                         .height(6.dp)
                         .clip(RoundedCornerShape(3.dp))
-                        .background(Color(0xFF1E293B))
+                        .background(Color(0xFFD6E4F9))
                 ) {
                     Box(
                         modifier = Modifier
-                            .fillMaxWidth(fraction = progressVal)
+                            .fillMaxWidth(progressAnim.value)
                             .height(6.dp)
                             .clip(RoundedCornerShape(3.dp))
                             .background(
                                 Brush.horizontalGradient(
-                                    listOf(
-                                        Color(0xFF00E5FF),
-                                        Color(0xFF38BDF8),
-                                        Color(0xFF0284C7),
-                                        Color(0xFFFFC107)
-                                    )
+                                    listOf(Color(0xFF1366D9), Color(0xFF0284C7))
                                 )
                             )
                     )
                 }
 
-                Spacer(modifier = Modifier.height(10.dp))
+                Spacer(modifier = Modifier.height(36.dp))
 
-                // Dynamic Status Readout in Bengali & English
+                // Smart Calculation • Better Design
                 Text(
-                    text = currentStepText,
-                    fontSize = 10.5.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF94A3B8),
-                    letterSpacing = 0.3.sp,
-                    textAlign = TextAlign.Center,
-                    maxLines = 1
+                    text = "Smart Calculation  •  Better Design",
+                    fontSize = 11.5.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = Color(0xFF3B5998),
+                    textAlign = TextAlign.Center
                 )
 
-                Spacer(modifier = Modifier.height(14.dp))
+                Spacer(modifier = Modifier.height(3.dp))
 
-                // Micro Standards Badges
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    listOf("IEC 60364", "IEEE 1561", "1φ / 3φ ISOLATED", "OFFLINE 100%").forEachIndexed { idx, label ->
-                        if (idx > 0) {
-                            Text(
-                                text = "•",
-                                color = Color(0xFF334155),
-                                fontSize = 10.sp,
-                                modifier = Modifier.padding(horizontal = 6.dp)
-                            )
-                        }
-                        Text(
-                            text = label,
-                            fontSize = 9.5.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFF64748B)
-                        )
-                    }
-                }
+                // Safer Tomorrow
+                Text(
+                    text = "Safer Tomorrow",
+                    fontSize = 11.sp,
+                    fontWeight = FontWeight.Normal,
+                    color = Color(0xFF47639E),
+                    textAlign = TextAlign.Center
+                )
             }
         }
     }

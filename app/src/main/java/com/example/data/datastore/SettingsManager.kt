@@ -275,7 +275,7 @@ class SettingsManager(private val context: Context) {
     }
 
     val languageFlow: Flow<String> = context.dataStore.data.map { prefs ->
-        prefs[Keys.LANGUAGE] ?: "BN"
+        prefs[Keys.LANGUAGE] ?: "EN"
     }
 
     suspend fun updateLanguage(lang: String) {

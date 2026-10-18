@@ -1,6 +1,7 @@
 package com.example.ui.screens.calculators
 
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -71,6 +72,7 @@ fun PfiCalculatorView(
     var sizingResult by remember { mutableStateOf<PfiBankSizingResult?>(null) }
     var calculationResult by remember { mutableStateOf<CalculationResult?>(null) }
     var isSaved by remember { mutableStateOf(false) }
+    var showFormulaSteps by remember { mutableStateOf(false) }
 
     fun runCalculation() {
         val load = loadValueStr.toDoubleOrNull() ?: 200.0
@@ -152,46 +154,47 @@ fun PfiCalculatorView(
             .padding(16.dp)
             .testTag("pfi_calculator_screen_container")
     ) {
-        // 1. Header Card
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(6.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        // 1. Compact Info Row (Title is already in top bar)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Surface(color = LevelBasicBg, shape = RoundedCornerShape(4.dp)) {
-                        Text(
-                            text = "#5 • BASIC",
-                            color = LevelBasicColor,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 11.sp,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Surface(color = LevelBasicBg, shape = RoundedCornerShape(4.dp)) {
                     Text(
-                        text = "PFI & Capacitor",
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = "#5 • BASIC",
+                        color = LevelBasicColor,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 11.sp,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
                     )
                 }
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Surface(color = Color(0xFFE2E8F0), shape = RoundedCornerShape(4.dp)) {
+                    Text(
+                        text = "PFI & Capacitor",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF475569),
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                    )
+                }
+            }
+            Surface(shape = RoundedCornerShape(4.dp), color = Color(0xFFEFF6FF)) {
                 Text(
-                    text = "PFI Size Calculation / Capacitor Bank",
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Complete APFC Capacitor Bank sizing assistant. Calculates required kVAR, recommends practical step configurations, determines APFC controller stages, capacitor voltage rating, and contactor requirements.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text = "IEC 60831",
+                    fontSize = 10.5.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF0284C7),
+                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
                 )
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
 
         // 2. INPUT PARAMETERS CARD
         Card(
@@ -642,48 +645,75 @@ fun PfiCalculatorView(
                         }
                     }
 
-                    // FORMULA
-                    HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
-                    Text(
-                        text = "Formula:",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-                    Surface(
-                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                        shape = RoundedCornerShape(8.dp),
+                    // Toggle Button for Formula and Step-by-Step Solution
+                    Spacer(modifier = Modifier.height(10.dp))
+                    OutlinedButton(
+                        onClick = { showFormulaSteps = !showFormulaSteps },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(top = 4.dp)
+                            .height(40.dp),
+                        shape = RoundedCornerShape(8.dp)
                     ) {
+                        Icon(
+                            if (showFormulaSteps) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
                         Text(
-                            text = "Qc = P × (tan φ₁ - tan φ₂)\nwhere φ₁ = cos⁻¹(PF₁) and φ₂ = cos⁻¹(PF₂)",
-                            fontFamily = FontFamily.Monospace,
+                            text = if (showFormulaSteps) "Hide Formula & Solution" else "Show Formula & Step-by-Step Solution",
                             fontSize = 12.sp,
-                            modifier = Modifier.padding(10.dp),
-                            color = MaterialTheme.colorScheme.onSurface
+                            fontWeight = FontWeight.SemiBold
                         )
                     }
 
-                    // 8-STEP SOLUTION
-                    calculationResult?.let { cRes ->
-                        if (cRes.steps.isNotEmpty()) {
-                            Spacer(modifier = Modifier.height(10.dp))
+                    // Collapsible Formula & Steps Section
+                    AnimatedVisibility(visible = showFormulaSteps) {
+                        Column {
+                            // FORMULA
+                            HorizontalDivider(modifier = Modifier.padding(vertical = 10.dp))
                             Text(
-                                text = "Step-by-Step Solution:",
+                                text = "Formula:",
                                 fontSize = 12.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = MaterialTheme.colorScheme.onSurface
                             )
-                            Column(modifier = Modifier.padding(top = 4.dp)) {
-                                cRes.steps.forEach { step ->
+                            Surface(
+                                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                shape = RoundedCornerShape(8.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 4.dp)
+                            ) {
+                                Text(
+                                    text = "Qc = P × (tan φ₁ - tan φ₂)\nwhere φ₁ = cos⁻¹(PF₁) and φ₂ = cos⁻¹(PF₂)",
+                                    fontFamily = FontFamily.Monospace,
+                                    fontSize = 12.sp,
+                                    modifier = Modifier.padding(10.dp),
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+
+                            // 8-STEP SOLUTION
+                            calculationResult?.let { cRes ->
+                                if (cRes.steps.isNotEmpty()) {
+                                    Spacer(modifier = Modifier.height(10.dp))
                                     Text(
-                                        text = "${step.stepNumber}. ${step.title}: ${step.equation} = ${step.result}",
+                                        text = "Step-by-Step Solution:",
                                         fontSize = 12.sp,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        modifier = Modifier.padding(vertical = 2.dp)
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
                                     )
+                                    Column(modifier = Modifier.padding(top = 4.dp)) {
+                                        cRes.steps.forEach { step ->
+                                            Text(
+                                                text = "${step.stepNumber}. ${step.title}: ${step.equation} = ${step.result}",
+                                                fontSize = 12.sp,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                modifier = Modifier.padding(vertical = 2.dp)
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }

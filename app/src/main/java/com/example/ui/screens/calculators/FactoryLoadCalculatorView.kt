@@ -1,6 +1,7 @@
 package com.example.ui.screens.calculators
 
 import android.widget.Toast
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -110,6 +111,7 @@ fun FactoryLoadCalculatorView(
     // Calculation result state
     var calculationResult by remember { mutableStateOf<CalculationResult?>(null) }
     var isSaved by remember { mutableStateOf(false) }
+    var showFormulaSteps by remember { mutableStateOf(false) }
 
     fun runCalculation() {
         val totalKw = loads.sumOf { it.totalKw }
@@ -196,41 +198,42 @@ fun FactoryLoadCalculatorView(
             .padding(16.dp)
             .testTag("factory_load_screen_container")
     ) {
-        // 1. Header Card
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(6.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        // 1. Compact Info Row (Title is already shown in Top Bar)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Column(modifier = Modifier.padding(16.dp)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Surface(color = LevelBasicBg, shape = RoundedCornerShape(4.dp)) {
-                        Text(
-                            text = "#1 • BASIC",
-                            color = LevelBasicColor,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 11.sp,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Surface(color = LevelBasicBg, shape = RoundedCornerShape(4.dp)) {
                     Text(
-                        text = "Factory & Industrial",
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        text = "#1 • BASIC",
+                        color = LevelBasicColor,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 11.sp,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
                     )
                 }
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Surface(color = Color(0xFFE2E8F0), shape = RoundedCornerShape(4.dp)) {
+                    Text(
+                        text = "Factory & Industrial",
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = Color(0xFF475569),
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                    )
+                }
+            }
+            Surface(shape = RoundedCornerShape(4.dp), color = Color(0xFFEFF6FF)) {
                 Text(
-                    text = "All Factory Load Calculation",
-                    style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
-                )
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = "Add factory machines from dropdown or custom entries. Accurately calculates total connected load (kW), maximum demand (kVA), line current, and recommended transformer sizing.",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    text = "IEC / BNBC",
+                    fontSize = 10.5.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF0284C7),
+                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
                 )
             }
         }
@@ -972,54 +975,54 @@ fun FactoryLoadCalculatorView(
                 modifier = Modifier
                     .fillMaxWidth()
                     .testTag("result_card"),
-                shape = RoundedCornerShape(6.dp),
+                shape = RoundedCornerShape(10.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                elevation = CardDefaults.cardElevation(defaultElevation = 3.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
             ) {
-                Column(modifier = Modifier.padding(18.dp)) {
+                Column(modifier = Modifier.padding(12.dp)) {
                     Text(
-                        text = "FINAL RESULT",
-                        fontSize = 12.sp,
+                        text = "গণনাকৃত ফলাফল (FINAL RESULT)",
+                        fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
                         color = ElectricBlueSecondary,
-                        letterSpacing = 1.sp
+                        letterSpacing = 0.5.sp
                     )
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
                     Row(verticalAlignment = Alignment.Bottom) {
                         Text(
                             text = res.primaryValue,
-                            fontSize = 32.sp,
+                            fontSize = 24.sp,
                             fontWeight = FontWeight.ExtraBold,
                             color = MaterialTheme.colorScheme.primary
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
                         Text(
                             text = res.primaryUnit,
-                            fontSize = 14.sp,
+                            fontSize = 12.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(bottom = 4.dp)
+                            modifier = Modifier.padding(bottom = 2.dp)
                         )
                     }
 
                     // Secondary results
                     if (res.secondaryResults.isNotEmpty()) {
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                         for ((label, value) in res.secondaryResults) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(vertical = 3.dp),
+                                    .padding(vertical = 2.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Text(
                                     text = label,
-                                    fontSize = 13.sp,
+                                    fontSize = 12.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Text(
                                     text = value,
-                                    fontSize = 13.sp,
+                                    fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onSurface
                                 )
@@ -1027,65 +1030,92 @@ fun FactoryLoadCalculatorView(
                         }
                     }
 
-                    // Formula
-                    if (res.formulaUsed.isNotEmpty()) {
-                        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp))
-                        Text(
-                            text = "Formula:",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Surface(
-                            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
-                            shape = RoundedCornerShape(8.dp),
+                    // Toggle Button for Formula and Step-by-Step Solution
+                    if (res.formulaUsed.isNotEmpty() || res.steps.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        OutlinedButton(
+                            onClick = { showFormulaSteps = !showFormulaSteps },
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(top = 4.dp)
+                                .height(40.dp),
+                            shape = RoundedCornerShape(8.dp)
                         ) {
+                            Icon(
+                                imageVector = if (showFormulaSteps) Icons.Default.ExpandLess else Icons.Default.Calculate,
+                                contentDescription = null,
+                                tint = ElectricBluePrimary,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = res.formulaUsed,
-                                fontFamily = FontFamily.Monospace,
+                                text = if (showFormulaSteps) "সূত্র ও স্টেপ সমাধান বন্ধ করুন" else "📐 Formula ও Step-by-Step Solution দেখুন",
                                 fontSize = 12.sp,
-                                modifier = Modifier.padding(10.dp),
-                                color = MaterialTheme.colorScheme.onSurface
+                                fontWeight = FontWeight.Bold,
+                                color = ElectricBluePrimary
                             )
                         }
-                    }
 
-                    // Step by step
-                    if (res.steps.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(10.dp))
-                        Text(
-                            text = "Step-by-Step Solution:",
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Column(modifier = Modifier.padding(top = 4.dp)) {
-                            res.steps.forEach { step ->
-                                Text(
-                                    text = "${step.stepNumber}. ${step.title}: ${step.equation} = ${step.result}",
-                                    fontSize = 12.sp,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.padding(vertical = 2.dp)
-                                )
+                        AnimatedVisibility(visible = showFormulaSteps) {
+                            Column(modifier = Modifier.padding(top = 8.dp)) {
+                                if (res.formulaUsed.isNotEmpty()) {
+                                    Text(
+                                        text = "Formula (সূত্র):",
+                                        fontSize = 11.5.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Surface(
+                                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                                        shape = RoundedCornerShape(8.dp),
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(top = 4.dp)
+                                    ) {
+                                        Text(
+                                            text = res.formulaUsed,
+                                            fontFamily = FontFamily.Monospace,
+                                            fontSize = 11.5.sp,
+                                            modifier = Modifier.padding(8.dp),
+                                            color = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    }
+                                }
+
+                                if (res.steps.isNotEmpty()) {
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    Text(
+                                        text = "Step-by-Step Solution:",
+                                        fontSize = 11.5.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Column(modifier = Modifier.padding(top = 4.dp)) {
+                                        res.steps.forEach { step ->
+                                            Text(
+                                                text = "${step.stepNumber}. ${step.title}: ${step.equation} = ${step.result}",
+                                                fontSize = 11.5.sp,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                modifier = Modifier.padding(vertical = 1.5.dp)
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
 
                     // Standard & Notes
-                    Spacer(modifier = Modifier.height(10.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = "Standard / Basis: ${res.standardBasis}",
-                        fontSize = 11.sp,
+                        fontSize = 10.5.sp,
                         fontWeight = FontWeight.Medium,
                         color = MaterialTheme.colorScheme.primary
                     )
                     res.notes.forEach { note ->
                         Text(
                             text = "• $note",
-                            fontSize = 11.sp,
+                            fontSize = 10.5.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }

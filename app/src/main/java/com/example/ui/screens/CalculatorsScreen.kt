@@ -92,27 +92,29 @@ fun CalculatorsScreen(
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     val app = remember { ElectricalApp.getApp(context) }
+    val currentLanguage by app.settingsManager.languageFlow.collectAsState(initial = "EN")
+    val isEn = currentLanguage == "EN"
     val favoriteIds by app.settingsManager.favoritesFlow.collectAsState(initial = emptySet())
 
     var searchQuery by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf<CalculatorCategory?>(null) }
     var selectedLevel by remember { mutableStateOf<CalculatorLevel?>(null) }
 
-    val categoryFilters = remember {
+    val categoryFilters = remember(isEn) {
         listOf(
-            CategoryFilterItem(null, "সব ক্যালকুলেটর (১৬৭)", Icons.Default.ElectricBolt, Color(0xFF0284C7)),
-            CategoryFilterItem(CalculatorCategory.FACTORY, "ফ্যাক্টরি ও ইন্ডাস্ট্রি", Icons.Default.Factory, Color(0xFF0284C7)),
-            CategoryFilterItem(CalculatorCategory.TRANSFORMER, "ট্রান্সফরমার", Icons.Default.Memory, Color(0xFF0EA5E9)),
-            CategoryFilterItem(CalculatorCategory.MOTOR, "মোটর ও পাম্প", Icons.Default.Bolt, Color(0xFFD97706)),
-            CategoryFilterItem(CalculatorCategory.CABLE, "ক্যাবল ও তার সাইজিং", Icons.Default.Cable, Color(0xFFEA580C)),
-            CategoryFilterItem(CalculatorCategory.PROTECTION, "ব্রেকার ও সুইচগিয়ার", Icons.Default.Shield, Color(0xFF1E3A8A)),
-            CategoryFilterItem(CalculatorCategory.POWER, "সোলার ও পাওয়ার", Icons.Default.WbSunny, Color(0xFFF59E0B)),
-            CategoryFilterItem(CalculatorCategory.BATTERY_UPS, "ব্যাটারি ও UPS", Icons.Default.BatteryChargingFull, Color(0xFF16A34A)),
-            CategoryFilterItem(CalculatorCategory.BUILDING, "বিল্ডিং ওয়্যারিং ও কন্ট্রোল", Icons.Default.Engineering, Color(0xFF0D9488)),
-            CategoryFilterItem(CalculatorCategory.PFI, "PFI ও ক্যাপাসিটর", Icons.Default.AcUnit, Color(0xFF0284C7)),
-            CategoryFilterItem(CalculatorCategory.GENERATOR, "জেনারেটর", Icons.Default.PrecisionManufacturing, Color(0xFF475569)),
-            CategoryFilterItem(CalculatorCategory.CONVERSION, "একক রূপান্তর", Icons.Default.SyncAlt, Color(0xFF7C3AED)),
-            CategoryFilterItem(CalculatorCategory.BASIC_ELEC, "বেসিক ইলেকট্রিক্যাল", Icons.Default.Construction, Color(0xFF2563EB))
+            CategoryFilterItem(null, if (isEn) "All (167)" else "সব ক্যালকুলেটর (১৬৭)", Icons.Default.ElectricBolt, Color(0xFF0284C7)),
+            CategoryFilterItem(CalculatorCategory.FACTORY, if (isEn) "Factory & Industry" else "ফ্যাক্টরি ও ইন্ডাস্ট্রি", Icons.Default.Factory, Color(0xFF0284C7)),
+            CategoryFilterItem(CalculatorCategory.TRANSFORMER, if (isEn) "Transformer" else "ট্রান্সফরমার", Icons.Default.Memory, Color(0xFF0EA5E9)),
+            CategoryFilterItem(CalculatorCategory.MOTOR, if (isEn) "Motor & Pump" else "মোটর ও পাম্প", Icons.Default.Bolt, Color(0xFFD97706)),
+            CategoryFilterItem(CalculatorCategory.CABLE, if (isEn) "Cable & Wire Sizing" else "ক্যাবল ও তার সাইজিং", Icons.Default.Cable, Color(0xFFEA580C)),
+            CategoryFilterItem(CalculatorCategory.PROTECTION, if (isEn) "Breaker & Switchgear" else "ব্রেকার ও সুইচগিয়ার", Icons.Default.Shield, Color(0xFF1E3A8A)),
+            CategoryFilterItem(CalculatorCategory.POWER, if (isEn) "Solar & Power" else "সোলার ও পাওয়ার", Icons.Default.WbSunny, Color(0xFFF59E0B)),
+            CategoryFilterItem(CalculatorCategory.BATTERY_UPS, if (isEn) "Battery & UPS" else "ব্যাটারি ও UPS", Icons.Default.BatteryChargingFull, Color(0xFF16A34A)),
+            CategoryFilterItem(CalculatorCategory.BUILDING, if (isEn) "Building Wiring & Control" else "বিল্ডিং ওয়্যারিং ও কন্ট্রোল", Icons.Default.Engineering, Color(0xFF0D9488)),
+            CategoryFilterItem(CalculatorCategory.PFI, if (isEn) "PFI & Capacitor" else "PFI ও ক্যাপাসিটর", Icons.Default.AcUnit, Color(0xFF0284C7)),
+            CategoryFilterItem(CalculatorCategory.GENERATOR, if (isEn) "Generator" else "জেনারেটর", Icons.Default.PrecisionManufacturing, Color(0xFF475569)),
+            CategoryFilterItem(CalculatorCategory.CONVERSION, if (isEn) "Unit Conversion" else "একক রূপান্তর", Icons.Default.SyncAlt, Color(0xFF7C3AED)),
+            CategoryFilterItem(CalculatorCategory.BASIC_ELEC, if (isEn) "Basic Electrical" else "বেসিক ইলেকট্রিক্যাল", Icons.Default.Construction, Color(0xFF2563EB))
         )
     }
 
@@ -135,221 +137,225 @@ fun CalculatorsScreen(
             .background(Color(0xFFF8FAFC))
             .testTag("calculators_screen_root")
     ) {
-        // ==========================================
-        // 1. TOP SEARCH BAR
-        // ==========================================
-        Surface(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 8.dp)
-                .height(46.dp)
-                .shadow(1.5.dp, RoundedCornerShape(23.dp)),
-            shape = RoundedCornerShape(23.dp),
-            color = Color.White,
-            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFCBD5E1))
+        LazyColumn(
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = PaddingValues(bottom = 16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 14.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Search,
-                    contentDescription = "Search",
-                    tint = Color(0xFF0284C7),
-                    modifier = Modifier.size(20.dp)
-                )
-
-                Spacer(modifier = Modifier.width(10.dp))
-
-                Box(modifier = Modifier.weight(1f)) {
-                    if (searchQuery.isEmpty()) {
-                        Text(
-                            text = "১৬৭টি ক্যালকুলেটরের যেকোনোটি সার্চ করুন...",
-                            fontSize = 12.5.sp,
-                            color = Color(0xFF94A3B8)
-                        )
-                    }
-                    BasicTextField(
-                        value = searchQuery,
-                        onValueChange = { searchQuery = it },
-                        singleLine = true,
-                        textStyle = TextStyle(
-                            fontSize = 13.5.sp,
-                            color = Color(0xFF0F172A),
-                            fontWeight = FontWeight.Medium
-                        ),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .testTag("search_calculators_input")
-                    )
-                }
-
-                if (searchQuery.isNotEmpty()) {
-                    IconButton(
-                        onClick = { searchQuery = "" },
-                        modifier = Modifier.size(24.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Close,
-                            contentDescription = "Clear",
-                            tint = Color(0xFF64748B),
-                            modifier = Modifier.size(16.dp)
-                        )
-                    }
-                }
-            }
-        }
-
-        // ==========================================
-        // 2. CATEGORY PILLS (HORIZONTAL SCROLL)
-        // ==========================================
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 14.dp, vertical = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            categoryFilters.forEach { filterItem ->
-                val isSelected = selectedCategory == filterItem.category
+            // ==========================================
+            // 1. TOP SEARCH BAR (SCROLLABLE WITH LIST)
+            // ==========================================
+            item {
                 Surface(
-                    shape = RoundedCornerShape(16.dp),
-                    color = if (isSelected) Color(0xFF0284C7) else Color.White,
-                    border = androidx.compose.foundation.BorderStroke(
-                        1.dp,
-                        if (isSelected) Color(0xFF0284C7) else Color(0xFFCBD5E1)
-                    ),
-                    modifier = Modifier.clickable {
-                        selectedCategory = if (isSelected && filterItem.category != null) null
-                        else filterItem.category
-                    }
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 6.dp)
+                        .height(46.dp),
+                    shape = RoundedCornerShape(23.dp),
+                    color = Color(0xFFEFF4F9)
                 ) {
                     Row(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 14.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
                         Icon(
-                            imageVector = filterItem.icon,
-                            contentDescription = null,
-                            tint = if (isSelected) Color.White else filterItem.color,
-                            modifier = Modifier.size(14.dp)
+                            imageVector = Icons.Default.Search,
+                            contentDescription = "Search",
+                            tint = Color(0xFF0284C7),
+                            modifier = Modifier.size(20.dp)
                         )
-                        Text(
-                            text = filterItem.title,
-                            fontSize = 11.5.sp,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                            color = if (isSelected) Color.White else Color(0xFF334155)
-                        )
+
+                        Spacer(modifier = Modifier.width(10.dp))
+
+                        Box(modifier = Modifier.weight(1f)) {
+                            if (searchQuery.isEmpty()) {
+                                Text(
+                                    text = if (isEn) "Search any of 167 calculators..." else "১৬৭টি ক্যালকুলেটরের যেকোনোটি সার্চ করুন...",
+                                    fontSize = 12.5.sp,
+                                    color = Color(0xFF94A3B8)
+                                )
+                            }
+                            BasicTextField(
+                                value = searchQuery,
+                                onValueChange = { searchQuery = it },
+                                singleLine = true,
+                                textStyle = TextStyle(
+                                    fontSize = 13.5.sp,
+                                    color = Color(0xFF0F172A),
+                                    fontWeight = FontWeight.Medium
+                                ),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .testTag("search_calculators_input")
+                            )
+                        }
+
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(
+                                onClick = { searchQuery = "" },
+                                modifier = Modifier.size(24.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "Clear",
+                                    tint = Color(0xFF64748B),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
                     }
                 }
             }
-        }
 
-        // ==========================================
-        // 3. LEVEL FILTER CHIPS & LIVE COUNT ROW
-        // ==========================================
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 14.dp, vertical = 6.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Level Pills
-            Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                LevelChip(
-                    title = "সকল",
-                    isSelected = selectedLevel == null,
-                    onClick = { selectedLevel = null }
-                )
-                LevelChip(
-                    title = "Advance (৫৫)",
-                    isSelected = selectedLevel == CalculatorLevel.ADVANCE,
-                    onClick = {
-                        selectedLevel = if (selectedLevel == CalculatorLevel.ADVANCE) null else CalculatorLevel.ADVANCE
+            // ==========================================
+            // 2. CATEGORY PILLS (SCROLLABLE WITH LIST)
+            // ==========================================
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(rememberScrollState())
+                        .padding(horizontal = 14.dp, vertical = 2.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    categoryFilters.forEach { filterItem ->
+                        val isSelected = selectedCategory == filterItem.category
+                        Surface(
+                            shape = RoundedCornerShape(16.dp),
+                            color = if (isSelected) Color(0xFF0284C7) else Color(0xFFEFF4F9),
+                            modifier = Modifier.clickable {
+                                selectedCategory = if (isSelected && filterItem.category != null) null
+                                else filterItem.category
+                            }
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Icon(
+                                    imageVector = filterItem.icon,
+                                    contentDescription = null,
+                                    tint = if (isSelected) Color.White else filterItem.color,
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Text(
+                                    text = filterItem.title,
+                                    fontSize = 11.5.sp,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                                    color = if (isSelected) Color.White else Color(0xFF334155)
+                                )
+                            }
+                        }
                     }
-                )
-                LevelChip(
-                    title = "Basic (৬১)",
-                    isSelected = selectedLevel == CalculatorLevel.BASIC,
-                    onClick = {
-                        selectedLevel = if (selectedLevel == CalculatorLevel.BASIC) null else CalculatorLevel.BASIC
-                    }
-                )
-                LevelChip(
-                    title = "Lower (৫১)",
-                    isSelected = selectedLevel == CalculatorLevel.LOWER,
-                    onClick = {
-                        selectedLevel = if (selectedLevel == CalculatorLevel.LOWER) null else CalculatorLevel.LOWER
-                    }
-                )
+                }
             }
 
-            // Count Indicator
-            Text(
-                text = "${filteredCalculators.size} টি টুল",
-                fontSize = 11.5.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF0284C7)
-            )
-        }
+            // ==========================================
+            // 3. LEVEL FILTER CHIPS & LIVE COUNT ROW
+            // ==========================================
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Level Pills
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        LevelChip(
+                            title = if (isEn) "All" else "সকল",
+                            isSelected = selectedLevel == null,
+                            onClick = { selectedLevel = null }
+                        )
+                        LevelChip(
+                            title = if (isEn) "Advance (55)" else "Advance (৫৫)",
+                            isSelected = selectedLevel == CalculatorLevel.ADVANCE,
+                            onClick = {
+                                selectedLevel = if (selectedLevel == CalculatorLevel.ADVANCE) null else CalculatorLevel.ADVANCE
+                            }
+                        )
+                        LevelChip(
+                            title = if (isEn) "Basic (61)" else "Basic (৬১)",
+                            isSelected = selectedLevel == CalculatorLevel.BASIC,
+                            onClick = {
+                                selectedLevel = if (selectedLevel == CalculatorLevel.BASIC) null else CalculatorLevel.BASIC
+                            }
+                        )
+                        LevelChip(
+                            title = if (isEn) "Lower (51)" else "Lower (৫১)",
+                            isSelected = selectedLevel == CalculatorLevel.LOWER,
+                            onClick = {
+                                selectedLevel = if (selectedLevel == CalculatorLevel.LOWER) null else CalculatorLevel.LOWER
+                            }
+                        )
+                    }
 
-        // ==========================================
-        // 4. CALCULATORS LIST
-        // ==========================================
-        if (filteredCalculators.isEmpty()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(40.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = null,
-                        tint = Color(0xFF94A3B8),
-                        modifier = Modifier.size(48.dp)
-                    )
-                    Spacer(modifier = Modifier.height(10.dp))
+                    // Count Indicator
                     Text(
-                        text = "কোনো ক্যালকুলেটর পাওয়া যায়নি",
-                        fontSize = 14.sp,
+                        text = if (isEn) "${filteredCalculators.size} Tools" else "${filteredCalculators.size} টি টুল",
+                        fontSize = 11.5.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF64748B)
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "সার্চ কীওয়ার্ড পরিবর্তন করুন বা ফিল্টার রিসেট করুন",
-                        fontSize = 12.sp,
-                        color = Color(0xFF94A3B8)
+                        color = Color(0xFF0284C7)
                     )
                 }
             }
-        } else {
-            LazyColumn(
-                modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 6.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
+
+            // ==========================================
+            // 4. CALCULATORS LIST ITEMS
+            // ==========================================
+            if (filteredCalculators.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 40.dp, bottom = 40.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(
+                                imageVector = Icons.Default.Search,
+                                contentDescription = null,
+                                tint = Color(0xFF94A3B8),
+                                modifier = Modifier.size(48.dp)
+                            )
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Text(
+                                text = "কোনো ক্যালকুলেটর পাওয়া যায়নি",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF64748B)
+                            )
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "সার্চ কীওয়ার্ড পরিবর্তন করুন বা ফিল্টার রিসেট করুন",
+                                fontSize = 12.sp,
+                                color = Color(0xFF94A3B8)
+                            )
+                        }
+                    }
+                }
+            } else {
                 items(
                     items = filteredCalculators,
                     key = { it.id }
                 ) { calc ->
-                    val isFavorite = favoriteIds.contains(calc.id)
-                    CalculatorCatalogCard(
-                        calc = calc,
-                        isFavorite = isFavorite,
-                        onToggleFavorite = {
-                            coroutineScope.launch {
-                                app.settingsManager.toggleFavorite(calc.id)
-                            }
-                        },
-                        onClick = { onNavigateToCalculator(calc.id) }
-                    )
+                    Box(modifier = Modifier.padding(horizontal = 14.dp)) {
+                        val isFavorite = favoriteIds.contains(calc.id)
+                        CalculatorCatalogCard(
+                            calc = calc,
+                            isFavorite = isFavorite,
+                            onToggleFavorite = {
+                                coroutineScope.launch {
+                                    app.settingsManager.toggleFavorite(calc.id)
+                                }
+                            },
+                            onClick = { onNavigateToCalculator(calc.id) }
+                        )
+                    }
                 }
             }
         }
@@ -364,11 +370,7 @@ private fun LevelChip(
 ) {
     Surface(
         shape = RoundedCornerShape(12.dp),
-        color = if (isSelected) Color(0xFF0F172A) else Color(0xFFF1F5F9),
-        border = androidx.compose.foundation.BorderStroke(
-            0.8.dp,
-            if (isSelected) Color(0xFF0F172A) else Color(0xFFE2E8F0)
-        ),
+        color = if (isSelected) Color(0xFF0F172A) else Color(0xFFEFF4F9),
         modifier = Modifier.clickable(onClick = onClick)
     ) {
         Text(
@@ -388,14 +390,13 @@ private fun CalculatorCatalogCard(
     onToggleFavorite: () -> Unit,
     onClick: () -> Unit
 ) {
-    Card(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .shadow(1.dp, RoundedCornerShape(12.dp)),
+            .clip(RoundedCornerShape(12.dp))
+            .clickable(onClick = onClick),
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.White),
-        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E8F0))
+        color = Color(0xFFEFF4F9)
     ) {
         Row(
             modifier = Modifier
