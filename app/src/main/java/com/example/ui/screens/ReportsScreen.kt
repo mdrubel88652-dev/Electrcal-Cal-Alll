@@ -2,6 +2,7 @@ package com.example.ui.screens
 
 import android.widget.Toast
 import androidx.compose.foundation.background
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -84,13 +85,13 @@ fun ReportsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8FAFC))
+            .background(MaterialTheme.colorScheme.background)
             .testTag("reports_screen_root")
     ) {
         // Tab Row (Calculations | Material Estimates | Project Contracts)
         Surface(
             modifier = Modifier.fillMaxWidth(),
-            color = Color.White,
+            color = MaterialTheme.colorScheme.surface,
             shadowElevation = 2.dp
         ) {
             Row(

@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -110,7 +111,7 @@ fun LevelScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8FAFC))
+            .background(MaterialTheme.colorScheme.background)
             .testTag("level_screen_${level.routeName}"),
         contentPadding = PaddingValues(bottom = 24.dp)
     ) {
@@ -121,7 +122,7 @@ fun LevelScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 14.dp, vertical = 8.dp),
                 shape = RoundedCornerShape(16.dp),
-                color = Color(0xFFEFF4F9),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                 shadowElevation = 0.dp
             ) {
                 Column(

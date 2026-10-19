@@ -1330,163 +1330,88 @@ fun SolarSystemCalculatorView(
                 }
 
                 // ==========================================
-                // 12. ACTIONS TOOLBAR (SAVE, COPY, SHARE, PDF, PRINT)
+                // 12. ACTIONS TOOLBAR (4-Button Grid: SAVE, COPY, SHARE, PDF)
                 // ==========================================
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 8.dp, vertical = 6.dp),
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        // Save History
-                        IconButton(
-                            onClick = {
-                                coroutineScope.launch {
-                                    val dateStr = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault()).format(Date())
-                                    val entity = HistoryEntity(
-                                        calculatorId = calculator.id,
-                                        calculatorName = calculator.name,
-                                        level = calculator.level.displayName,
-                                        category = calculator.category.displayName,
-                                        formattedDate = dateStr,
-                                        inputSummary = "Daily: ${dailyEnergyStr} kWh | PSH: ${peakSunHoursStr}h | Backup: ${backupHoursStr}h | Load: ${fmt(res.effectiveBackupLoadKw)} kW",
-                                        primaryResult = fmt(res.actualPvArrayPowerKw),
-                                        resultUnit = "kW (${res.panelsCount} × ${res.panelWattage.roundToInt()}W Panels)",
-                                        formula = "P_pv = (Daily_kWh / Derate_0.80) / PSH",
-                                        stepSummary = "${res.panelsCount} Panels | ${fmt(res.recommendedInverterKva)} kVA Inverter | ${res.actualBankVoltage.roundToInt()}V/${res.actualBankAh.roundToInt()}Ah Batt Bank",
-                                        notes = "Solar PV System Design: ${fmt(res.actualPvArrayPowerKw)} kW PV array, ${fmt(res.recommendedInverterKva)} kVA inverter, ${res.actualBankVoltage.roundToInt()}V/${res.actualBankAh.roundToInt()}Ah battery bank (${res.totalBatteries} batteries: ${res.batteriesInSeries}S × ${res.parallelStrings}P)."
-                                    )
-                                    app.historyRepository.insertHistory(entity)
-                                    isSaved = true
-                                    Toast.makeText(context, "Solar system design saved to history!", Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        ) {
-                            Icon(
-                                if (isSaved) Icons.Default.BookmarkAdded else Icons.Default.BookmarkBorder,
-                                contentDescription = "Save to History",
-                                tint = if (isSaved) ElectricBluePrimary else MaterialTheme.colorScheme.onSurface
+                com.example.ui.components.CalculatorActionButtons(
+                    isSaved = isSaved,
+                    onSave = {
+                        coroutineScope.launch {
+                            val dateStr = SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault()).format(Date())
+                            val entity = HistoryEntity(
+                                calculatorId = calculator.id,
+                                calculatorName = calculator.name,
+                                level = calculator.level.displayName,
+                                category = calculator.category.displayName,
+                                formattedDate = dateStr,
+                                inputSummary = "Daily: ${dailyEnergyStr} kWh | PSH: ${peakSunHoursStr}h | Backup: ${backupHoursStr}h | Load: ${fmt(res.effectiveBackupLoadKw)} kW",
+                                primaryResult = fmt(res.actualPvArrayPowerKw),
+                                resultUnit = "kW (${res.panelsCount} × ${res.panelWattage.roundToInt()}W Panels)",
+                                formula = "P_pv = (Daily_kWh / Derate_0.80) / PSH",
+                                stepSummary = "${res.panelsCount} Panels | ${fmt(res.recommendedInverterKva)} kVA Inverter | ${res.actualBankVoltage.roundToInt()}V/${res.actualBankAh.roundToInt()}Ah Batt Bank",
+                                notes = "Solar PV System Design: ${fmt(res.actualPvArrayPowerKw)} kW PV array, ${fmt(res.recommendedInverterKva)} kVA inverter, ${res.actualBankVoltage.roundToInt()}V/${res.actualBankAh.roundToInt()}Ah battery bank (${res.totalBatteries} batteries: ${res.batteriesInSeries}S × ${res.parallelStrings}P)."
                             )
+                            app.historyRepository.insertHistory(entity)
+                            isSaved = true
+                            Toast.makeText(context, "Solar system design saved to history!", Toast.LENGTH_SHORT).show()
                         }
-
-                        // Copy
-                        IconButton(
-                            onClick = {
-                                val copyText = buildString {
-                                    appendLine("=== SOLAR SYSTEM DESIGN REPORT ===")
-                                    appendLine("Daily Energy: ${dailyEnergyStr} kWh/day | Peak Sun Hours: ${peakSunHoursStr} h | Backup: ${backupHoursStr} h")
-                                    appendLine("Solar PV Array: ${fmt(res.actualPvArrayPowerKw)} kW (${res.panelsCount} × ${res.panelWattage.roundToInt()}W Panels)")
-                                    appendLine("Inverter Size: ${fmt(res.recommendedInverterKva)} kVA (${fmt(res.recommendedInverterContinuousKw)} kW continuous, ${selectedOutputPhase})")
-                                    appendLine("Battery Bank: ${res.actualBankVoltage.roundToInt()}V / ${res.actualBankAh.roundToInt()}Ah (${res.totalBatteries} Batteries: ${res.batteriesInSeries}S × ${res.parallelStrings}P)")
-                                    appendLine("Charge Controller: ${if (res.controllerQuantity > 1) "${res.controllerQuantity} × ${res.perControllerAmps.roundToInt()}A" else "${res.recommendedControllerAmps.roundToInt()}A"} ${res.controllerType}")
-                                    appendLine("Estimated Backup: ${res.estimatedBackupHours.toInt()}h ${res.estimatedBackupMinutes}m")
-                                    appendLine("Generated by ELECTRICAL CALCULATION ALL")
-                                }
-                                ShareUtils.copyToClipboard(context, calculator.name, copyText)
-                            }
-                        ) {
-                            Icon(Icons.Default.ContentCopy, contentDescription = "Copy")
+                    },
+                    onCopy = {
+                        val copyText = buildString {
+                            appendLine("=== SOLAR SYSTEM DESIGN REPORT ===")
+                            appendLine("Daily Energy: ${dailyEnergyStr} kWh/day | Peak Sun Hours: ${peakSunHoursStr} h | Backup: ${backupHoursStr} h")
+                            appendLine("Solar PV Array: ${fmt(res.actualPvArrayPowerKw)} kW (${res.panelsCount} × ${res.panelWattage.roundToInt()}W Panels)")
+                            appendLine("Inverter Size: ${fmt(res.recommendedInverterKva)} kVA (${fmt(res.recommendedInverterContinuousKw)} kW continuous, ${selectedOutputPhase})")
+                            appendLine("Battery Bank: ${res.actualBankVoltage.roundToInt()}V / ${res.actualBankAh.roundToInt()}Ah (${res.totalBatteries} Batteries: ${res.batteriesInSeries}S × ${res.parallelStrings}P)")
+                            appendLine("Charge Controller: ${if (res.controllerQuantity > 1) "${res.controllerQuantity} × ${res.perControllerAmps.roundToInt()}A" else "${res.recommendedControllerAmps.roundToInt()}A"} ${res.controllerType}")
+                            appendLine("Estimated Backup: ${res.estimatedBackupHours.toInt()}h ${res.estimatedBackupMinutes}m")
+                            appendLine("Generated by ELECTRICAL CALCULATION ALL")
                         }
-
-                        // Share
-                        IconButton(
-                            onClick = {
-                                val shareText = buildString {
-                                    appendLine("SOLAR PV SYSTEM DESIGN")
-                                    appendLine("PV Array: ${fmt(res.actualPvArrayPowerKw)} kW (${res.panelsCount} × ${res.panelWattage.roundToInt()}W)")
-                                    appendLine("Inverter: ${fmt(res.recommendedInverterKva)} kVA")
-                                    appendLine("Battery Bank: ${res.actualBankVoltage.roundToInt()}V / ${res.actualBankAh.roundToInt()}Ah (${res.totalBatteries} Units)")
-                                    appendLine("Estimated Runtime: ${res.estimatedBackupHours.toInt()}h ${res.estimatedBackupMinutes}m")
-                                    appendLine("ELECTRICAL CALCULATION ALL")
-                                }
-                                ShareUtils.shareText(context, calculator.name, shareText)
-                            }
-                        ) {
-                            Icon(Icons.Default.Share, contentDescription = "Share")
+                        ShareUtils.copyToClipboard(context, calculator.name, copyText)
+                    },
+                    onShare = {
+                        val shareText = buildString {
+                            appendLine("SOLAR PV SYSTEM DESIGN")
+                            appendLine("PV Array: ${fmt(res.actualPvArrayPowerKw)} kW (${res.panelsCount} × ${res.panelWattage.roundToInt()}W)")
+                            appendLine("Inverter: ${fmt(res.recommendedInverterKva)} kVA")
+                            appendLine("Battery Bank: ${res.actualBankVoltage.roundToInt()}V / ${res.actualBankAh.roundToInt()}Ah (${res.totalBatteries} Units)")
+                            appendLine("Estimated Runtime: ${res.estimatedBackupHours.toInt()}h ${res.estimatedBackupMinutes}m")
+                            appendLine("ELECTRICAL CALCULATION ALL")
                         }
+                        ShareUtils.shareText(context, calculator.name, shareText)
+                    },
+                    onPdf = {
+                        try {
+                            val inputsMap = mutableMapOf<String, String>()
+                            inputsMap["Daily Energy"] = "${dailyEnergyStr} kWh/day"
+                            inputsMap["Peak Sun Hours"] = "${peakSunHoursStr} h/day"
+                            inputsMap["Backup Duration"] = "${backupHoursStr} Hours"
+                            inputsMap["Backup Load"] = "${fmt(res.effectiveBackupLoadKw)} kW"
+                            inputsMap["System Type"] = selectedSystemType.label
+                            inputsMap["System Voltage"] = "${res.actualBankVoltage.roundToInt()} V"
+                            inputsMap["Panel Rating"] = "${res.panelWattage.roundToInt()} W"
+                            inputsMap["Battery Chemistry"] = selectedBatteryType.label
+                            inputsMap["Unit Battery"] = "${batteryUnitVoltageStr}V / ${batteryUnitAhStr}Ah"
+                            inputsMap["Battery DoD"] = "${dodPercentStr}%"
+                            inputsMap["Inverter Efficiency"] = "${inverterEfficiencyStr}%"
+                            inputsMap["Output Phase"] = selectedOutputPhase
+                            inputsMap["Controller Type"] = selectedControllerType
 
-                        // PDF
-                        IconButton(
-                            onClick = {
-                                try {
-                                    val inputsMap = mutableMapOf<String, String>()
-                                    inputsMap["Daily Energy"] = "${dailyEnergyStr} kWh/day"
-                                    inputsMap["Peak Sun Hours"] = "${peakSunHoursStr} h/day"
-                                    inputsMap["Backup Duration"] = "${backupHoursStr} Hours"
-                                    inputsMap["Backup Load"] = "${fmt(res.effectiveBackupLoadKw)} kW"
-                                    inputsMap["System Type"] = selectedSystemType.label
-                                    inputsMap["System Voltage"] = "${res.actualBankVoltage.roundToInt()} V"
-                                    inputsMap["Panel Rating"] = "${res.panelWattage.roundToInt()} W"
-                                    inputsMap["Battery Chemistry"] = selectedBatteryType.label
-                                    inputsMap["Unit Battery"] = "${batteryUnitVoltageStr}V / ${batteryUnitAhStr}Ah"
-                                    inputsMap["Battery DoD"] = "${dodPercentStr}%"
-                                    inputsMap["Inverter Efficiency"] = "${inverterEfficiencyStr}%"
-                                    inputsMap["Output Phase"] = selectedOutputPhase
-                                    inputsMap["Controller Type"] = selectedControllerType
-
-                                    val cRes = calculationResult ?: return@IconButton
-                                    val pdf = PdfReportGenerator.generateCalculationPdf(
-                                        context,
-                                        calculator,
-                                        inputsMap,
-                                        cRes,
-                                        devSettings,
-                                        pdfSettings,
-                                        techProfile
-                                    )
-                                    ShareUtils.sharePdf(context, pdf, "${calculator.name} Report")
-                                } catch (e: Exception) {
-                                    Toast.makeText(context, "PDF error: ${e.message}", Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        ) {
-                            Icon(Icons.Default.PictureAsPdf, contentDescription = "PDF Report", tint = Color(0xFFC62828))
-                        }
-
-                        // Print
-                        IconButton(
-                            onClick = {
-                                try {
-                                    val inputsMap = mutableMapOf<String, String>()
-                                    inputsMap["Daily Energy"] = "${dailyEnergyStr} kWh/day"
-                                    inputsMap["Peak Sun Hours"] = "${peakSunHoursStr} h/day"
-                                    inputsMap["Backup Duration"] = "${backupHoursStr} Hours"
-                                    inputsMap["Backup Load"] = "${fmt(res.effectiveBackupLoadKw)} kW"
-                                    inputsMap["System Type"] = selectedSystemType.label
-                                    inputsMap["System Voltage"] = "${res.actualBankVoltage.roundToInt()} V"
-                                    inputsMap["Panel Rating"] = "${res.panelWattage.roundToInt()} W"
-                                    inputsMap["Battery Chemistry"] = selectedBatteryType.label
-                                    inputsMap["Unit Battery"] = "${batteryUnitVoltageStr}V / ${batteryUnitAhStr}Ah"
-                                    inputsMap["Battery DoD"] = "${dodPercentStr}%"
-                                    inputsMap["Inverter Efficiency"] = "${inverterEfficiencyStr}%"
-                                    inputsMap["Output Phase"] = selectedOutputPhase
-                                    inputsMap["Controller Type"] = selectedControllerType
-
-                                    val cRes = calculationResult ?: return@IconButton
-                                    val pdf = PdfReportGenerator.generateCalculationPdf(
-                                        context,
-                                        calculator,
-                                        inputsMap,
-                                        cRes,
-                                        devSettings,
-                                        pdfSettings,
-                                        techProfile
-                                    )
-                                    PrintManagerHelper.printPdfFile(context, pdf, calculator.name)
-                                } catch (e: Exception) {
-                                    Toast.makeText(context, "Print error: ${e.message}", Toast.LENGTH_SHORT).show()
-                                }
-                            }
-                        ) {
-                            Icon(Icons.Default.Print, contentDescription = "Print", tint = ElectricBluePrimary)
+                            val cRes = calculationResult ?: return@CalculatorActionButtons
+                            val pdf = PdfReportGenerator.generateCalculationPdf(
+                                context,
+                                calculator,
+                                inputsMap,
+                                cRes,
+                                devSettings,
+                                pdfSettings,
+                                techProfile
+                            )
+                            ShareUtils.sharePdf(context, pdf, "${calculator.name} Report")
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "PDF error: ${e.message}", Toast.LENGTH_SHORT).show()
                         }
                     }
-                }
+                )
             }
         }
     }

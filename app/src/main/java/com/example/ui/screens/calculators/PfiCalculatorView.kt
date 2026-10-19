@@ -149,7 +149,7 @@ fun PfiCalculatorView(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8FAFC))
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
             .padding(16.dp)
             .testTag("pfi_calculator_screen_container")

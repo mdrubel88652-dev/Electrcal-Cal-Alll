@@ -234,7 +234,7 @@ fun CalculatorScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8FAFC))
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
             .padding(16.dp)
             .testTag("calculator_screen_container")
@@ -259,14 +259,14 @@ fun CalculatorScreen(
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Surface(
-                    color = Color(0xFFE2E8F0),
+                    color = MaterialTheme.colorScheme.surfaceVariant,
                     shape = RoundedCornerShape(6.dp)
                 ) {
                     Text(
                         text = calculator.category.displayName,
                         fontSize = 11.sp,
                         fontWeight = FontWeight.SemiBold,
-                        color = Color(0xFF475569),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
                     )
                 }
@@ -274,7 +274,7 @@ fun CalculatorScreen(
             if (calculator.standard.isNotBlank()) {
                 Surface(
                     shape = RoundedCornerShape(6.dp),
-                    color = Color(0xFFEFF6FF)
+                    color = Color(0xFF0284C7).copy(alpha = 0.12f)
                 ) {
                     Text(
                         text = calculator.standard,
@@ -289,204 +289,136 @@ fun CalculatorScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // 2. Input Fields Section
-        Text(
-            text = "Input Parameters",
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
+        // 2. Input Fields Section Header with Prominent Clear/Reset and Default Sample System
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp),
+            shape = RoundedCornerShape(10.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+        ) {
+            Column(modifier = Modifier.padding(10.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = null,
+                        tint = Color(0xFF0284C7),
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "বোঝার সুবিধার্থে ডিফল্ট মান দেখানো হয়েছে। নিজের মান বসাতে রিসেট করুন।",
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = FontWeight.Medium,
+                        lineHeight = 15.sp,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
 
-        // Phase Selection Component (Only for Single Phase / Three Phase Calculators)
-        if (calculator.isPhaseSelectable) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 12.dp)
-                    .testTag("phase_selection_card"),
-                shape = RoundedCornerShape(10.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ),
-                border = BorderStroke(1.dp, ElectricBluePrimary.copy(alpha = 0.35f))
-            ) {
-                Column(modifier = Modifier.padding(14.dp)) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Reset / Clear Inputs button (clears inputs so user types without backspacing)
+                    Surface(
+                        onClick = {
+                            calculator.inputs.forEach { input ->
+                                inputValues[input.id] = ""
+                            }
+                            result = null
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color(0xFFEF4444).copy(alpha = 0.12f),
+                        border = BorderStroke(1.dp, Color(0xFFEF4444).copy(alpha = 0.3f)),
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag("clear_inputs_btn")
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
                             Icon(
-                                Icons.Default.ElectricBolt,
+                                imageVector = Icons.Default.Refresh,
                                 contentDescription = null,
-                                tint = ElectricBluePrimary,
-                                modifier = Modifier.size(20.dp)
+                                tint = Color(0xFFDC2626),
+                                modifier = Modifier.size(14.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Text(
-                                text = "System Phase Selection / ফেজ নির্বাচন",
-                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                        }
-
-                        Surface(
-                            shape = RoundedCornerShape(4.dp),
-                            color = ElectricBluePrimary.copy(alpha = 0.12f)
-                        ) {
-                            Text(
-                                text = selectedPhase,
-                                fontSize = 11.sp,
+                                text = "রিসেট / খালি করুন",
+                                fontSize = 11.5.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = ElectricBluePrimary,
-                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                                color = Color(0xFFDC2626)
                             )
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    // Phase Toggle Buttons
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(48.dp)
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(MaterialTheme.colorScheme.surfaceVariant),
-                        horizontalArrangement = Arrangement.spacedBy(4.dp)
-                    ) {
-                        // Single Phase Option
-                        val isSingleSelected = selectedPhase == "1-Phase"
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(if (isSingleSelected) ElectricBluePrimary else Color.Transparent)
-                                .clickable {
-                                    selectedPhase = "1-Phase"
-                                    unitSelections["phase"] = "1-Phase"
-                                    unitSelections["is3Phase"] = "1-Phase"
-                                    listOf("v", "voltage", "volts", "vlt", "sysV", "v2").forEach { vKey ->
-                                        if (inputValues[vKey] == "400" || inputValues[vKey] == "415") {
-                                            inputValues[vKey] = "230"
-                                        }
-                                    }
-                                    runRecalculation("1-Phase")
-                                }
-                                .testTag("phase_single"),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                if (isSingleSelected) {
-                                    Icon(
-                                        Icons.Default.Check,
-                                        contentDescription = null,
-                                        tint = Color.White,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                }
-                                Text(
-                                    text = "Single Phase (1φ • 230V)",
-                                    fontSize = 12.sp,
-                                    fontWeight = if (isSingleSelected) FontWeight.Bold else FontWeight.Medium,
-                                    color = if (isSingleSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-
-                        // Three Phase Option
-                        val isThreeSelected = selectedPhase == "3-Phase"
-                        Box(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxHeight()
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(if (isThreeSelected) ElectricBluePrimary else Color.Transparent)
-                                .clickable {
-                                    selectedPhase = "3-Phase"
-                                    unitSelections["phase"] = "3-Phase"
-                                    unitSelections["is3Phase"] = "3-Phase"
-                                    listOf("v", "voltage", "volts", "vlt", "sysV", "v2").forEach { vKey ->
-                                        if (inputValues[vKey] == "230" || inputValues[vKey] == "220") {
-                                            inputValues[vKey] = "400"
-                                        }
-                                    }
-                                    runRecalculation("3-Phase")
-                                }
-                                .testTag("phase_three"),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Center
-                            ) {
-                                if (isThreeSelected) {
-                                    Icon(
-                                        Icons.Default.Check,
-                                        contentDescription = null,
-                                        tint = Color.White,
-                                        modifier = Modifier.size(16.dp)
-                                    )
-                                    Spacer(modifier = Modifier.width(4.dp))
-                                }
-                                Text(
-                                    text = "Three Phase (3φ • 400V)",
-                                    fontSize = 12.sp,
-                                    fontWeight = if (isThreeSelected) FontWeight.Bold else FontWeight.Medium,
-                                    color = if (isThreeSelected) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    // Strict Separation Banner
+                    // Default Example Values button
                     Surface(
-                        color = Color(0xFFFEF3C7),
+                        onClick = {
+                            calculator.inputs.forEach { input ->
+                                inputValues[input.id] = input.defaultValue
+                            }
+                            runRecalculation()
+                        },
                         shape = RoundedCornerShape(8.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        color = Color(0xFF0284C7).copy(alpha = 0.12f),
+                        border = BorderStroke(1.dp, Color(0xFF0284C7).copy(alpha = 0.3f)),
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag("default_values_btn")
                     ) {
                         Row(
-                            modifier = Modifier.padding(10.dp),
-                            verticalAlignment = Alignment.Top
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
                         ) {
-                            Icon(
-                                Icons.Default.Info,
-                                contentDescription = null,
-                                tint = Color(0xFFB45309),
-                                modifier = Modifier
-                                    .size(18.dp)
-                                    .padding(top = 1.dp)
+                            Text(
+                                text = "💡 নমুনা মান লোড",
+                                fontSize = 11.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF0284C7)
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Column {
-                                Text(
-                                    text = "গুরুত্বপূর্ণ শর্ত: Single Phase ও Three Phase লোড একই ক্যালকুলেশনে মিশিয়ে হিসাব করা যাবে না।",
-                                    fontSize = 11.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF92400E)
-                                )
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = if (selectedPhase == "1-Phase") {
-                                        "বর্তমানে Single Phase (1φ Line-to-Neutral 230V) সূত্রে সম্পূর্ণ হিসাব সম্পন্ন হচ্ছে। সূত্র: I = P / (V × PF), P = V × I × PF, ΔV = 2×L×I×R/1000"
-                                    } else {
-                                        "বর্তমানে Three Phase (3φ Line-to-Line 400V) সূত্রে সম্পূর্ণ হিসাব সম্পন্ন হচ্ছে। সূত্র: I = P / (√3 × V × PF), P = √3 × V × I × PF, ΔV = √3×L×I×R/1000"
-                                    },
-                                    fontSize = 10.sp,
-                                    color = Color(0xFFB45309)
-                                )
-                            }
                         }
                     }
                 }
             }
+        }
+
+        // Modern Clean Phase Selection Component
+        if (calculator.isPhaseSelectable) {
+            com.example.ui.components.ModernPhaseSelector(
+                selectedPhase = selectedPhase,
+                onPhaseSelected = { newPhase ->
+                    selectedPhase = newPhase
+                    unitSelections["phase"] = newPhase
+                    unitSelections["is3Phase"] = newPhase
+                    if (newPhase == "1-Phase") {
+                        listOf("v", "voltage", "volts", "vlt", "sysV", "v2").forEach { vKey ->
+                            if (inputValues[vKey] == "400" || inputValues[vKey] == "415") {
+                                inputValues[vKey] = "230"
+                            }
+                        }
+                    } else {
+                        listOf("v", "voltage", "volts", "vlt", "sysV", "v2").forEach { vKey ->
+                            if (inputValues[vKey] == "230" || inputValues[vKey] == "220") {
+                                inputValues[vKey] = "400"
+                            }
+                        }
+                    }
+                    runRecalculation(newPhase)
+                },
+                modifier = Modifier.padding(bottom = 12.dp)
+            )
         }
 
         val visibleInputs = calculator.inputs.filter { it.id != "phase" && it.id != "is3Phase" }
@@ -562,38 +494,33 @@ fun CalculatorScreen(
                     }
                 },
                 modifier = Modifier
-                    .weight(1f)
+                    .weight(1.3f)
                     .height(48.dp)
                     .testTag("calculate_button"),
                 shape = RoundedCornerShape(10.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = ElectricBluePrimary)
             ) {
-                Icon(Icons.Default.Calculate, contentDescription = null)
+                Icon(Icons.Default.Calculate, contentDescription = null, modifier = Modifier.size(18.dp))
                 Spacer(modifier = Modifier.width(6.dp))
-                Text("Calculate", fontWeight = FontWeight.Bold)
+                Text("Calculate / হিসাব", fontWeight = FontWeight.Bold, fontSize = 13.5.sp)
             }
 
             OutlinedButton(
                 onClick = {
-                    if (calculator.isPhaseSelectable) {
-                        selectedPhase = calculator.defaultPhase
-                        unitSelections["phase"] = calculator.defaultPhase
-                        unitSelections["is3Phase"] = calculator.defaultPhase
-                    }
                     calculator.inputs.forEach { input ->
                         inputValues[input.id] = input.defaultValue
                     }
                     runRecalculation()
                 },
                 modifier = Modifier
-                    .weight(0.6f)
+                    .weight(0.7f)
                     .height(48.dp)
                     .testTag("reset_button"),
                 shape = RoundedCornerShape(10.dp)
             ) {
-                Icon(Icons.Default.Refresh, contentDescription = null)
+                Icon(Icons.Default.Refresh, contentDescription = null, modifier = Modifier.size(16.dp))
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("Reset")
+                Text("Reset", fontWeight = FontWeight.Bold, fontSize = 13.sp)
             }
         }
 
@@ -601,104 +528,24 @@ fun CalculatorScreen(
         result?.let { res ->
             Spacer(modifier = Modifier.height(14.dp))
 
-            // Compact & Modern Result Card (Space-efficient)
+            // Enhanced Modern Result Card (Dynamic text scaling, never breaks on large/long results)
+            com.example.ui.components.ModernResultCard(result = res)
+
+            // Compact Input Summary Card (Dynamic theme colors)
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .testTag("result_card"),
-                shape = RoundedCornerShape(12.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-                elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .background(
-                            androidx.compose.ui.graphics.Brush.linearGradient(
-                                listOf(Color(0xFF047857), Color(0xFF10B981))
-                            )
-                        )
-                        .padding(horizontal = 14.dp, vertical = 10.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(Color.White.copy(alpha = 0.2f)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.ElectricBolt,
-                                contentDescription = null,
-                                tint = Color.White,
-                                modifier = Modifier.size(20.dp)
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.width(10.dp))
-
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = "গণনাকৃত ফলাফল (Result)",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFFD1FAE5)
-                            )
-                            Row(verticalAlignment = Alignment.Bottom) {
-                                Text(
-                                    text = res.primaryValue,
-                                    fontSize = 22.sp,
-                                    fontWeight = FontWeight.Black,
-                                    color = Color.White
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = res.primaryUnit,
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFFA7F3D0),
-                                    modifier = Modifier.padding(bottom = 2.dp)
-                                )
-                            }
-                        }
-
-                        if (res.standardBasis.isNotBlank()) {
-                            Surface(
-                                shape = RoundedCornerShape(4.dp),
-                                color = Color.White.copy(alpha = 0.25f)
-                            ) {
-                                Text(
-                                    text = res.standardBasis.ifEmpty { "IEC" },
-                                    fontSize = 9.5.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color.White,
-                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-
-            // Compact Input Summary Card
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 8.dp),
+                    .padding(top = 10.dp),
                 shape = RoundedCornerShape(10.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
-                border = BorderStroke(1.dp, Color(0xFFE2E8F0))
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
             ) {
                 Column(modifier = Modifier.padding(10.dp)) {
                     Text(
                         text = "ইনপুট ডাটা সামারি (Input Data)",
                         fontSize = 11.5.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF0F172A)
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     inputValues.forEach { (key, value) ->
@@ -711,8 +558,8 @@ fun CalculatorScreen(
                                 .padding(vertical = 1.5.dp),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(text = "$label :", fontSize = 11.5.sp, color = Color(0xFF64748B))
-                            Text(text = "$value $unit".trim(), fontSize = 11.5.sp, fontWeight = FontWeight.SemiBold, color = Color(0xFF0F172A))
+                            Text(text = "$label :", fontSize = 11.5.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            Text(text = "$value $unit".trim(), fontSize = 11.5.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
                         }
                     }
                 }
@@ -758,28 +605,28 @@ fun CalculatorScreen(
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(10.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color.White),
-                                border = BorderStroke(1.dp, Color(0xFFE2E8F0))
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
                             ) {
                                 Column(modifier = Modifier.padding(12.dp)) {
                                     Row(verticalAlignment = Alignment.CenterVertically) {
                                         Icon(Icons.Default.Calculate, contentDescription = null, tint = Color(0xFF0284C7), modifier = Modifier.size(16.dp))
                                         Spacer(modifier = Modifier.width(6.dp))
-                                        Text("Formula (সূত্র)", fontSize = 12.5.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
+                                        Text("Formula (সূত্র)", fontSize = 12.5.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                                     }
                                     Spacer(modifier = Modifier.height(6.dp))
                                     Surface(
                                         modifier = Modifier.fillMaxWidth(),
-                                        color = Color(0xFFF8FAFC),
+                                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
                                         shape = RoundedCornerShape(8.dp),
-                                        border = BorderStroke(1.dp, Color(0xFFE2E8F0))
+                                        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
                                     ) {
                                         Text(
                                             text = res.formulaUsed,
                                             fontFamily = FontFamily.Monospace,
                                             fontSize = 12.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = Color(0xFF0F172A),
+                                            color = MaterialTheme.colorScheme.onSurface,
                                             modifier = Modifier.padding(10.dp)
                                         )
                                     }
@@ -792,15 +639,15 @@ fun CalculatorScreen(
                             Card(
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(10.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color.White),
-                                border = BorderStroke(1.dp, Color(0xFFE2E8F0))
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
                             ) {
                                 Column(modifier = Modifier.padding(12.dp)) {
                                     Text(
                                         text = "Step-by-Step Solution (ধাপে ধাপে সমাধান)",
                                         fontSize = 12.5.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF0F172A)
+                                        color = MaterialTheme.colorScheme.onSurface
                                     )
                                     Spacer(modifier = Modifier.height(6.dp))
                                     res.steps.forEachIndexed { idx, step ->
@@ -829,7 +676,7 @@ fun CalculatorScreen(
                                                 text = "${step.equation} = ${step.result}",
                                                 fontSize = 11.5.sp,
                                                 fontWeight = FontWeight.Medium,
-                                                color = Color(0xFF334155)
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant
                                             )
                                         }
                                     }
@@ -843,210 +690,63 @@ fun CalculatorScreen(
             if (res.notes.isNotEmpty()) {
                 Column(modifier = Modifier.padding(top = 4.dp)) {
                     res.notes.forEach { note ->
-                        Text(text = "• $note", fontSize = 11.sp, color = Color(0xFF64748B))
+                        Text(text = "• $note", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // 2-Row Action Buttons Grid (Exact Match Screen 4 in Reference Image)
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                // Row 1: [💾 Save] [📋 Copy] [🔗 Share]
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    // Save Button
-                    Surface(
-                        onClick = {
-                            coroutineScope.launch {
-                                val dateStr = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault()).format(Date())
-                                val entity = HistoryEntity(
-                                    calculatorId = calculator.id,
-                                    calculatorName = calculator.name,
-                                    level = calculator.level.displayName,
-                                    category = calculator.category.displayName,
-                                    formattedDate = dateStr,
-                                    inputSummary = inputValues.entries.joinToString(", ") { "${it.key}: ${it.value}" },
-                                    primaryResult = res.primaryValue,
-                                    resultUnit = res.primaryUnit,
-                                    formula = res.formulaUsed,
-                                    stepSummary = res.steps.joinToString(" | ") { it.result }
-                                )
-                                app.historyRepository.insertHistory(entity)
-                                isSaved = true
-                                Toast.makeText(context, "Saved to history", Toast.LENGTH_SHORT).show()
-                            }
-                        },
-                        shape = RoundedCornerShape(8.dp),
-                        color = Color(0xFF0284C7),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(vertical = 10.dp),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(15.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Save", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                        }
+            // Unified 4-Action Buttons Grid (Save, Copy, Share, PDF Report with direct Print)
+            com.example.ui.components.CalculatorActionButtons(
+                isSaved = isSaved,
+                onSave = {
+                    coroutineScope.launch {
+                        val dateStr = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault()).format(Date())
+                        val entity = HistoryEntity(
+                            calculatorId = calculator.id,
+                            calculatorName = calculator.name,
+                            level = calculator.level.displayName,
+                            category = calculator.category.displayName,
+                            formattedDate = dateStr,
+                            inputSummary = inputValues.entries.joinToString(", ") { "${it.key}: ${it.value}" },
+                            primaryResult = res.primaryValue,
+                            resultUnit = res.primaryUnit,
+                            formula = res.formulaUsed,
+                            stepSummary = res.steps.joinToString(" | ") { it.result }
+                        )
+                        app.historyRepository.insertHistory(entity)
+                        isSaved = true
+                        Toast.makeText(context, "Saved to history", Toast.LENGTH_SHORT).show()
                     }
-
-                    // Copy Button
-                    Surface(
-                        onClick = {
-                            val copyText = "${calculator.name}\nResult: ${res.primaryValue} ${res.primaryUnit}\nFormula: ${res.formulaUsed}"
-                            ShareUtils.copyToClipboard(context, calculator.name, copyText)
-                            Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
-                        },
-                        shape = RoundedCornerShape(8.dp),
-                        color = Color(0xFF0284C7),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(vertical = 10.dp),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(Icons.Default.ContentCopy, contentDescription = null, tint = Color.White, modifier = Modifier.size(15.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Copy", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                        }
-                    }
-
-                    // Share Button
-                    Surface(
-                        onClick = {
-                            val shareText = "${calculator.name}\nResult: ${res.primaryValue} ${res.primaryUnit}\nFormula: ${res.formulaUsed}\nStandard: ${res.standardBasis}\nCalculated with ELECTRICAL CALCULATION ALL"
-                            ShareUtils.shareText(context, calculator.name, shareText)
-                        },
-                        shape = RoundedCornerShape(8.dp),
-                        color = Color(0xFF0284C7),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(vertical = 10.dp),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(Icons.Default.Share, contentDescription = null, tint = Color.White, modifier = Modifier.size(15.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Share", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                        }
+                },
+                onCopy = {
+                    val copyText = "${calculator.name}\nResult: ${res.primaryValue} ${res.primaryUnit}\nFormula: ${res.formulaUsed}"
+                    ShareUtils.copyToClipboard(context, calculator.name, copyText)
+                    Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+                },
+                onShare = {
+                    val shareText = "${calculator.name}\nResult: ${res.primaryValue} ${res.primaryUnit}\nFormula: ${res.formulaUsed}\nStandard: ${res.standardBasis}\nCalculated with ELECTRICAL CALCULATION ALL"
+                    ShareUtils.shareText(context, calculator.name, shareText)
+                },
+                onPdf = {
+                    try {
+                        val pdf = PdfReportGenerator.generateCalculationPdf(
+                            context,
+                            calculator,
+                            inputValues,
+                            res,
+                            devSettings,
+                            pdfSettings,
+                            techProfile
+                        )
+                        Toast.makeText(context, "PDF generated: ${pdf.name}", Toast.LENGTH_SHORT).show()
+                        ShareUtils.sharePdf(context, pdf, "${calculator.name} Report")
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
-
-                // Row 2: [🖨️ Print] [📄 PDF] [📤 Share PDF]
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    // Print Button
-                    Surface(
-                        onClick = {
-                            try {
-                                val pdf = PdfReportGenerator.generateCalculationPdf(
-                                    context,
-                                    calculator,
-                                    inputValues,
-                                    res,
-                                    devSettings,
-                                    pdfSettings,
-                                    techProfile
-                                )
-                                PrintManagerHelper.printPdfFile(context, pdf, calculator.name)
-                            } catch (e: Exception) {
-                                Toast.makeText(context, "Print error: ${e.message}", Toast.LENGTH_SHORT).show()
-                            }
-                        },
-                        shape = RoundedCornerShape(8.dp),
-                        color = Color(0xFF0D9488),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(vertical = 10.dp),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(Icons.Default.Print, contentDescription = null, tint = Color.White, modifier = Modifier.size(15.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Print", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                        }
-                    }
-
-                    // PDF Button
-                    Surface(
-                        onClick = {
-                            try {
-                                val pdf = PdfReportGenerator.generateCalculationPdf(
-                                    context,
-                                    calculator,
-                                    inputValues,
-                                    res,
-                                    devSettings,
-                                    pdfSettings,
-                                    techProfile
-                                )
-                                Toast.makeText(context, "PDF generated: ${pdf.name}", Toast.LENGTH_SHORT).show()
-                                ShareUtils.sharePdf(context, pdf, "${calculator.name} Report")
-                            } catch (e: Exception) {
-                                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-                            }
-                        },
-                        shape = RoundedCornerShape(8.dp),
-                        color = Color(0xFFDC2626),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(vertical = 10.dp),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(Icons.Default.PictureAsPdf, contentDescription = null, tint = Color.White, modifier = Modifier.size(15.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("PDF", color = Color.White, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                        }
-                    }
-
-                    // Share PDF Button
-                    Surface(
-                        onClick = {
-                            try {
-                                val pdf = PdfReportGenerator.generateCalculationPdf(
-                                    context,
-                                    calculator,
-                                    inputValues,
-                                    res,
-                                    devSettings,
-                                    pdfSettings,
-                                    techProfile
-                                )
-                                ShareUtils.sharePdf(context, pdf, "${calculator.name} PDF Report")
-                            } catch (e: Exception) {
-                                Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-                            }
-                        },
-                        shape = RoundedCornerShape(8.dp),
-                        color = Color(0xFF7C3AED),
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(vertical = 10.dp),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(Icons.Default.Share, contentDescription = null, tint = Color.White, modifier = Modifier.size(15.dp))
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text("Share PDF", color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                        }
-                    }
-                }
-            }
+            )
         }
     }
 }

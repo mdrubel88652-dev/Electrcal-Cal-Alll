@@ -124,7 +124,7 @@ fun MainAppNavigation() {
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        containerColor = Color(0xFFF8FAFC),
+        containerColor = MaterialTheme.colorScheme.background,
         topBar = {
             if (!isSplashScreen) {
                 AppTopBar(

@@ -4,6 +4,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -150,7 +151,7 @@ fun HomeScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8FAFC))
+            .background(MaterialTheme.colorScheme.background)
             .testTag("home_screen_column"),
         contentPadding = PaddingValues(bottom = 36.dp)
     ) {
@@ -161,7 +162,7 @@ fun HomeScreen(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Color(0xFFF8FAFC))
+                    .background(MaterialTheme.colorScheme.background)
                     .padding(horizontal = 16.dp, vertical = 10.dp)
             ) {
                 // Sleek Search Bar directly on background

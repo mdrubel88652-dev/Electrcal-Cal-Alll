@@ -118,11 +118,22 @@ fun ProjectScreen() {
     val scope = rememberCoroutineScope()
 
     val projects by repository.allProjects.collectAsState(initial = emptyList())
+    val quickTasks by repository.allQuickTasks.collectAsState(initial = emptyList())
     val techProfile by app.settingsManager.technicianProfileFlow.collectAsState(initial = com.example.data.datastore.TechnicianReportProfile())
 
+    var selectedProjectTab by remember { mutableIntStateOf(0) } // 0: Contract Projects, 1: Quick Tasks
     var showAddProjectDialog by remember { mutableStateOf(false) }
     var selectedProjectForPayment by remember { mutableStateOf<ContractProjectEntity?>(null) }
     var projectToDelete by remember { mutableStateOf<ContractProjectEntity?>(null) }
+    var showAddQuickTaskDialog by remember { mutableStateOf(false) }
+    var quickTaskToDelete by remember { mutableStateOf<QuickTaskEntity?>(null) }
+
+    val currentMonthKey = remember {
+        SimpleDateFormat("yyyy-MM", Locale.getDefault()).format(Date())
+    }
+    val thisMonthTasks = quickTasks.filter { it.monthYear == currentMonthKey }
+    val thisMonthTotal = thisMonthTasks.sumOf { it.amount }
+    val monthlyRemaining = (50000.0 - thisMonthTotal).coerceAtLeast(0.0)
 
     val projectCount = projects.size
     val isSlotFull = projectCount >= MAX_PROJECTS
@@ -130,16 +141,89 @@ fun ProjectScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8FAFC))
+            .background(MaterialTheme.colorScheme.background)
             .testTag("project_screen_root")
     ) {
-        LazyColumn(
+        // Top Project Section Tabs: Contract Projects vs Quick Tasks
+        Surface(
             modifier = Modifier
-                .fillMaxSize()
-                .testTag("projects_list"),
-            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp)
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 6.dp),
+            shape = RoundedCornerShape(12.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
         ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                Surface(
+                    onClick = { selectedProjectTab = 0 },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(8.dp),
+                    color = if (selectedProjectTab == 0) MaterialTheme.colorScheme.surface else Color.Transparent,
+                    shadowElevation = if (selectedProjectTab == 0) 2.dp else 0.dp
+                ) {
+                    Row(
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Assignment,
+                            contentDescription = null,
+                            tint = if (selectedProjectTab == 0) Color(0xFF0284C7) else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "বড় প্রজেক্ট (৫টি)",
+                            fontSize = 12.sp,
+                            fontWeight = if (selectedProjectTab == 0) FontWeight.Bold else FontWeight.Medium,
+                            color = if (selectedProjectTab == 0) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                Surface(
+                    onClick = { selectedProjectTab = 1 },
+                    modifier = Modifier.weight(1f),
+                    shape = RoundedCornerShape(8.dp),
+                    color = if (selectedProjectTab == 1) MaterialTheme.colorScheme.surface else Color.Transparent,
+                    shadowElevation = if (selectedProjectTab == 1) 2.dp else 0.dp
+                ) {
+                    Row(
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Work,
+                            contentDescription = null,
+                            tint = if (selectedProjectTab == 1) Color(0xFF10B981) else MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "ছোট কাজের হিসাব (৫০K)",
+                            fontSize = 12.sp,
+                            fontWeight = if (selectedProjectTab == 1) FontWeight.Bold else FontWeight.Medium,
+                            color = if (selectedProjectTab == 1) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        }
+
+        if (selectedProjectTab == 0) {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .testTag("projects_list"),
+                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
             // ==========================================
             // 1. SCROLLABLE PROJECT HEADER CARD (CLEAN APP THEME)
             // ==========================================
@@ -461,7 +545,14 @@ fun ProjectScreen() {
                 }
             }
         }
+    } else {
+        QuickTasksTabContent(
+            quickTasks = quickTasks,
+            onAddTaskClick = { showAddQuickTaskDialog = true },
+            onDeleteTaskClick = { quickTaskToDelete = it }
+        )
     }
+}
 
     // Add Project Dialog
     if (showAddProjectDialog) {
@@ -492,7 +583,54 @@ fun ProjectScreen() {
         )
     }
 
-    // Delete Confirmation Dialog
+    // Add Quick Task Dialog (Enforces ৳50,000 monthly limit)
+    if (showAddQuickTaskDialog) {
+        AddQuickTaskDialog(
+            remainingQuota = monthlyRemaining,
+            onDismiss = { showAddQuickTaskDialog = false },
+            onSave = { task ->
+                scope.launch {
+                    repository.saveQuickTask(task)
+                    showAddQuickTaskDialog = false
+                    Toast.makeText(context, "ছোট কাজের হিস্ট্রি সেভ হয়েছে ও ওয়ালেটে যুক্ত হয়েছে", Toast.LENGTH_SHORT).show()
+                }
+            }
+        )
+    }
+
+    // Delete Quick Task Confirmation Dialog (Informs that amount will be deducted from Wallet)
+    quickTaskToDelete?.let { task ->
+        AlertDialog(
+            onDismissRequest = { quickTaskToDelete = null },
+            title = {
+                Text("কাজের হিস্ট্রি মুছে ফেলবেন?", fontWeight = FontWeight.Bold)
+            },
+            text = {
+                Text("আপনি কি নিশ্চিত যে '${task.taskTitle}' কাজটি মুছে ফেলতে চান? এটি মুছে ফেললে ওয়ালেট থেকে সাথে সাথে ৳${task.amount.toLong()} মাইনাস ও বাতিল হয়ে যাবে।")
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        scope.launch {
+                            repository.deleteQuickTask(task.id)
+                            quickTaskToDelete = null
+                            Toast.makeText(context, "কাজটি মুছে ফেলা হয়েছে এবং ওয়ালেট থেকে মাইনাস হয়েছে", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFDC2626))
+                ) {
+                    Text("মুছে ফেলুন", color = Color.White)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { quickTaskToDelete = null }) {
+                    Text("বাতিল")
+                }
+            }
+        )
+    }
+
+    // Delete Confirmation Dialog for Major Projects
     projectToDelete?.let { proj ->
         AlertDialog(
             onDismissRequest = { projectToDelete = null },

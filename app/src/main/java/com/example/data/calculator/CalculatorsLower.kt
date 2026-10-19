@@ -78,16 +78,16 @@ object CalculatorsLower {
                 val cost = kwh * rate
                 CalculationResult(
                     primaryValue = ElectricalFormulas.fmt(cost),
-                    primaryUnit = "Total Cost",
+                    primaryUnit = "৳ (Total Cost)",
                     formulaUsed = "Cost = Energy (kWh) × Rate per Unit",
                     steps = listOf(
                         CalculationStep(1, "Total Energy", "(P × Hours × Days) / 1000", "($p × $h × $d) / 1000", "${ElectricalFormulas.fmt(kwh)} kWh"),
-                        CalculationStep(2, "Total Expense", "Energy × Rate", "$kwh × $rate", "${ElectricalFormulas.fmt(cost)}")
+                        CalculationStep(2, "Total Expense", "Energy × Rate", "$kwh × $rate", "${ElectricalFormulas.fmt(cost)}"),
                     ),
                     secondaryResults = listOf(
                         "Energy Consumption" to "${ElectricalFormulas.fmt(kwh)} kWh (Units)",
                         "Daily Energy" to "${ElectricalFormulas.fmt((p * h) / 1000.0)} kWh/day",
-                        "Daily Cost" to "${ElectricalFormulas.fmt(((p * h) / 1000.0) * rate)}"
+                        "Daily Cost" to "৳ ${ElectricalFormulas.fmt(((p * h) / 1000.0) * rate)}"
                     )
                 )
             }
@@ -116,7 +116,7 @@ object CalculatorsLower {
                 val total = energyCharge + d + m
                 CalculationResult(
                     primaryValue = ElectricalFormulas.fmt(total),
-                    primaryUnit = "Total Bill Amount",
+                    primaryUnit = "৳ (Net Bill)",
                     formulaUsed = "Bill = (Units × Rate) + Demand Charge + Meter Charge",
                     steps = listOf(
                         CalculationStep(1, "Energy Charge", "Units × Rate", "$u × $r", "${ElectricalFormulas.fmt(energyCharge)}"),

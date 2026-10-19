@@ -71,7 +71,7 @@ fun HistoryScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8FAFC))
+            .background(MaterialTheme.colorScheme.background)
             .padding(16.dp)
             .testTag("history_screen")
     ) {

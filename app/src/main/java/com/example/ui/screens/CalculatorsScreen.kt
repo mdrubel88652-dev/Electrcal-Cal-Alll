@@ -134,7 +134,7 @@ fun CalculatorsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8FAFC))
+            .background(MaterialTheme.colorScheme.background)
             .testTag("calculators_screen_root")
     ) {
         LazyColumn(

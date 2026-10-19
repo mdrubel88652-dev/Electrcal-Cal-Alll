@@ -143,7 +143,7 @@ fun InformationScreen(
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8FAFC))
+            .background(MaterialTheme.colorScheme.background)
             .testTag("information_screen_root")
     ) {
         // List of 167 Calculator Guide Cards with Scrollable Banner & Search

@@ -193,7 +193,7 @@ fun FactoryLoadCalculatorView(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8FAFC))
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
             .padding(16.dp)
             .testTag("factory_load_screen_container")
@@ -1125,133 +1125,66 @@ fun FactoryLoadCalculatorView(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Action Buttons Bar
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(6.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    // Save
-                    IconButton(
-                        onClick = {
-                            coroutineScope.launch {
-                                val dateStr = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault()).format(Date())
-                                val summary = "Loads (${loads.size}): " + loads.joinToString(", ") { "${it.name} ${it.displayOriginal} (x${it.quantity})" } + " | Total: %.2f kW".format(loads.sumOf { it.totalKw })
-                                val entity = HistoryEntity(
-                                    calculatorId = calculator.id,
-                                    calculatorName = calculator.name,
-                                    level = calculator.level.displayName,
-                                    category = calculator.category.displayName,
-                                    formattedDate = dateStr,
-                                    inputSummary = summary,
-                                    primaryResult = res.primaryValue,
-                                    resultUnit = res.primaryUnit,
-                                    formula = res.formulaUsed,
-                                    stepSummary = res.steps.joinToString(" | ") { it.result }
-                                )
-                                app.historyRepository.insertHistory(entity)
-                                isSaved = true
-                                Toast.makeText(context, "Saved to history", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    ) {
-                        Icon(
-                            imageVector = if (isSaved) Icons.Default.Check else Icons.Default.BookmarkBorder,
-                            contentDescription = "Save",
-                            tint = if (isSaved) Color(0xFF2E7D32) else MaterialTheme.colorScheme.primary
+            // 4-Button Action Grid (Save, Copy, Share, PDF Report)
+            com.example.ui.components.CalculatorActionButtons(
+                isSaved = isSaved,
+                onSave = {
+                    coroutineScope.launch {
+                        val dateStr = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault()).format(Date())
+                        val summary = "Loads (${loads.size}): " + loads.joinToString(", ") { "${it.name} ${it.displayOriginal} (x${it.quantity})" } + " | Total: %.2f kW".format(loads.sumOf { it.totalKw })
+                        val entity = HistoryEntity(
+                            calculatorId = calculator.id,
+                            calculatorName = calculator.name,
+                            level = calculator.level.displayName,
+                            category = calculator.category.displayName,
+                            formattedDate = dateStr,
+                            inputSummary = summary,
+                            primaryResult = res.primaryValue,
+                            resultUnit = res.primaryUnit,
+                            formula = res.formulaUsed,
+                            stepSummary = res.steps.joinToString(" | ") { it.result }
                         )
+                        app.historyRepository.insertHistory(entity)
+                        isSaved = true
+                        Toast.makeText(context, "Saved to history", Toast.LENGTH_SHORT).show()
                     }
-
-                    // Copy
-                    IconButton(
-                        onClick = {
-                            val copyText = "All Factory Load Calculation\nTotal Connected Load: %.2f kW\nDesign Demand: ${res.primaryValue} ${res.primaryUnit}\nFormula: ${res.formulaUsed}".format(loads.sumOf { it.totalKw })
-                            ShareUtils.copyToClipboard(context, calculator.name, copyText)
+                },
+                onCopy = {
+                    val copyText = "All Factory Load Calculation\nTotal Connected Load: %.2f kW\nDesign Demand: ${res.primaryValue} ${res.primaryUnit}\nFormula: ${res.formulaUsed}".format(loads.sumOf { it.totalKw })
+                    ShareUtils.copyToClipboard(context, calculator.name, copyText)
+                    Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+                },
+                onShare = {
+                    val shareText = "All Factory Load Calculation Report\nTotal Connected Load: %.2f kW\nDesign Demand: ${res.primaryValue} ${res.primaryUnit}\nCalculated with ELECTRICAL CALCULATION ALL".format(loads.sumOf { it.totalKw })
+                    ShareUtils.shareText(context, calculator.name, shareText)
+                },
+                onPdf = {
+                    try {
+                        val inputsMap = mutableMapOf<String, String>()
+                        inputsMap["Total Connected Load"] = "%.2f kW".format(loads.sumOf { it.totalKw })
+                        inputsMap["Demand Factor"] = demandFactorStr
+                        inputsMap["Diversity Factor"] = diversityFactorStr
+                        inputsMap["Power Factor"] = avgPfStr
+                        inputsMap["Plant Efficiency"] = plantEffStr
+                        inputsMap["Supply Voltage"] = "$systemVoltageStr V (3 Phase)"
+                        loads.take(8).forEachIndexed { i, it ->
+                            inputsMap["Load #${i + 1}"] = "${it.name}: ${it.displayOriginal} × ${it.quantity} = %.2f kW".format(it.totalKw)
                         }
-                    ) {
-                        Icon(Icons.Default.ContentCopy, contentDescription = "Copy")
-                    }
-
-                    // Share
-                    IconButton(
-                        onClick = {
-                            val shareText = "All Factory Load Calculation Report\nTotal Connected Load: %.2f kW\nDesign Demand: ${res.primaryValue} ${res.primaryUnit}\nCalculated with ELECTRICAL CALCULATION ALL".format(loads.sumOf { it.totalKw })
-                            ShareUtils.shareText(context, calculator.name, shareText)
-                        }
-                    ) {
-                        Icon(Icons.Default.Share, contentDescription = "Share")
-                    }
-
-                    // PDF
-                    IconButton(
-                        onClick = {
-                            try {
-                                val inputsMap = mutableMapOf<String, String>()
-                                inputsMap["Total Connected Load"] = "%.2f kW".format(loads.sumOf { it.totalKw })
-                                inputsMap["Demand Factor"] = demandFactorStr
-                                inputsMap["Diversity Factor"] = diversityFactorStr
-                                inputsMap["Power Factor"] = avgPfStr
-                                inputsMap["Plant Efficiency"] = plantEffStr
-                                inputsMap["Supply Voltage"] = "$systemVoltageStr V (3 Phase)"
-                                loads.take(8).forEachIndexed { i, it ->
-                                    inputsMap["Load #${i + 1}"] = "${it.name}: ${it.displayOriginal} × ${it.quantity} = %.2f kW".format(it.totalKw)
-                                }
-                                val pdf = PdfReportGenerator.generateCalculationPdf(
-                                    context,
-                                    calculator,
-                                    inputsMap,
-                                    res,
-                                    devSettings,
-                                    pdfSettings,
-                                    techProfile
-                                )
-                                ShareUtils.sharePdf(context, pdf, "${calculator.name} Report")
-                            } catch (e: Exception) {
-                                Toast.makeText(context, "PDF error: ${e.message}", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    ) {
-                        Icon(Icons.Default.PictureAsPdf, contentDescription = "PDF Report", tint = Color(0xFFC62828))
-                    }
-
-                    // Print
-                    IconButton(
-                        onClick = {
-                            try {
-                                val inputsMap = mutableMapOf<String, String>()
-                                inputsMap["Total Connected Load"] = "%.2f kW".format(loads.sumOf { it.totalKw })
-                                inputsMap["Demand Factor"] = demandFactorStr
-                                inputsMap["Diversity Factor"] = diversityFactorStr
-                                inputsMap["Power Factor"] = avgPfStr
-                                inputsMap["Plant Efficiency"] = plantEffStr
-                                inputsMap["Supply Voltage"] = "$systemVoltageStr V (3 Phase)"
-                                loads.take(8).forEachIndexed { i, it ->
-                                    inputsMap["Load #${i + 1}"] = "${it.name}: ${it.displayOriginal} × ${it.quantity} = %.2f kW".format(it.totalKw)
-                                }
-                                val pdf = PdfReportGenerator.generateCalculationPdf(
-                                    context,
-                                    calculator,
-                                    inputsMap,
-                                    res,
-                                    devSettings,
-                                    pdfSettings,
-                                    techProfile
-                                )
-                                PrintManagerHelper.printPdfFile(context, pdf, calculator.name)
-                            } catch (e: Exception) {
-                                Toast.makeText(context, "Print error: ${e.message}", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    ) {
-                        Icon(Icons.Default.Print, contentDescription = "Print", tint = ElectricBluePrimary)
+                        val pdf = PdfReportGenerator.generateCalculationPdf(
+                            context,
+                            calculator,
+                            inputsMap,
+                            res,
+                            devSettings,
+                            pdfSettings,
+                            techProfile
+                        )
+                        ShareUtils.sharePdf(context, pdf, "${calculator.name} Report")
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "PDF error: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
-            }
+            )
         }
     }
 

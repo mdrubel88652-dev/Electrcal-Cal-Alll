@@ -26,6 +26,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Surface
@@ -74,7 +75,7 @@ fun ThemeScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFF8FAFC))
+            .background(MaterialTheme.colorScheme.background)
             .verticalScroll(rememberScrollState())
             .padding(16.dp)
             .testTag("theme_screen_root"),
@@ -83,8 +84,8 @@ fun ThemeScreen(
         // Theme Mode Selection (Screen 11)
         Card(
             shape = RoundedCornerShape(14.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.White),
-            border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFE2E8F0))
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f))
         ) {
             Column(modifier = Modifier.padding(14.dp)) {
                 // Option 1: System Default
@@ -123,7 +124,7 @@ fun ThemeScreen(
                 text = "Accent Color",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF0F172A)
+                color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.height(8.dp))
             Row(
@@ -159,7 +160,7 @@ fun ThemeScreen(
                 text = "Preview",
                 fontSize = 14.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF0F172A)
+                color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.height(8.dp))
             Row(
@@ -244,8 +245,8 @@ private fun ThemeOptionRow(
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
         Column {
-            Text(title, fontSize = 14.5.sp, fontWeight = FontWeight.Bold, color = Color(0xFF0F172A))
-            Text(subtitle, fontSize = 11.5.sp, color = Color(0xFF64748B))
+            Text(title, fontSize = 14.5.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
+            Text(subtitle, fontSize = 11.5.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         RadioButton(
             selected = isSelected,

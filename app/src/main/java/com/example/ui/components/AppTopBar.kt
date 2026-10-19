@@ -94,7 +94,7 @@ fun AppTopBar(
                             fontSize = 15.sp,
                             lineHeight = 17.sp
                         ),
-                        color = Color(0xFF0F172A),
+                        color = MaterialTheme.colorScheme.onSurface,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -123,7 +123,7 @@ fun AppTopBar(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Navigate back",
-                        tint = Color(0xFF0F172A),
+                        tint = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.size(22.dp)
                     )
                 }
@@ -158,7 +158,7 @@ fun AppTopBar(
                     Icon(
                         imageVector = Icons.Default.Notifications,
                         contentDescription = "Notification",
-                        tint = Color(0xFF0F172A),
+                        tint = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.size(23.dp)
                     )
                 }
@@ -173,18 +173,18 @@ fun AppTopBar(
                     Icon(
                         imageVector = Icons.Default.Menu,
                         contentDescription = "Technician Hub & Wallet Menu",
-                        tint = Color(0xFF0F172A),
+                        tint = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.size(26.dp)
                     )
                 }
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = Color(0xFFF8FAFC),
-            scrolledContainerColor = Color(0xFFF8FAFC),
-            titleContentColor = Color(0xFF0F172A),
-            navigationIconContentColor = Color(0xFF0F172A),
-            actionIconContentColor = Color(0xFF0F172A)
+            containerColor = MaterialTheme.colorScheme.surface,
+            scrolledContainerColor = MaterialTheme.colorScheme.surface,
+            titleContentColor = MaterialTheme.colorScheme.onSurface,
+            navigationIconContentColor = MaterialTheme.colorScheme.onSurface,
+            actionIconContentColor = MaterialTheme.colorScheme.onSurface
         )
     )
 }

@@ -59,6 +59,10 @@ class ProjectRepository(
         return quickTaskDao.insertQuickTask(task)
     }
 
+    suspend fun saveQuickTask(task: QuickTaskEntity): Long {
+        return addQuickTask(task)
+    }
+
     suspend fun deleteQuickTask(taskId: Long) {
         quickTaskDao.deleteQuickTask(taskId)
     }

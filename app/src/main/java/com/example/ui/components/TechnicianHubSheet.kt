@@ -4,6 +4,7 @@ import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -132,14 +133,14 @@ fun TechnicianHubSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = Color(0xFFF8FAFC),
+        containerColor = MaterialTheme.colorScheme.surface,
         dragHandle = {
             Surface(
                 modifier = Modifier
                     .padding(vertical = 8.dp)
                     .size(width = 36.dp, height = 4.dp),
                 shape = CircleShape,
-                color = Color(0xFFCBD5E1)
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.4f)
             ) {}
         },
         modifier = Modifier.testTag("technician_hub_sheet")
@@ -178,13 +179,13 @@ fun TechnicianHubSheet(
                             text = if (isEn) "Technician Hub" else "টেকনিশিয়ান হাব ও শর্টকাট",
                             fontSize = 17.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF0F172A)
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = if (isEn) "Quick Profile & Real-time Wallet" else "প্রোফাইল ভিউ এবং রিয়েল-টাইম ওয়ালেট",
                             fontSize = 11.5.sp,
                             fontWeight = FontWeight.Medium,
-                            color = Color(0xFF64748B)
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
@@ -423,7 +424,8 @@ private fun TechnicianProfileReadOnlyTab(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
                 elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
             ) {
                 Column(
@@ -453,7 +455,7 @@ private fun TechnicianProfileReadOnlyTab(
                         text = profile.name.ifBlank { if (isEn) "No Name Submitted" else "কোনো নাম সাবমিট করা হয়নি" },
                         fontSize = 17.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF0F172A),
+                        color = MaterialTheme.colorScheme.onSurface,
                         textAlign = TextAlign.Center
                     )
 
@@ -497,7 +499,8 @@ private fun TechnicianProfileReadOnlyTab(
             Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(14.dp),
-                colors = CardDefaults.cardColors(containerColor = Color.White),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)),
                 elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
             ) {
                 Column(
@@ -511,7 +514,7 @@ private fun TechnicianProfileReadOnlyTab(
                         label = if (isEn) "Contact Phone" else "যোগাযোগের ফোন",
                         value = profile.contactPhone.ifBlank { if (isEn) "Not provided" else "দেওয়া হয়নি" }
                     )
-                    HorizontalDivider(color = Color(0xFFF1F5F9))
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f))
 
                     ReadOnlyInfoRow(
                         icon = Icons.Default.Business,

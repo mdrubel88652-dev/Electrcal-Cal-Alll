@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -26,6 +27,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.Tune
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -67,21 +69,22 @@ fun AppBottomBar(
         NavItemData(Screen.Calculators.route, "Calculators", Icons.Default.Calculate, Color(0xFF0284C7), "nav_item_calculators"),
         NavItemData(Screen.Project.route, "Project", Icons.Default.Assignment, Color(0xFF0284C7), "nav_item_project"),
         NavItemData(Screen.Favorites.route, "Favorites", Icons.Default.Star, Color(0xFFD97706), "nav_item_favorites"),
-        NavItemData(Screen.Settings.route, "Settings", Icons.Default.Settings, Color(0xFF0F172A), "nav_item_settings")
+        NavItemData(Screen.Settings.route, "Settings", Icons.Default.Settings, Color(0xFF0284C7), "nav_item_settings")
     )
 
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = Color(0xFFF8FAFC),
-        shadowElevation = 0.dp,
-        tonalElevation = 0.dp
+        color = MaterialTheme.colorScheme.surface,
+        shadowElevation = 4.dp,
+        tonalElevation = 2.dp,
+        border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .windowInsetsPadding(WindowInsets.navigationBars)
         ) {
-            // Bottom Bar Buttons Row (একই অবিচ্ছিন্ন ব্যাকগ্রাউন্ড)
+            // Bottom Bar Buttons Row
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -116,7 +119,7 @@ fun AppBottomBar(
                                 modifier = Modifier
                                     .clip(RoundedCornerShape(12.dp))
                                     .background(
-                                        if (isSelected) item.activeColor.copy(alpha = 0.12f)
+                                        if (isSelected) item.activeColor.copy(alpha = 0.15f)
                                         else Color.Transparent
                                     )
                                     .padding(horizontal = 10.dp, vertical = 2.dp),
@@ -125,7 +128,7 @@ fun AppBottomBar(
                                 Icon(
                                     imageVector = item.icon,
                                     contentDescription = item.title,
-                                    tint = if (isSelected) item.activeColor else Color(0xFF64748B),
+                                    tint = if (isSelected) item.activeColor else MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.size(19.dp)
                                 )
                             }
@@ -136,7 +139,7 @@ fun AppBottomBar(
                                 text = item.title,
                                 fontSize = 9.5.sp,
                                 fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                                color = if (isSelected) item.activeColor else Color(0xFF64748B),
+                                color = if (isSelected) item.activeColor else MaterialTheme.colorScheme.onSurfaceVariant,
                                 maxLines = 1,
                                 overflow = TextOverflow.Ellipsis
                             )
