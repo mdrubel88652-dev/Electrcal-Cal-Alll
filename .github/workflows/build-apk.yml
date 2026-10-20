@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: app
+        working-directory: ./app
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Java
         uses: actions/setup-java@v3
         with:
