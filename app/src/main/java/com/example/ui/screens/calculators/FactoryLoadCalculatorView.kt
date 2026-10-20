@@ -2,6 +2,7 @@ package com.example.ui.screens.calculators
 
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -238,7 +239,135 @@ fun FactoryLoadCalculatorView(
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Clear/Reset and Default Sample System Banner
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp),
+            shape = RoundedCornerShape(10.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+        ) {
+            Column(modifier = Modifier.padding(10.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = null,
+                        tint = Color(0xFF0284C7),
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "বোঝার সুবিধার্থে ডিফল্ট মান দেখানো হয়েছে। নিজের মান বসাতে রিসেট করুন।",
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = FontWeight.Medium,
+                        lineHeight = 15.sp,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Reset / Clear Inputs button
+                    Surface(
+                        onClick = {
+                            loads.clear()
+                            demandFactorStr = "0.80"
+                            diversityFactorStr = "1.15"
+                            avgPfStr = "0.85"
+                            plantEffStr = "0.90"
+                            runCalculation()
+                            Toast.makeText(context, "সকল লোড ও ইনপুট রিসেট করা হয়েছে", Toast.LENGTH_SHORT).show()
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color(0xFFEF4444).copy(alpha = 0.12f),
+                        border = BorderStroke(1.dp, Color(0xFFEF4444).copy(alpha = 0.3f)),
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag("clear_inputs_btn")
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = null,
+                                tint = Color(0xFFDC2626),
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "রিসেট / খালি করুন",
+                                fontSize = 11.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFDC2626)
+                            )
+                        }
+                    }
+
+                    // Default Example Values button
+                    Surface(
+                        onClick = {
+                            loads.clear()
+                            if (systemPhase == "3 Phase") {
+                                loads.addAll(
+                                    listOf(
+                                        FactoryLoadItem(name = "Pump Motor", power = 7.5, unit = "kW", quantity = 3, phase = "3 Phase", powerFactor = 0.85),
+                                        FactoryLoadItem(name = "Industrial Blower", power = 3.0, unit = "kW", quantity = 4, phase = "3 Phase", powerFactor = 0.88),
+                                        FactoryLoadItem(name = "Air Compressor", power = 15.0, unit = "kW", quantity = 2, phase = "3 Phase", powerFactor = 0.86)
+                                    )
+                                )
+                            } else {
+                                loads.addAll(
+                                    listOf(
+                                        FactoryLoadItem(name = "Single-Phase Motor", power = 2.2, unit = "kW", quantity = 3, phase = "1 Phase", powerFactor = 0.85),
+                                        FactoryLoadItem(name = "Cooling Fan", power = 0.5, unit = "kW", quantity = 6, phase = "1 Phase", powerFactor = 0.90),
+                                        FactoryLoadItem(name = "Industrial Light", power = 0.25, unit = "kW", quantity = 20, phase = "1 Phase", powerFactor = 0.95)
+                                    )
+                                )
+                            }
+                            demandFactorStr = "0.80"
+                            diversityFactorStr = "1.15"
+                            avgPfStr = "0.85"
+                            plantEffStr = "0.90"
+                            runCalculation()
+                            Toast.makeText(context, "নমুনা লোডসমূহ লোড করা হয়েছে", Toast.LENGTH_SHORT).show()
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color(0xFF0284C7).copy(alpha = 0.12f),
+                        border = BorderStroke(1.dp, Color(0xFF0284C7).copy(alpha = 0.3f)),
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag("load_default_btn")
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Text(
+                                text = "💡 নমুনা মান লোড",
+                                fontSize = 11.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF0284C7)
+                            )
+                        }
+                    }
+                }
+            }
+        }
 
         // System Phase Selection Card (Strict phase isolation)
         Card(
@@ -286,78 +415,26 @@ fun FactoryLoadCalculatorView(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp)
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(MaterialTheme.colorScheme.surfaceVariant),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp)
-                ) {
-                    val is3Sel = systemPhase == "3 Phase"
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(if (is3Sel) ElectricBluePrimary else Color.Transparent)
-                            .clickable {
-                                systemPhase = "3 Phase"
-                                systemVoltageStr = "400"
-                                pendingPhase = "3 Phase"
-                                customPhase = "3 Phase"
-                                loads.forEachIndexed { idx, it -> loads[idx] = it.copy(phase = "3 Phase") }
-                                runCalculation()
-                            }
-                            .testTag("factory_phase_three"),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            if (is3Sel) {
-                                Icon(Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
-                            }
-                            Text(
-                                text = "Three Phase (3φ • 400V)",
-                                fontSize = 12.sp,
-                                fontWeight = if (is3Sel) FontWeight.Bold else FontWeight.Medium,
-                                color = if (is3Sel) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                com.example.ui.components.ModernPhaseSelector(
+                    selectedPhase = if (systemPhase == "3 Phase") "3-Phase" else "1-Phase",
+                    onPhaseSelected = { ph ->
+                        if (ph.contains("3")) {
+                            systemPhase = "3 Phase"
+                            systemVoltageStr = "400"
+                            pendingPhase = "3 Phase"
+                            customPhase = "3 Phase"
+                            loads.forEachIndexed { idx, it -> loads[idx] = it.copy(phase = "3 Phase") }
+                        } else {
+                            systemPhase = "1 Phase"
+                            systemVoltageStr = "230"
+                            pendingPhase = "1 Phase"
+                            customPhase = "1 Phase"
+                            loads.forEachIndexed { idx, it -> loads[idx] = it.copy(phase = "1 Phase") }
                         }
-                    }
-
-                    val is1Sel = systemPhase == "1 Phase"
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(if (is1Sel) ElectricBluePrimary else Color.Transparent)
-                            .clickable {
-                                systemPhase = "1 Phase"
-                                systemVoltageStr = "230"
-                                pendingPhase = "1 Phase"
-                                customPhase = "1 Phase"
-                                loads.forEachIndexed { idx, it -> loads[idx] = it.copy(phase = "1 Phase") }
-                                runCalculation()
-                            }
-                            .testTag("factory_phase_single"),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            if (is1Sel) {
-                                Icon(Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
-                                Spacer(modifier = Modifier.width(4.dp))
-                            }
-                            Text(
-                                text = "Single Phase (1φ • 230V)",
-                                fontSize = 12.sp,
-                                fontWeight = if (is1Sel) FontWeight.Bold else FontWeight.Medium,
-                                color = if (is1Sel) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-                }
+                        runCalculation()
+                    },
+                    modifier = Modifier.padding(vertical = 4.dp)
+                )
 
                 Spacer(modifier = Modifier.height(10.dp))
 

@@ -2,6 +2,7 @@ package com.example.ui.screens.calculators
 
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -277,6 +278,139 @@ fun SolarSystemCalculatorView(
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
+
+            // Clear/Reset and Default Sample System Banner
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 4.dp),
+                shape = RoundedCornerShape(10.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+            ) {
+                Column(modifier = Modifier.padding(10.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Info,
+                            contentDescription = null,
+                            tint = Color(0xFF0284C7),
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(
+                            text = "বোঝার সুবিধার্থে ডিফল্ট মান দেখানো হয়েছে। নিজের মান বসাতে রিসেট করুন।",
+                            fontSize = 11.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontWeight = FontWeight.Medium,
+                            lineHeight = 15.sp,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        // Reset / Clear Inputs button
+                        Surface(
+                            onClick = {
+                                dailyEnergyStr = ""
+                                peakSunHoursStr = "4.5"
+                                backupHoursStr = ""
+                                backupLoadStr = ""
+                                peakLoadStr = ""
+                                Toast.makeText(context, "ইনপুট রিসেট করা হয়েছে", Toast.LENGTH_SHORT).show()
+                            },
+                            shape = RoundedCornerShape(8.dp),
+                            color = Color(0xFFEF4444).copy(alpha = 0.12f),
+                            border = BorderStroke(1.dp, Color(0xFFEF4444).copy(alpha = 0.3f)),
+                            modifier = Modifier
+                                .weight(1f)
+                                .testTag("clear_inputs_btn")
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Refresh,
+                                    contentDescription = null,
+                                    tint = Color(0xFFDC2626),
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "রিসেট / খালি করুন",
+                                    fontSize = 11.5.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFFDC2626)
+                                )
+                            }
+                        }
+
+                        // Default Example Values button
+                        Surface(
+                            onClick = {
+                                dailyEnergyStr = "12"
+                                peakSunHoursStr = "4.5"
+                                backupHoursStr = "6"
+                                backupLoadStr = ""
+                                selectedSystemType = SolarSystemType.OFF_GRID
+                                selectedSystemVoltage = 48.0
+                                isCustomVoltage = false
+                                selectedPanelWattage = 550.0
+                                isCustomPanelWattage = false
+                                perfFactorStr = "80"
+                                selectedBatteryType = SolarBatteryType.LIFEPO4
+                                batteryUnitVoltageStr = "12"
+                                batteryUnitAhStr = "200"
+                                dodPercentStr = "90"
+                                batteryMarginStr = "10"
+                                peakLoadStr = "3.5"
+                                powerFactorStr = "0.90"
+                                inverterEfficiencyStr = "90"
+                                inverterMarginStr = "20"
+                                selectedOutputPhase = "Single Phase 230V"
+                                selectedControllerType = "MPPT"
+                                runCalculation()
+                                Toast.makeText(context, "নমুনা মান লোড করা হয়েছে", Toast.LENGTH_SHORT).show()
+                            },
+                            shape = RoundedCornerShape(8.dp),
+                            color = Color(0xFF0284C7).copy(alpha = 0.12f),
+                            border = BorderStroke(1.dp, Color(0xFF0284C7).copy(alpha = 0.3f)),
+                            modifier = Modifier
+                                .weight(1f)
+                                .testTag("load_default_btn")
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.CheckCircle,
+                                    contentDescription = null,
+                                    tint = Color(0xFF0284C7),
+                                    modifier = Modifier.size(14.dp)
+                                )
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Text(
+                                    text = "নমুনা মান লোড",
+                                    fontSize = 11.5.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF0284C7)
+                                )
+                            }
+                        }
+                    }
+                }
+            }
 
             // ==========================================
             // 1. SOLAR ENERGY INPUT SECTION
@@ -759,22 +893,14 @@ fun SolarSystemCalculatorView(
                         )
                     }
 
-                    // Phase & Output Voltage
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        FilterChip(
-                            selected = selectedOutputPhase == "Single Phase 230V",
-                            onClick = { selectedOutputPhase = "Single Phase 230V"; runCalculation() },
-                            label = { Text("1-Phase 230V") }
-                        )
-                        FilterChip(
-                            selected = selectedOutputPhase == "Three Phase 400V",
-                            onClick = { selectedOutputPhase = "Three Phase 400V"; runCalculation() },
-                            label = { Text("3-Phase 400V") }
-                        )
-                    }
+                    // Modern Phase Selector
+                    com.example.ui.components.ModernPhaseSelector(
+                        selectedPhase = if (selectedOutputPhase.contains("3")) "3-Phase" else "1-Phase",
+                        onPhaseSelected = { ph ->
+                            selectedOutputPhase = if (ph.contains("3")) "Three Phase 400V" else "Single Phase 230V"
+                            runCalculation()
+                        }
+                    )
 
                     // Charge Controller Type
                     Row(
@@ -1409,6 +1535,38 @@ fun SolarSystemCalculatorView(
                             ShareUtils.sharePdf(context, pdf, "${calculator.name} Report")
                         } catch (e: Exception) {
                             Toast.makeText(context, "PDF error: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    onPrint = {
+                        try {
+                            val inputsMap = mutableMapOf<String, String>()
+                            inputsMap["Daily Energy"] = "${dailyEnergyStr} kWh/day"
+                            inputsMap["Peak Sun Hours"] = "${peakSunHoursStr} h/day"
+                            inputsMap["Backup Duration"] = "${backupHoursStr} Hours"
+                            inputsMap["Backup Load"] = "${fmt(res.effectiveBackupLoadKw)} kW"
+                            inputsMap["System Type"] = selectedSystemType.label
+                            inputsMap["System Voltage"] = "${res.actualBankVoltage.roundToInt()} V"
+                            inputsMap["Panel Rating"] = "${res.panelWattage.roundToInt()} W"
+                            inputsMap["Battery Chemistry"] = selectedBatteryType.label
+                            inputsMap["Unit Battery"] = "${batteryUnitVoltageStr}V / ${batteryUnitAhStr}Ah"
+                            inputsMap["Battery DoD"] = "${dodPercentStr}%"
+                            inputsMap["Inverter Efficiency"] = "${inverterEfficiencyStr}%"
+                            inputsMap["Output Phase"] = selectedOutputPhase
+                            inputsMap["Controller Type"] = selectedControllerType
+
+                            val cRes = calculationResult ?: return@CalculatorActionButtons
+                            val pdf = PdfReportGenerator.generateCalculationPdf(
+                                context,
+                                calculator,
+                                inputsMap,
+                                cRes,
+                                devSettings,
+                                pdfSettings,
+                                techProfile
+                            )
+                            PrintManagerHelper.printPdfFile(context, pdf, calculator.name)
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "Print error: ${e.message}", Toast.LENGTH_SHORT).show()
                         }
                     }
                 )

@@ -2,6 +2,7 @@ package com.example.ui.screens.calculators
 
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -222,6 +223,128 @@ fun HouseWiringCalculatorView(
         }
 
         Spacer(modifier = Modifier.height(12.dp))
+
+        // Clear/Reset and Default Sample System Banner
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp),
+            shape = RoundedCornerShape(10.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+        ) {
+            Column(modifier = Modifier.padding(10.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = null,
+                        tint = Color(0xFF0284C7),
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "বোঝার সুবিধার্থে ডিফল্ট মান দেখানো হয়েছে। নিজের মান বসাতে রিসেট করুন।",
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = FontWeight.Medium,
+                        lineHeight = 15.sp,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Reset / Clear Inputs button
+                    Surface(
+                        onClick = {
+                            loads.clear()
+                            demandFactorStr = "0.80"
+                            powerFactorStr = "0.85"
+                            Toast.makeText(context, "সকল লোড ও ইনপুট রিসেট করা হয়েছে", Toast.LENGTH_SHORT).show()
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color(0xFFEF4444).copy(alpha = 0.12f),
+                        border = BorderStroke(1.dp, Color(0xFFEF4444).copy(alpha = 0.3f)),
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag("clear_inputs_btn")
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = null,
+                                tint = Color(0xFFDC2626),
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "রিসেট / খালি করুন",
+                                fontSize = 11.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFDC2626)
+                            )
+                        }
+                    }
+
+                    // Default Example Values button
+                    Surface(
+                        onClick = {
+                            loads.clear()
+                            loads.addAll(
+                                listOf(
+                                    HouseholdLoadItem(name = "LED Light (15W)", power = 15.0, unit = "W", quantity = 10, category = "Lighting"),
+                                    HouseholdLoadItem(name = "Ceiling Fan (75W)", power = 75.0, unit = "W", quantity = 4, category = "Fans"),
+                                    HouseholdLoadItem(name = "Refrigerator (250W)", power = 250.0, unit = "W", quantity = 1, category = "Refrigeration"),
+                                    HouseholdLoadItem(name = "Split AC 1.5 Ton (1800W)", power = 1800.0, unit = "W", quantity = 1, category = "Cooling"),
+                                    HouseholdLoadItem(name = "Water Pump 1 HP (750W)", power = 750.0, unit = "W", quantity = 1, category = "Pumps"),
+                                    HouseholdLoadItem(name = "Smart TV (100W)", power = 100.0, unit = "W", quantity = 1, category = "Entertainment")
+                                )
+                            )
+                            demandFactorStr = "0.80"
+                            powerFactorStr = "0.85"
+                            Toast.makeText(context, "নমুনা লোডসমূহ লোড করা হয়েছে", Toast.LENGTH_SHORT).show()
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color(0xFF0284C7).copy(alpha = 0.12f),
+                        border = BorderStroke(1.dp, Color(0xFF0284C7).copy(alpha = 0.3f)),
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag("load_default_btn")
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = Color(0xFF0284C7),
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "নমুনা মান লোড",
+                                fontSize = 11.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF0284C7)
+                            )
+                        }
+                    }
+                }
+            }
+        }
 
         // 2. ADD HOUSEHOLD LOAD SECTION
         Card(
@@ -641,45 +764,20 @@ fun HouseWiringCalculatorView(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
+                // Modern Clean Phase Selector
+                com.example.ui.components.ModernPhaseSelector(
+                    selectedPhase = supplyPhase,
+                    onPhaseSelected = { ph ->
+                        supplyPhase = if (ph.contains("3")) "3 Phase" else "1 Phase"
+                        supplyVoltageStr = if (ph.contains("3")) "400" else "230"
+                    },
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    // Supply Phase selector
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text("Supply Phase", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(56.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(MaterialTheme.colorScheme.surfaceVariant),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            listOf("1 Phase", "3 Phase").forEach { ph ->
-                                val isSel = supplyPhase == ph
-                                Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .fillMaxHeight()
-                                        .background(if (isSel) ElectricBluePrimary else Color.Transparent)
-                                        .clickable {
-                                            supplyPhase = ph
-                                            supplyVoltageStr = if (ph == "3 Phase") "400" else "230"
-                                        },
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = ph,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = if (isSel) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                        }
-                    }
-
                     OutlinedTextField(
                         value = demandFactorStr,
                         onValueChange = { demandFactorStr = it },
@@ -689,14 +787,7 @@ fun HouseWiringCalculatorView(
                         singleLine = true,
                         shape = RoundedCornerShape(8.dp)
                     )
-                }
 
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
                     OutlinedTextField(
                         value = supplyVoltageStr,
                         onValueChange = { supplyVoltageStr = it },
@@ -716,46 +807,6 @@ fun HouseWiringCalculatorView(
                         singleLine = true,
                         shape = RoundedCornerShape(8.dp)
                     )
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                // Strict Phase Isolation Notice
-                Surface(
-                    color = Color(0xFFFEF3C7),
-                    shape = RoundedCornerShape(8.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier.padding(10.dp),
-                        verticalAlignment = Alignment.Top
-                    ) {
-                        Icon(
-                            Icons.Default.Info,
-                            contentDescription = null,
-                            tint = Color(0xFFB45309),
-                            modifier = Modifier.size(18.dp).padding(top = 1.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Column {
-                            Text(
-                                text = "গুরুত্বপূর্ণ শর্ত: Single Phase ও Three Phase লোড একই ক্যালকুলেশনে মিশিয়ে হিসাব করা যাবে না।",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF92400E)
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = if (supplyPhase == "1 Phase") {
-                                    "বর্তমানে সম্পূর্ণ হিসাব Single Phase (1φ 230V) সূত্রে সম্পন্ন হচ্ছে: I = P / (V × PF)।"
-                                } else {
-                                    "বর্তমানে সম্পূর্ণ হিসাব Three Phase (3φ 400V) সূত্রে সম্পন্ন হচ্ছে: I = P / (√3 × V × PF)।"
-                                },
-                                fontSize = 10.sp,
-                                color = Color(0xFFB45309)
-                            )
-                        }
-                    }
                 }
 
                 Spacer(modifier = Modifier.height(14.dp))
@@ -1029,6 +1080,31 @@ fun HouseWiringCalculatorView(
                         ShareUtils.sharePdf(context, pdf, "${calculator.name} Report")
                     } catch (e: Exception) {
                         Toast.makeText(context, "PDF error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                onPrint = {
+                    try {
+                        val inputsMap = mutableMapOf<String, String>()
+                        inputsMap["Total Connected Load"] = "%.2f kW (${loads.sumOf { it.totalWatts }.roundToInt()} W)".format(loads.sumOf { it.totalKw })
+                        inputsMap["Demand Factor"] = demandFactorStr
+                        inputsMap["Supply Phase"] = supplyPhase
+                        inputsMap["Supply Voltage"] = "$supplyVoltageStr V"
+                        inputsMap["Power Factor"] = powerFactorStr
+                        loads.take(8).forEachIndexed { i, it ->
+                            inputsMap["Appliance #${i + 1}"] = "${it.name}: ${it.displayOriginal} × ${it.quantity} = ${it.totalWatts.roundToInt()} W (%.3f kW)".format(it.totalKw)
+                        }
+                        val pdf = PdfReportGenerator.generateCalculationPdf(
+                            context,
+                            calculator,
+                            inputsMap,
+                            res,
+                            devSettings,
+                            pdfSettings,
+                            techProfile
+                        )
+                        PrintManagerHelper.printPdfFile(context, pdf, calculator.name)
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "Print error: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
             )

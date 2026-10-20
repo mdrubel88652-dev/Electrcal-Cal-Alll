@@ -51,17 +51,27 @@ private val LightColorScheme = lightColorScheme(
 
 @Composable
 fun ElectricalCalculationTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = false,
+    accentColor: Color? = null,
     dynamicColor: Boolean = false, // Keep consistent industrial electrical branding
     content: @Composable () -> Unit
 ) {
-    val colorScheme = when {
+    val baseScheme = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
+    }
+
+    val colorScheme = if (accentColor != null) {
+        baseScheme.copy(
+            primary = accentColor,
+            secondary = accentColor
+        )
+    } else {
+        baseScheme
     }
 
     MaterialTheme(

@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -58,13 +59,25 @@ class MainActivity : ComponentActivity() {
         setContent {
             val app = ElectricalApp.getApp(this)
             val themeMode by app.settingsManager.themeModeFlow.collectAsState(initial = "LIGHT")
+            val accentHex by app.settingsManager.accentColorFlow.collectAsState(initial = "#0284C7")
             val darkTheme = when (themeMode) {
                 "DARK" -> true
                 "LIGHT" -> false
-                else -> isSystemInDarkTheme()
+                else -> false
             }
 
-            ElectricalCalculationTheme(darkTheme = darkTheme) {
+            val accentColor = remember(accentHex) {
+                try {
+                    Color(android.graphics.Color.parseColor(accentHex))
+                } catch (e: Exception) {
+                    Color(0xFF0284C7)
+                }
+            }
+
+            ElectricalCalculationTheme(
+                darkTheme = darkTheme,
+                accentColor = accentColor
+            ) {
                 MainAppNavigation()
             }
         }

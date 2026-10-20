@@ -745,6 +745,22 @@ fun CalculatorScreen(
                     } catch (e: Exception) {
                         Toast.makeText(context, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
+                },
+                onPrint = {
+                    try {
+                        val pdf = PdfReportGenerator.generateCalculationPdf(
+                            context,
+                            calculator,
+                            inputValues,
+                            res,
+                            devSettings,
+                            pdfSettings,
+                            techProfile
+                        )
+                        com.example.print.PrintManagerHelper.printPdfFile(context, pdf, calculator.name)
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "Print error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
                 }
             )
         }

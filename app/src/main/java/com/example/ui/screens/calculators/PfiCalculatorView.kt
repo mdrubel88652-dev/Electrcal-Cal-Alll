@@ -2,6 +2,7 @@ package com.example.ui.screens.calculators
 
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -194,7 +195,122 @@ fun PfiCalculatorView(
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
+        // Clear/Reset and Default Sample System Banner
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 12.dp),
+            shape = RoundedCornerShape(10.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+        ) {
+            Column(modifier = Modifier.padding(10.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Info,
+                        contentDescription = null,
+                        tint = Color(0xFF0284C7),
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = "বোঝার সুবিধার্থে ডিফল্ট মান দেখানো হয়েছে। নিজের মান বসাতে রিসেট করুন।",
+                        fontSize = 11.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = FontWeight.Medium,
+                        lineHeight = 15.sp,
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Reset / Clear Inputs button
+                    Surface(
+                        onClick = {
+                            loadValueStr = ""
+                            existingPfStr = "0.75"
+                            targetPfStr = "0.98"
+                            Toast.makeText(context, "ইনপুট রিসেট করা হয়েছে", Toast.LENGTH_SHORT).show()
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color(0xFFEF4444).copy(alpha = 0.12f),
+                        border = BorderStroke(1.dp, Color(0xFFEF4444).copy(alpha = 0.3f)),
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag("clear_inputs_btn")
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = null,
+                                tint = Color(0xFFDC2626),
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "রিসেট / খালি করুন",
+                                fontSize = 11.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFFDC2626)
+                            )
+                        }
+                    }
+
+                    // Default Example Values button
+                    Surface(
+                        onClick = {
+                            loadValueStr = "100"
+                            loadUnit = "kW"
+                            existingPfStr = "0.75"
+                            targetPfStr = "0.98"
+                            systemVoltageStr = "400"
+                            phaseSelection = "3 Phase"
+                            frequencySelection = "50 Hz"
+                            runCalculation()
+                            Toast.makeText(context, "নমুনা মান লোড করা হয়েছে", Toast.LENGTH_SHORT).show()
+                        },
+                        shape = RoundedCornerShape(8.dp),
+                        color = Color(0xFF0284C7).copy(alpha = 0.12f),
+                        border = BorderStroke(1.dp, Color(0xFF0284C7).copy(alpha = 0.3f)),
+                        modifier = Modifier
+                            .weight(1f)
+                            .testTag("load_default_btn")
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 7.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = Color(0xFF0284C7),
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "নমুনা মান লোড",
+                                fontSize = 11.5.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF0284C7)
+                            )
+                        }
+                    }
+                }
+            }
+        }
 
         // 2. INPUT PARAMETERS CARD
         Card(
@@ -314,33 +430,13 @@ fun PfiCalculatorView(
                     // Phase selector
                     Column(modifier = Modifier.weight(1f)) {
                         Text("Phase", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(56.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(MaterialTheme.colorScheme.surfaceVariant),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            listOf("3 Phase", "1 Phase").forEach { ph ->
-                                val isSel = phaseSelection == ph
-                                Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .fillMaxHeight()
-                                        .background(if (isSel) ElectricBluePrimary else Color.Transparent)
-                                        .clickable { phaseSelection = ph },
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = ph,
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = if (isSel) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
+                        Spacer(modifier = Modifier.height(2.dp))
+                        com.example.ui.components.ModernPhaseSelector(
+                            selectedPhase = if (phaseSelection == "3 Phase") "3-Phase" else "1-Phase",
+                            onPhaseSelected = { ph ->
+                                phaseSelection = if (ph.contains("3")) "3 Phase" else "1 Phase"
                             }
-                        }
+                        )
                     }
 
                     // Frequency selector
@@ -733,143 +829,72 @@ fun PfiCalculatorView(
             Spacer(modifier = Modifier.height(16.dp))
 
             // Action Buttons Bar
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(6.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    // Save
-                    IconButton(
-                        onClick = {
-                            coroutineScope.launch {
-                                val dateStr = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault()).format(Date())
-                                val summary = "Load: ${loadValueStr} $loadUnit, PF: $existingPfStr -> $targetPfStr, V: ${systemVoltageStr}V | Req: ${fmt(res.requiredKvar)} kVAR"
-                                val notesStr = "Steps: ${res.totalStepsCount} (${res.steps.joinToString { "${it.kvar.roundToInt()}kVAR" }}) | Controller: ${res.recommendedControllerSteps}-Step | Bank: ${fmt(res.recommendedBankKvar)} kVAR"
-                                val entity = HistoryEntity(
-                                    calculatorId = calculator.id,
-                                    calculatorName = calculator.name,
-                                    level = calculator.level.displayName,
-                                    category = calculator.category.displayName,
-                                    formattedDate = dateStr,
-                                    inputSummary = summary,
-                                    primaryResult = fmt(res.recommendedBankKvar),
-                                    resultUnit = "kVAR (Recommended Bank)",
-                                    formula = "Qc = P × (tan φ₁ - tan φ₂)",
-                                    stepSummary = "Steps: ${res.totalStepsCount} (${res.recommendedControllerSteps}-Step Controller) | Required: ${fmt(res.requiredKvar)} kVAR",
-                                    notes = notesStr
-                                )
-                                app.historyRepository.insertHistory(entity)
-                                isSaved = true
-                                Toast.makeText(context, "Saved to history", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    ) {
-                        Icon(
-                            imageVector = if (isSaved) Icons.Default.Check else Icons.Default.BookmarkBorder,
-                            contentDescription = "Save",
-                            tint = if (isSaved) Color(0xFF2E7D32) else MaterialTheme.colorScheme.primary
+            // 4-Button Action Grid (Save, Copy, Share, PDF Report)
+            com.example.ui.components.CalculatorActionButtons(
+                isSaved = isSaved,
+                onSave = {
+                    coroutineScope.launch {
+                        val dateStr = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault()).format(Date())
+                        val summary = "Load: ${loadValueStr} $loadUnit, PF: $existingPfStr -> $targetPfStr, V: ${systemVoltageStr}V | Req: ${fmt(res.requiredKvar)} kVAR"
+                        val notesStr = "Steps: ${res.totalStepsCount} (${res.steps.joinToString { "${it.kvar.roundToInt()}kVAR" }}) | Controller: ${res.recommendedControllerSteps}-Step | Bank: ${fmt(res.recommendedBankKvar)} kVAR"
+                        val entity = HistoryEntity(
+                            calculatorId = calculator.id,
+                            calculatorName = calculator.name,
+                            level = calculator.level.displayName,
+                            category = calculator.category.displayName,
+                            formattedDate = dateStr,
+                            inputSummary = summary,
+                            primaryResult = fmt(res.recommendedBankKvar),
+                            resultUnit = "kVAR (Recommended Bank)",
+                            formula = "Qc = P × (tan φ₁ - tan φ₂)",
+                            stepSummary = "Steps: ${res.totalStepsCount} (${res.recommendedControllerSteps}-Step Controller) | Required: ${fmt(res.requiredKvar)} kVAR",
+                            notes = notesStr
                         )
+                        app.historyRepository.insertHistory(entity)
+                        isSaved = true
+                        Toast.makeText(context, "Saved to history", Toast.LENGTH_SHORT).show()
                     }
+                },
+                onCopy = {
+                    val copyText = "PFI / Capacitor Bank Sizing\nLoad: ${loadValueStr} $loadUnit\nPF: $existingPfStr -> $targetPfStr\nRequired Compensation: ${fmt(res.requiredKvar)} kVAR\nRecommended Bank: ${fmt(res.recommendedBankKvar)} kVAR\nConfiguration: ${res.steps.joinToString { "Step ${it.stepNumber}: ${it.kvar.roundToInt()} kVAR" }}\nAPFC Controller: ${res.recommendedControllerSteps} Step"
+                    ShareUtils.copyToClipboard(context, calculator.name, copyText)
+                    Toast.makeText(context, "Copied to clipboard", Toast.LENGTH_SHORT).show()
+                },
+                onShare = {
+                    val shareText = "PFI / Capacitor Bank Report\nLoad: ${loadValueStr} $loadUnit\nPF: $existingPfStr -> $targetPfStr\nRequired: ${fmt(res.requiredKvar)} kVAR\nRecommended Bank: ${fmt(res.recommendedBankKvar)} kVAR\nController: ${res.recommendedControllerSteps}-Step APFC\nCalculated with ELECTRICAL CALCULATION ALL"
+                    ShareUtils.shareText(context, calculator.name, shareText)
+                },
+                onPdf = {
+                    try {
+                        val inputsMap = mutableMapOf<String, String>()
+                        inputsMap["Existing Load"] = "${loadValueStr} $loadUnit"
+                        inputsMap["Existing PF"] = existingPfStr
+                        inputsMap["Target PF"] = targetPfStr
+                        inputsMap["System Voltage"] = "${systemVoltageStr} V (${phaseSelection})"
+                        inputsMap["Frequency"] = frequencySelection
+                        inputsMap["Required kVAR"] = "${fmt(res.requiredKvar)} kVAR"
+                        inputsMap["Recommended Bank"] = "${fmt(res.recommendedBankKvar)} kVAR"
+                        inputsMap["Capacitor Steps"] = res.steps.joinToString(", ") { "S${it.stepNumber}: ${it.kvar.roundToInt()}kVAR" }
+                        inputsMap["APFC Controller"] = "${res.recommendedControllerSteps}-Step Controller"
+                        inputsMap["Capacitor Units"] = "${res.totalCapacitorUnits} Units (${res.capacitorUnitBreakdown})"
+                        inputsMap["Capacitor Voltage"] = res.recommendedCapacitorVoltageRating
 
-                    // Copy
-                    IconButton(
-                        onClick = {
-                            val copyText = "PFI / Capacitor Bank Sizing\nLoad: ${loadValueStr} $loadUnit\nPF: $existingPfStr -> $targetPfStr\nRequired Compensation: ${fmt(res.requiredKvar)} kVAR\nRecommended Bank: ${fmt(res.recommendedBankKvar)} kVAR\nConfiguration: ${res.steps.joinToString { "Step ${it.stepNumber}: ${it.kvar.roundToInt()} kVAR" }}\nAPFC Controller: ${res.recommendedControllerSteps} Step"
-                            ShareUtils.copyToClipboard(context, calculator.name, copyText)
-                        }
-                    ) {
-                        Icon(Icons.Default.ContentCopy, contentDescription = "Copy")
-                    }
-
-                    // Share
-                    IconButton(
-                        onClick = {
-                            val shareText = "PFI / Capacitor Bank Report\nLoad: ${loadValueStr} $loadUnit\nPF: $existingPfStr -> $targetPfStr\nRequired: ${fmt(res.requiredKvar)} kVAR\nRecommended Bank: ${fmt(res.recommendedBankKvar)} kVAR\nController: ${res.recommendedControllerSteps}-Step APFC\nCalculated with ELECTRICAL CALCULATION ALL"
-                            ShareUtils.shareText(context, calculator.name, shareText)
-                        }
-                    ) {
-                        Icon(Icons.Default.Share, contentDescription = "Share")
-                    }
-
-                    // PDF
-                    IconButton(
-                        onClick = {
-                            try {
-                                val inputsMap = mutableMapOf<String, String>()
-                                inputsMap["Existing Load"] = "${loadValueStr} $loadUnit"
-                                inputsMap["Existing PF"] = existingPfStr
-                                inputsMap["Target PF"] = targetPfStr
-                                inputsMap["System Voltage"] = "${systemVoltageStr} V (${phaseSelection})"
-                                inputsMap["Frequency"] = frequencySelection
-                                inputsMap["Required kVAR"] = "${fmt(res.requiredKvar)} kVAR"
-                                inputsMap["Recommended Bank"] = "${fmt(res.recommendedBankKvar)} kVAR"
-                                inputsMap["Capacitor Steps"] = res.steps.joinToString(", ") { "S${it.stepNumber}: ${it.kvar.roundToInt()}kVAR" }
-                                inputsMap["APFC Controller"] = "${res.recommendedControllerSteps}-Step Controller"
-                                inputsMap["Capacitor Units"] = "${res.totalCapacitorUnits} Units (${res.capacitorUnitBreakdown})"
-                                inputsMap["Capacitor Voltage"] = res.recommendedCapacitorVoltageRating
-
-                                val cRes = calculationResult ?: return@IconButton
-                                val pdf = PdfReportGenerator.generateCalculationPdf(
-                                    context,
-                                    calculator,
-                                    inputsMap,
-                                    cRes,
-                                    devSettings,
-                                    pdfSettings,
-                                    techProfile
-                                )
-                                ShareUtils.sharePdf(context, pdf, "${calculator.name} Report")
-                            } catch (e: Exception) {
-                                Toast.makeText(context, "PDF error: ${e.message}", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    ) {
-                        Icon(Icons.Default.PictureAsPdf, contentDescription = "PDF Report", tint = Color(0xFFC62828))
-                    }
-
-                    // Print
-                    IconButton(
-                        onClick = {
-                            try {
-                                val inputsMap = mutableMapOf<String, String>()
-                                inputsMap["Existing Load"] = "${loadValueStr} $loadUnit"
-                                inputsMap["Existing PF"] = existingPfStr
-                                inputsMap["Target PF"] = targetPfStr
-                                inputsMap["System Voltage"] = "${systemVoltageStr} V (${phaseSelection})"
-                                inputsMap["Frequency"] = frequencySelection
-                                inputsMap["Required kVAR"] = "${fmt(res.requiredKvar)} kVAR"
-                                inputsMap["Recommended Bank"] = "${fmt(res.recommendedBankKvar)} kVAR"
-                                inputsMap["Capacitor Steps"] = res.steps.joinToString(", ") { "S${it.stepNumber}: ${it.kvar.roundToInt()}kVAR" }
-                                inputsMap["APFC Controller"] = "${res.recommendedControllerSteps}-Step Controller"
-                                inputsMap["Capacitor Units"] = "${res.totalCapacitorUnits} Units (${res.capacitorUnitBreakdown})"
-                                inputsMap["Capacitor Voltage"] = res.recommendedCapacitorVoltageRating
-
-                                val cRes = calculationResult ?: return@IconButton
-                                val pdf = PdfReportGenerator.generateCalculationPdf(
-                                    context,
-                                    calculator,
-                                    inputsMap,
-                                    cRes,
-                                    devSettings,
-                                    pdfSettings,
-                                    techProfile
-                                )
-                                PrintManagerHelper.printPdfFile(context, pdf, calculator.name)
-                            } catch (e: Exception) {
-                                Toast.makeText(context, "Print error: ${e.message}", Toast.LENGTH_SHORT).show()
-                            }
-                        }
-                    ) {
-                        Icon(Icons.Default.Print, contentDescription = "Print", tint = ElectricBluePrimary)
+                        val cRes = calculationResult ?: return@CalculatorActionButtons
+                        val pdf = PdfReportGenerator.generateCalculationPdf(
+                            context,
+                            calculator,
+                            inputsMap,
+                            cRes,
+                            devSettings,
+                            pdfSettings,
+                            techProfile
+                        )
+                        ShareUtils.sharePdf(context, pdf, "${calculator.name} Report")
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "PDF error: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
-            }
+            )
         }
     }
 }

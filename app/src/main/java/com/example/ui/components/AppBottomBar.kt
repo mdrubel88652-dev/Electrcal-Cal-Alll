@@ -74,10 +74,9 @@ fun AppBottomBar(
 
     Surface(
         modifier = Modifier.fillMaxWidth(),
-        color = MaterialTheme.colorScheme.surface,
-        shadowElevation = 4.dp,
-        tonalElevation = 2.dp,
-        border = BorderStroke(0.5.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+        color = MaterialTheme.colorScheme.background,
+        shadowElevation = 0.dp,
+        tonalElevation = 0.dp
     ) {
         Column(
             modifier = Modifier
