@@ -1001,23 +1001,29 @@ fun HouseWiringCalculatorView(
                                     }
                                 }
                             }
-                        }
-                    }
 
-                    // Standard & Notes
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Text(
-                        text = "Standard / Basis: ${res.standardBasis}",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    res.notes.forEach { note ->
-                        Text(
-                            text = "• $note",
-                            fontSize = 11.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                            if (res.standardBasis.isNotBlank() || res.notes.isNotEmpty()) {
+                                Spacer(modifier = Modifier.height(10.dp))
+                                HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                                Spacer(modifier = Modifier.height(8.dp))
+                                if (res.standardBasis.isNotBlank()) {
+                                    Text(
+                                        text = "Standard / Basis: ${res.standardBasis}",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                }
+                                res.notes.forEach { note ->
+                                    Text(
+                                        text = "• $note",
+                                        fontSize = 11.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.padding(vertical = 1.dp)
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }

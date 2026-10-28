@@ -4,12 +4,24 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import com.example.ui.screens.PrepaidMeterData
+import com.example.ui.screens.ElectricalToolsCatalog
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -34,6 +46,7 @@ import com.example.ui.screens.BuildingMaterialScreen
 import com.example.ui.screens.CalculatorScreen
 import com.example.ui.screens.CalculatorsScreen
 import com.example.ui.screens.DeveloperScreen
+import com.example.ui.screens.ElectricalToolsScreen
 import com.example.ui.screens.FavoritesScreen
 import com.example.ui.screens.HistoryScreen
 import com.example.ui.screens.HomeScreen
@@ -42,6 +55,7 @@ import com.example.ui.screens.LevelScreen
 import com.example.ui.screens.MaterialEstimateScreen
 import com.example.ui.screens.MaterialListScreen
 import com.example.ui.screens.NotificationScreen
+import com.example.ui.screens.PrepaidMeterScreen
 import com.example.ui.screens.PrivacyPolicyScreen
 import com.example.ui.screens.ProjectScreen
 import com.example.ui.screens.ReportsScreen
@@ -50,11 +64,14 @@ import com.example.ui.screens.SplashScreen
 import com.example.ui.screens.TechnicianProfileScreen
 import com.example.ui.screens.ThemeScreen
 import com.example.ui.theme.ElectricalCalculationTheme
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        hideSystemNavigationBars()
 
         setContent {
             val app = ElectricalApp.getApp(this)
@@ -82,6 +99,25 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    override fun onResume() {
+        super.onResume()
+        hideSystemNavigationBars()
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) {
+            hideSystemNavigationBars()
+        }
+    }
+
+    private fun hideSystemNavigationBars() {
+        val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
+        windowInsetsController.systemBarsBehavior =
+            WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        windowInsetsController.hide(WindowInsetsCompat.Type.navigationBars())
+    }
 }
 
 @Composable
@@ -98,6 +134,14 @@ fun MainAppNavigation() {
     var showThreeLineMenu by remember { mutableStateOf(false) }
 
     val isSplashScreen = currentRoute == Screen.Splash.route
+
+    LaunchedEffect(Unit) {
+        withContext(Dispatchers.Default) {
+            CalculatorRegistry.allCalculators
+            PrepaidMeterData.meterBrands
+            ElectricalToolsCatalog.tools
+        }
+    }
 
     val isTopLevelRoute = currentRoute in listOf(
         Screen.Main.route,
@@ -128,6 +172,8 @@ fun MainAppNavigation() {
         currentRoute == Screen.Notification.route -> if (isEn) "Notifications" else "নোটিফিকেশন"
         currentRoute == Screen.Information.route -> if (isEn) "Information Guide (167)" else "সহায়িকা • Information (167)"
         currentRoute == Screen.TechnicianProfile.route -> if (isEn) "Technician Report Profile" else "টেকনিশিয়ান রিপোর্ট প্রোফাইল"
+        currentRoute == Screen.PrepaidMeter.route -> if (isEn) "Prepaid Meter Codes" else "প্রিপেইড মিটার কোড ও সহায়িকা"
+        currentRoute == Screen.Tools.route -> if (isEn) "Electrical Tools Guide (50)" else "ইলেকট্রিক্যাল টুলস সহায়িকা (৫০)"
         currentRoute?.startsWith("calculator/") == true -> {
             val id = navBackStackEntry?.arguments?.getInt("calcId") ?: 0
             CalculatorRegistry.getById(id)?.name ?: "Calculator"
@@ -138,11 +184,12 @@ fun MainAppNavigation() {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = MaterialTheme.colorScheme.background,
+        contentWindowInsets = WindowInsets(0, 0, 0, 0),
         topBar = {
-            if (!isSplashScreen) {
+            if (!isSplashScreen && currentRoute != Screen.Main.route) {
                 AppTopBar(
-                    title = if (currentRoute == Screen.Main.route) "Electrical Calculation All" else currentTitle,
-                    subtitle = if (currentRoute == Screen.Main.route) "Electrical engineering solution" else "Electrical Engineering Calculation & Estimation",
+                    title = currentTitle,
+                    subtitle = "Electrical Engineering Calculation & Estimation",
                     canNavigateBack = !isTopLevelRoute,
                     onNavigateBack = { navController.popBackStack() },
                     onNavigateToNotification = { navController.navigate(Screen.Notification.route) },
@@ -156,12 +203,14 @@ fun MainAppNavigation() {
                 AppBottomBar(
                     currentRoute = currentRoute,
                     onNavigate = { route ->
-                        navController.navigate(route) {
-                            popUpTo(Screen.Main.route) {
-                                saveState = true
+                        if (route != currentRoute) {
+                            navController.navigate(route) {
+                                popUpTo(Screen.Main.route) {
+                                    saveState = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
                             }
-                            launchSingleTop = true
-                            restoreState = true
                         }
                     }
                 )
@@ -171,7 +220,12 @@ fun MainAppNavigation() {
         NavHost(
             navController = navController,
             startDestination = Screen.Splash.route,
-            modifier = if (isSplashScreen) Modifier.fillMaxSize() else Modifier.padding(innerPadding)
+            enterTransition = { EnterTransition.None },
+            exitTransition = { ExitTransition.None },
+            popEnterTransition = { EnterTransition.None },
+            popExitTransition = { ExitTransition.None },
+            modifier = if (isSplashScreen || currentRoute == Screen.Main.route) Modifier.fillMaxSize()
+                       else Modifier.padding(innerPadding)
         ) {
             composable(Screen.Splash.route) {
                 SplashScreen(
@@ -186,45 +240,58 @@ fun MainAppNavigation() {
                 )
             }
 
-            composable(Screen.Main.route) {
-                HomeScreen(
-                    onNavigateToCalculator = { id ->
-                        navController.navigate(Screen.CalculatorDetail.createRoute(id))
-                    },
-                    onNavigateToBuildingMaterial = {
-                        navController.navigate(Screen.MaterialEstimate.route)
-                    },
-                    onNavigateToFavorites = {
-                        navController.navigate(Screen.Favorites.route)
-                    },
-                    onNavigateToHistory = {
-                        navController.navigate(Screen.History.route)
-                    },
-                    onNavigateToCalculatorsList = {
-                        navController.navigate(Screen.Calculators.route)
-                    },
-                    onNavigateToSettings = {
-                        navController.navigate(Screen.Settings.route)
-                    },
-                    onNavigateToProject = {
-                        navController.navigate(Screen.Project.route)
-                    },
-                    onNavigateToInformation = {
-                        navController.navigate(Screen.Information.route)
-                    },
-                    onNavigateToNotification = {
-                        navController.navigate(Screen.Notification.route)
-                    },
-                    onNavigateToAdvance = {
-                        navController.navigate(Screen.Advance.route)
-                    },
-                    onNavigateToBasic = {
-                        navController.navigate(Screen.Basic.route)
-                    },
-                    onNavigateToLower = {
-                        navController.navigate(Screen.Lower.route)
-                    }
-                )
+            composable(
+                route = Screen.Main.route,
+                exitTransition = { fadeOut(animationSpec = tween(0)) },
+                popEnterTransition = { fadeIn(animationSpec = tween(0)) }
+            ) {
+                if (currentRoute == Screen.Main.route) {
+                    HomeScreen(
+                        onNavigateToCalculator = { id ->
+                            navController.navigate(Screen.CalculatorDetail.createRoute(id))
+                        },
+                        onNavigateToBuildingMaterial = {
+                            navController.navigate(Screen.MaterialEstimate.route)
+                        },
+                        onNavigateToFavorites = {
+                            navController.navigate(Screen.Favorites.route)
+                        },
+                        onNavigateToHistory = {
+                            navController.navigate(Screen.History.route)
+                        },
+                        onNavigateToCalculatorsList = {
+                            navController.navigate(Screen.Calculators.route)
+                        },
+                        onNavigateToSettings = {
+                            navController.navigate(Screen.Settings.route)
+                        },
+                        onNavigateToProject = {
+                            navController.navigate(Screen.Project.route)
+                        },
+                        onNavigateToInformation = {
+                            navController.navigate(Screen.Information.route)
+                        },
+                        onNavigateToNotification = {
+                            navController.navigate(Screen.Notification.route)
+                        },
+                        onNavigateToAdvance = {
+                            navController.navigate(Screen.Advance.route)
+                        },
+                        onNavigateToBasic = {
+                            navController.navigate(Screen.Basic.route)
+                        },
+                        onNavigateToLower = {
+                            navController.navigate(Screen.Lower.route)
+                        },
+                        onNavigateToPrepaidMeter = {
+                            navController.navigate(Screen.PrepaidMeter.route)
+                        },
+                        onNavigateToTools = {
+                            navController.navigate(Screen.Tools.route)
+                        },
+                        onOpenMenu = { showThreeLineMenu = true }
+                    )
+                }
             }
 
             composable(Screen.Advance.route) {
@@ -360,6 +427,18 @@ fun MainAppNavigation() {
 
             composable(Screen.TechnicianProfile.route) {
                 TechnicianProfileScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(Screen.PrepaidMeter.route) {
+                PrepaidMeterScreen(
+                    onNavigateBack = { navController.popBackStack() }
+                )
+            }
+
+            composable(Screen.Tools.route) {
+                ElectricalToolsScreen(
                     onNavigateBack = { navController.popBackStack() }
                 )
             }

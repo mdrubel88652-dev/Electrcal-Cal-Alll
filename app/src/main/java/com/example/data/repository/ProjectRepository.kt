@@ -2,21 +2,26 @@ package com.example.data.repository
 
 import com.example.data.database.ContractProjectDao
 import com.example.data.database.ContractProjectEntity
+import com.example.data.database.ExpenseDao
+import com.example.data.database.ExpenseEntity
 import com.example.data.database.ProjectPaymentDao
 import com.example.data.database.ProjectPaymentEntity
 import com.example.data.database.QuickTaskDao
 import com.example.data.database.QuickTaskEntity
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.emptyFlow
 
 class ProjectRepository(
     private val projectDao: ContractProjectDao,
     private val paymentDao: ProjectPaymentDao,
-    private val quickTaskDao: QuickTaskDao
+    private val quickTaskDao: QuickTaskDao,
+    private val expenseDao: ExpenseDao? = null
 ) {
     val allProjects: Flow<List<ContractProjectEntity>> = projectDao.getAllProjects()
     val projectCount: Flow<Int> = projectDao.getProjectCount()
     val allPayments: Flow<List<ProjectPaymentEntity>> = paymentDao.getAllPayments()
     val allQuickTasks: Flow<List<QuickTaskEntity>> = quickTaskDao.getAllQuickTasks()
+    val allExpenses: Flow<List<ExpenseEntity>> = expenseDao?.getAllExpenses() ?: emptyFlow()
 
     fun getPaymentsForProject(projectId: Long): Flow<List<ProjectPaymentEntity>> {
         return paymentDao.getPaymentsForProject(projectId)
@@ -65,5 +70,17 @@ class ProjectRepository(
 
     suspend fun deleteQuickTask(taskId: Long) {
         quickTaskDao.deleteQuickTask(taskId)
+    }
+
+    fun getExpensesForProject(projectId: Long): Flow<List<ExpenseEntity>> {
+        return expenseDao?.getExpensesForProject(projectId) ?: emptyFlow()
+    }
+
+    suspend fun addExpense(expense: ExpenseEntity): Long {
+        return expenseDao?.insertExpense(expense) ?: 0L
+    }
+
+    suspend fun deleteExpense(expenseId: Long) {
+        expenseDao?.deleteExpense(expenseId)
     }
 }

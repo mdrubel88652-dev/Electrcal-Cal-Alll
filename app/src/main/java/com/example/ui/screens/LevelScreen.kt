@@ -122,7 +122,8 @@ fun LevelScreen(
                     .fillMaxWidth()
                     .padding(horizontal = 14.dp, vertical = 4.dp),
                 shape = RoundedCornerShape(12.dp),
-                color = Color(0xFFEFF4F9),
+                color = MaterialTheme.colorScheme.surface,
+                border = BorderStroke(1.2.dp, Color(0xFFCBD5E1)),
                 shadowElevation = 0.dp
             ) {
                 Row(
@@ -177,37 +178,6 @@ fun LevelScreen(
                             )
                         }
                     }
-                }
-            }
-        }
-
-        // Section Title & Result Counter
-        item {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = if (isEn) "${level.displayName} Calculators (${filteredList.size})" else "${level.displayName} ক্যালকুলেটর (${filteredList.size})",
-                    fontSize = 13.5.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF0F172A)
-                )
-
-                if (searchQuery.isNotEmpty()) {
-                    Text(
-                        text = if (isEn) "Reset" else "রিসেট",
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = levelAccentColor,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(4.dp))
-                            .clickable { searchQuery = "" }
-                            .padding(horizontal = 4.dp, vertical = 2.dp)
-                    )
                 }
             }
         }

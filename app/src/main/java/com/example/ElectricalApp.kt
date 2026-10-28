@@ -20,7 +20,8 @@ class ElectricalApp : Application() {
         com.example.data.repository.ProjectRepository(
             database.contractProjectDao(),
             database.projectPaymentDao(),
-            database.quickTaskDao()
+            database.quickTaskDao(),
+            database.expenseDao()
         )
     }
 

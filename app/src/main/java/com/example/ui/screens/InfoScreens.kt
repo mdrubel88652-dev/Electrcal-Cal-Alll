@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.NotificationsActive
 import androidx.compose.material.icons.filled.Person
@@ -215,14 +216,6 @@ fun DeveloperScreen() {
                 Spacer(modifier = Modifier.height(10.dp))
 
                 ProfileDetailItem(
-                    icon = Icons.Default.NotificationsActive,
-                    label = "Contact Number",
-                    value = "+880 16094-92193"
-                )
-
-                Spacer(modifier = Modifier.height(10.dp))
-
-                ProfileDetailItem(
                     icon = Icons.Default.Info,
                     label = "Official Email",
                     value = "mdrubel88652@gmail.com"
@@ -238,46 +231,25 @@ fun DeveloperScreen() {
 
                 HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 
-                // Quick Action Buttons
-                Row(
+                // Quick Action Button
+                androidx.compose.material3.Button(
+                    onClick = {
+                        try {
+                            val intent = android.content.Intent(android.content.Intent.ACTION_SENDTO).apply {
+                                data = android.net.Uri.parse("mailto:mdrubel88652@gmail.com")
+                            }
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            android.widget.Toast.makeText(context, "mdrubel88652@gmail.com", android.widget.Toast.LENGTH_SHORT).show()
+                        }
+                    },
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    shape = RoundedCornerShape(10.dp),
+                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = Color(0xFF0F172A))
                 ) {
-                    androidx.compose.material3.Button(
-                        onClick = {
-                            try {
-                                val intent = android.content.Intent(android.content.Intent.ACTION_DIAL).apply {
-                                    data = android.net.Uri.parse("tel:+8801609492193")
-                                }
-                                context.startActivity(intent)
-                            } catch (e: Exception) {
-                                android.widget.Toast.makeText(context, "+880 16094-92193", android.widget.Toast.LENGTH_SHORT).show()
-                            }
-                        },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(10.dp),
-                        colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = Color(0xFF0284C7))
-                    ) {
-                        Text("Call Now", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                    }
-
-                    androidx.compose.material3.Button(
-                        onClick = {
-                            try {
-                                val intent = android.content.Intent(android.content.Intent.ACTION_SENDTO).apply {
-                                    data = android.net.Uri.parse("mailto:mdrubel88652@gmail.com")
-                                }
-                                context.startActivity(intent)
-                            } catch (e: Exception) {
-                                android.widget.Toast.makeText(context, "mdrubel88652@gmail.com", android.widget.Toast.LENGTH_SHORT).show()
-                            }
-                        },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(10.dp),
-                        colors = androidx.compose.material3.ButtonDefaults.buttonColors(containerColor = Color(0xFF0F172A))
-                    ) {
-                        Text("Send Email", fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                    }
+                    Icon(Icons.Default.Email, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Send Email", fontSize = 13.sp, fontWeight = FontWeight.Bold)
                 }
             }
         }

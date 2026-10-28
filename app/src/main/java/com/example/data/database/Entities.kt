@@ -55,7 +55,11 @@ data class ContractProjectEntity(
     val startDate: String,
     val notes: String = "",
     val isCompleted: Boolean = false,
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
+    val floors: Int = 1,
+    val endDate: String = "",
+    val contactPerson: String = "",
+    val status: String = "Ongoing"
 )
 
 @Entity(tableName = "project_payments")
@@ -66,20 +70,41 @@ data class ProjectPaymentEntity(
     val amount: Double,
     val paymentDate: String,
     val note: String = "",
-    val timestamp: Long = System.currentTimeMillis()
+    val timestamp: Long = System.currentTimeMillis(),
+    val installmentName: String = "Installment",
+    val paymentMethod: String = "Cash",
+    val receiptNo: String = ""
 )
 
 @Entity(tableName = "quick_tasks")
 data class QuickTaskEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
-    val taskTitle: String, // কি কাজ করছে (e.g. Substation Maintenance, Board Wiring)
-    val clientName: String = "", // ক্লায়েন্ট / কাস্টমার
+    val taskTitle: String,
+    val clientName: String = "",
     val contactPhone: String = "",
     val location: String = "",
-    val amount: Double, // কত টাকা পেমেন্ট পেয়েছেন
-    val taskDate: String, // কাজের তারিখ (e.g. "18 Oct 2026")
-    val monthYear: String, // মাস ও বছর (e.g. "2026-10") for 50,000 monthly limit
+    val amount: Double,
+    val taskDate: String,
+    val monthYear: String = "",
     val note: String = "",
+    val timestamp: Long = System.currentTimeMillis(),
+    val jobCategory: String = "Installation",
+    val workDescription: String = "",
+    val totalAmount: Double = amount,
+    val paymentStatus: String = "Paid"
+)
+
+@Entity(tableName = "wallet_expenses")
+data class ExpenseEntity(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
+    val category: String,
+    val amount: Double,
+    val expenseDate: String,
+    val description: String = "",
+    val linkedProjectId: Long? = null,
+    val linkedJobId: Long? = null,
+    val paymentMethod: String = "Cash",
     val timestamp: Long = System.currentTimeMillis()
 )

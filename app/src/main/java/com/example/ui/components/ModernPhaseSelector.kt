@@ -57,7 +57,7 @@ fun ModernPhaseSelector(
             .testTag("modern_phase_selector_card"),
         shape = RoundedCornerShape(12.dp),
         color = MaterialTheme.colorScheme.surface,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.25f)),
+        border = BorderStroke(1.2.dp, Color(0xFFCBD5E1)),
         tonalElevation = 1.dp
     ) {
         Column(
@@ -158,7 +158,7 @@ private fun PhaseSegmentItem(
         shape = RoundedCornerShape(8.dp),
         color = bgColor,
         shadowElevation = elevation,
-        border = if (isSelected) BorderStroke(1.dp, accentColor.copy(alpha = 0.5f)) else null
+        border = if (isSelected) BorderStroke(1.5.dp, accentColor) else BorderStroke(1.dp, Color(0xFFCBD5E1).copy(alpha = 0.6f))
     ) {
         Row(
             modifier = Modifier

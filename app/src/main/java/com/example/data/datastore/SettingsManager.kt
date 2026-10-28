@@ -95,10 +95,14 @@ class SettingsManager(private val context: Context) {
 
         // Technician Report Profile
         val TECH_NAME = stringPreferencesKey("tech_name")
+        val TECH_DESIGNATION = stringPreferencesKey("tech_designation")
         val TECH_COMPANY = stringPreferencesKey("tech_company")
         val TECH_PHONE = stringPreferencesKey("tech_phone")
         val TECH_EMAIL = stringPreferencesKey("tech_email")
         val TECH_ADDRESS = stringPreferencesKey("tech_address")
+        val TECH_PHOTO_URI = stringPreferencesKey("tech_photo_uri")
+        val TECH_LICENSE_NAME = stringPreferencesKey("tech_license_name")
+        val TECH_LICENSE_NUMBER = stringPreferencesKey("tech_license_number")
 
         // Favorites & Accent Color
         val FAVORITES = stringPreferencesKey("favorites")
@@ -159,12 +163,16 @@ class SettingsManager(private val context: Context) {
     }
 
     val technicianProfileFlow: Flow<TechnicianReportProfile> = context.dataStore.data.map { prefs ->
+        val designationVal = prefs[Keys.TECH_DESIGNATION] ?: prefs[Keys.TECH_COMPANY] ?: ""
         TechnicianReportProfile(
             name = prefs[Keys.TECH_NAME] ?: "",
-            company = prefs[Keys.TECH_COMPANY] ?: "",
+            designation = designationVal,
             contactPhone = prefs[Keys.TECH_PHONE] ?: "",
             email = prefs[Keys.TECH_EMAIL] ?: "",
-            officialAddress = prefs[Keys.TECH_ADDRESS] ?: ""
+            officialAddress = prefs[Keys.TECH_ADDRESS] ?: "",
+            photoUri = prefs[Keys.TECH_PHOTO_URI] ?: "",
+            licenseName = prefs[Keys.TECH_LICENSE_NAME] ?: "",
+            licenseNumber = prefs[Keys.TECH_LICENSE_NUMBER] ?: ""
         )
     }
 
@@ -223,20 +231,28 @@ class SettingsManager(private val context: Context) {
     suspend fun updateTechnicianProfile(profile: TechnicianReportProfile) {
         context.dataStore.edit { prefs ->
             prefs[Keys.TECH_NAME] = profile.name.trim()
-            prefs[Keys.TECH_COMPANY] = profile.company.trim()
+            prefs[Keys.TECH_DESIGNATION] = profile.designation.trim()
+            prefs[Keys.TECH_COMPANY] = profile.designation.trim()
             prefs[Keys.TECH_PHONE] = profile.contactPhone.trim()
             prefs[Keys.TECH_EMAIL] = profile.email.trim()
             prefs[Keys.TECH_ADDRESS] = profile.officialAddress.trim()
+            prefs[Keys.TECH_PHOTO_URI] = profile.photoUri.trim()
+            prefs[Keys.TECH_LICENSE_NAME] = profile.licenseName.trim()
+            prefs[Keys.TECH_LICENSE_NUMBER] = profile.licenseNumber.trim()
         }
     }
 
     suspend fun resetTechnicianProfile() {
         context.dataStore.edit { prefs ->
             prefs.remove(Keys.TECH_NAME)
+            prefs.remove(Keys.TECH_DESIGNATION)
             prefs.remove(Keys.TECH_COMPANY)
             prefs.remove(Keys.TECH_PHONE)
             prefs.remove(Keys.TECH_EMAIL)
             prefs.remove(Keys.TECH_ADDRESS)
+            prefs.remove(Keys.TECH_PHOTO_URI)
+            prefs.remove(Keys.TECH_LICENSE_NAME)
+            prefs.remove(Keys.TECH_LICENSE_NUMBER)
         }
     }
 

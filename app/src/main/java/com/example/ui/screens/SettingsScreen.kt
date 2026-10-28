@@ -1,52 +1,20 @@
 package com.example.ui.screens
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.widget.Toast
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.FormatListNumbered
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.LightMode
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.Shield
-import androidx.compose.material.icons.filled.Tune
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.RadioButtonDefaults
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,6 +23,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.ElectricalApp
@@ -93,11 +63,19 @@ fun SettingsScreen(
     var selectedLanguage by remember(currentLanguage) { mutableStateOf(currentLanguage) }
     val isEn = selectedLanguage == "EN"
 
-    // Dialog visibility states for user-requested interactive pickers
+    // Dialog visibility states
     var showLanguageDialog by remember { mutableStateOf(false) }
     var showStandardDialog by remember { mutableStateOf(false) }
     var showThemeDialog by remember { mutableStateOf(false) }
+    var showPdfSettingsDialog by remember { mutableStateOf(false) }
+    var showClearHistoryDialog by remember { mutableStateOf(false) }
+    var showPremiumDialog by remember { mutableStateOf(false) }
+    var showComplaintDialog by remember { mutableStateOf(false) }
+    var showTranslationDialog by remember { mutableStateOf(false) }
+    var showOtherAppsDialog by remember { mutableStateOf(false) }
+    var showRateDialog by remember { mutableStateOf(false) }
 
+    // PDF toggles
     var showLogo by remember(pdfSettings.showLogo) { mutableStateOf(pdfSettings.showLogo) }
     var showDevInfo by remember(pdfSettings.showDeveloperInfo) { mutableStateOf(pdfSettings.showDeveloperInfo) }
     var showDateTime by remember(pdfSettings.showDateTime) { mutableStateOf(pdfSettings.showDateTime) }
@@ -112,12 +90,20 @@ fun SettingsScreen(
         AlertDialog(
             onDismissRequest = { showLanguageDialog = false },
             title = {
-                Text(
-                    text = if (isEn) "Select Language" else "ভাষা নির্বাচন করুন (Select Language)",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF0F172A)
-                )
+                Column {
+                    Text(
+                        text = if (isEn) "Select Language" else "ভাষা নির্বাচন করুন",
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF082D63)
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = if (isEn) "Select app display language" else "অ্যাপ ডিসপ্লে ভাষা নির্বাচন করুন",
+                        fontSize = 12.sp,
+                        color = Color(0xFF64748B)
+                    )
+                }
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -126,14 +112,14 @@ fun SettingsScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp))
+                                .clip(RoundedCornerShape(10.dp))
                                 .clickable {
                                     selectedLanguage = code
                                     coroutineScope.launch {
                                         app.settingsManager.updateLanguage(code)
                                         Toast.makeText(
                                             context,
-                                            if (code == "EN") "Language changed: English" else "ভাষা পরিবর্তিত হয়েছে: বাংলা",
+                                            if (code == "EN") "Language: English" else "ভাষা: বাংলা",
                                             Toast.LENGTH_SHORT
                                         ).show()
                                     }
@@ -150,18 +136,18 @@ fun SettingsScreen(
                                         app.settingsManager.updateLanguage(code)
                                         Toast.makeText(
                                             context,
-                                            if (code == "EN") "Language changed: English" else "ভাষা পরিবর্তিত হয়েছে: বাংলা",
+                                            if (code == "EN") "Language: English" else "ভাষা: বাংলা",
                                             Toast.LENGTH_SHORT
                                         ).show()
                                     }
                                     showLanguageDialog = false
                                 },
-                                colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF0284C7))
+                                colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF082D63))
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = label,
-                                fontSize = 14.sp,
+                                fontSize = 14.5.sp,
                                 fontWeight = if (selectedLanguage == code) FontWeight.Bold else FontWeight.Normal,
                                 color = Color(0xFF0F172A)
                             )
@@ -171,11 +157,11 @@ fun SettingsScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showLanguageDialog = false }) {
-                    Text(if (isEn) "Close" else "বন্ধ করুন", color = Color(0xFF0284C7), fontWeight = FontWeight.Bold)
+                    Text(if (isEn) "Close" else "বন্ধ করুন", color = Color(0xFF082D63), fontWeight = FontWeight.Bold)
                 }
             },
             containerColor = Color.White,
-            shape = RoundedCornerShape(16.dp)
+            shape = RoundedCornerShape(18.dp)
         )
     }
 
@@ -186,12 +172,20 @@ fun SettingsScreen(
         AlertDialog(
             onDismissRequest = { showStandardDialog = false },
             title = {
-                Text(
-                    text = if (isEn) "Select Default Standard (IEC, NEC, BNBC)" else "ডিফল্ট স্ট্যান্ডার্ড নির্বাচন করুন",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF0F172A)
-                )
+                Column {
+                    Text(
+                        text = if (isEn) "Default Standard Setting" else "ডিফল্ট স্ট্যান্ডার্ড সেটিংস",
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF082D63)
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = if (isEn) "International & national electrical engineering standards" else "আন্তর্জাতিক ও জাতীয় ইলেকট্রিক্যাল ইঞ্জিনিয়ারিং স্ট্যান্ডার্ড",
+                        fontSize = 12.sp,
+                        color = Color(0xFF64748B)
+                    )
+                }
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
@@ -205,12 +199,12 @@ fun SettingsScreen(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp))
+                                .clip(RoundedCornerShape(10.dp))
                                 .clickable {
                                     selectedStandard = std
                                     coroutineScope.launch {
                                         app.settingsManager.updateCalculationDefaults(calcDefaults.copy(standard = std))
-                                        Toast.makeText(context, if (isEn) "Standard selected: $std" else "স্ট্যান্ডার্ড নির্বাচন: $std", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "Standard: $std", Toast.LENGTH_SHORT).show()
                                     }
                                     showStandardDialog = false
                                 }
@@ -223,11 +217,11 @@ fun SettingsScreen(
                                     selectedStandard = std
                                     coroutineScope.launch {
                                         app.settingsManager.updateCalculationDefaults(calcDefaults.copy(standard = std))
-                                        Toast.makeText(context, if (isEn) "Standard selected: $std" else "স্ট্যান্ডার্ড নির্বাচন: $std", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "Standard: $std", Toast.LENGTH_SHORT).show()
                                     }
                                     showStandardDialog = false
                                 },
-                                colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF0284C7))
+                                colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF082D63))
                             )
                             Spacer(modifier = Modifier.width(6.dp))
                             Column {
@@ -249,11 +243,11 @@ fun SettingsScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showStandardDialog = false }) {
-                    Text(if (isEn) "Close" else "বন্ধ করুন", color = Color(0xFF0284C7), fontWeight = FontWeight.Bold)
+                    Text(if (isEn) "Close" else "বন্ধ করুন", color = Color(0xFF082D63), fontWeight = FontWeight.Bold)
                 }
             },
             containerColor = Color.White,
-            shape = RoundedCornerShape(16.dp)
+            shape = RoundedCornerShape(18.dp)
         )
     }
 
@@ -264,34 +258,38 @@ fun SettingsScreen(
         AlertDialog(
             onDismissRequest = { showThemeDialog = false },
             title = {
-                Text(
-                    text = if (isEn) "Select Appearance Theme" else "Appearance Theme নির্বাচন করুন",
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFF0F172A)
-                )
+                Column {
+                    Text(
+                        text = if (isEn) "Appearance Theme" else "থিম ও রূপরেখা",
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF082D63)
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = if (isEn) "Choose light, dark, or system theme mode" else "লাইট, ডার্ক বা সিস্টেম থিম মোড নির্বাচন করুন",
+                        fontSize = 12.sp,
+                        color = Color(0xFF64748B)
+                    )
+                }
             },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    val themes = if (isEn) listOf(
-                        "LIGHT" to "Light (Clean Theme • Default)",
-                        "DARK" to "Dark (Deep Black Theme)",
+                    val themes = listOf(
+                        "LIGHT" to "Light (Clean Light Theme)",
+                        "DARK" to "Dark (Deep Dark Theme)",
                         "SYSTEM" to "System Default (Follow Device)"
-                    ) else listOf(
-                        "LIGHT" to "Light (হালকা থিম • ডিফল্ট)",
-                        "DARK" to "Dark (গাঢ় ব্ল্যাক থিম)",
-                        "SYSTEM" to "System Default (ডিভাইসের নিয়ম অনুযায়ী)"
                     )
                     themes.forEach { (mode, label) ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp))
+                                .clip(RoundedCornerShape(10.dp))
                                 .clickable {
                                     selectedThemeMode = mode
                                     coroutineScope.launch {
                                         app.settingsManager.updateThemeMode(mode)
-                                        Toast.makeText(context, if (isEn) "Theme mode: $label" else "থিম মোড: $label", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "Theme: $label", Toast.LENGTH_SHORT).show()
                                     }
                                     showThemeDialog = false
                                 }
@@ -304,16 +302,16 @@ fun SettingsScreen(
                                     selectedThemeMode = mode
                                     coroutineScope.launch {
                                         app.settingsManager.updateThemeMode(mode)
-                                        Toast.makeText(context, if (isEn) "Theme mode: $label" else "থিম মোড: $label", Toast.LENGTH_SHORT).show()
+                                        Toast.makeText(context, "Theme: $label", Toast.LENGTH_SHORT).show()
                                     }
                                     showThemeDialog = false
                                 },
-                                colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF0284C7))
+                                colors = RadioButtonDefaults.colors(selectedColor = Color(0xFF082D63))
                             )
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(
                                 text = label,
-                                fontSize = 14.sp,
+                                fontSize = 14.5.sp,
                                 fontWeight = if (selectedThemeMode == mode) FontWeight.Bold else FontWeight.Normal,
                                 color = Color(0xFF0F172A)
                             )
@@ -323,369 +321,895 @@ fun SettingsScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showThemeDialog = false }) {
-                    Text(if (isEn) "Close" else "বন্ধ করুন", color = Color(0xFF0284C7), fontWeight = FontWeight.Bold)
+                    Text(if (isEn) "Close" else "বন্ধ করুন", color = Color(0xFF082D63), fontWeight = FontWeight.Bold)
                 }
             },
             containerColor = Color.White,
-            shape = RoundedCornerShape(16.dp)
+            shape = RoundedCornerShape(18.dp)
         )
     }
 
     // ==========================================
-    // MAIN SETTINGS LIST DIRECTLY ON ROOT BACKGROUND
+    // 4. PDF REPORT EXPORT SETTINGS DIALOG
+    // ==========================================
+    if (showPdfSettingsDialog) {
+        AlertDialog(
+            onDismissRequest = { showPdfSettingsDialog = false },
+            title = {
+                Column {
+                    Text(
+                        text = if (isEn) "PDF Report Export Settings" else "PDF রিপোর্ট এক্সপোর্ট সেটিংস",
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF082D63)
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = if (isEn) "Configure elements to include in PDF calculation reports"
+                               else "PDF রিপোর্ট ও প্রিন্ট ডকুমেন্টের উপাদানসমূহ কনফিগার করুন",
+                        fontSize = 12.sp,
+                        color = Color(0xFF64748B)
+                    )
+                }
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    SettingsSwitchRow(
+                        title = if (isEn) "Show App Logo in Header" else "হেডারে অ্যাপ লোগো দেখান",
+                        subtitle = if (isEn) "Display app logo on top header" else "টপ হেডারে অ্যাপের লোগো প্রিন্ট করুন",
+                        checked = showLogo,
+                        onCheckedChange = {
+                            showLogo = it
+                            coroutineScope.launch {
+                                app.settingsManager.updatePdfPrintSettings(pdfSettings.copy(showLogo = it))
+                            }
+                        }
+                    )
+                    SettingsSwitchRow(
+                        title = if (isEn) "Show Technician Profile in Footer" else "ফুটার এ টেকনিশিয়ান প্রোফাইল দেখান",
+                        subtitle = if (isEn) "Show technician profile in footer" else "রিপোর্ট ফুটারে টেকনিশিয়ানের তথ্য প্রদর্শন",
+                        checked = showDevInfo,
+                        onCheckedChange = {
+                            showDevInfo = it
+                            coroutineScope.launch {
+                                app.settingsManager.updatePdfPrintSettings(pdfSettings.copy(showDeveloperInfo = it))
+                            }
+                        }
+                    )
+                    SettingsSwitchRow(
+                        title = if (isEn) "Show Date & Time" else "তারিখ ও সময় অন্তর্ভুক্ত করুন",
+                        subtitle = if (isEn) "Show current date and time on export" else "এক্সপোর্টে বর্তমান তারিখ ও সময় প্রদর্শন",
+                        checked = showDateTime,
+                        onCheckedChange = {
+                            showDateTime = it
+                            coroutineScope.launch {
+                                app.settingsManager.updatePdfPrintSettings(pdfSettings.copy(showDateTime = it))
+                            }
+                        }
+                    )
+                    SettingsSwitchRow(
+                        title = if (isEn) "Show Formula" else "হিসাবের সূত্র প্রদর্শন",
+                        subtitle = if (isEn) "Display calculation formula in report" else "রিপোর্টে ব্যবহৃত সমীকরণ ও সূত্র প্রদর্শন",
+                        checked = showFormula,
+                        onCheckedChange = {
+                            showFormula = it
+                            coroutineScope.launch {
+                                app.settingsManager.updatePdfPrintSettings(pdfSettings.copy(showFormula = it))
+                            }
+                        }
+                    )
+                    SettingsSwitchRow(
+                        title = if (isEn) "Show Step-by-Step Solution" else "ধাপভিত্তিক সমাধান প্রদর্শন",
+                        subtitle = if (isEn) "Show detailed step by step solution" else "বিস্তারিত সমীকরণ ও সমাধান ধাপ প্রদর্শন",
+                        checked = showSteps,
+                        onCheckedChange = {
+                            showSteps = it
+                            coroutineScope.launch {
+                                app.settingsManager.updatePdfPrintSettings(pdfSettings.copy(showSteps = it))
+                            }
+                        }
+                    )
+                    SettingsSwitchRow(
+                        title = if (isEn) "Show Engineering Notes & Standards" else "ইঞ্জিনিয়ারিং নোটস ও স্ট্যান্ডার্ড",
+                        subtitle = if (isEn) "Display notes and engineering assumptions" else "ইঞ্জিনিয়ারিং নোট ও স্ট্যান্ডার্ড অনুমান প্রদর্শন",
+                        checked = showNotes,
+                        onCheckedChange = {
+                            showNotes = it
+                            coroutineScope.launch {
+                                app.settingsManager.updatePdfPrintSettings(pdfSettings.copy(showNotes = it))
+                            }
+                        }
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showPdfSettingsDialog = false }) {
+                    Text(if (isEn) "Done" else "সম্পন্ন", color = Color(0xFF082D63), fontWeight = FontWeight.Bold)
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(18.dp)
+        )
+    }
+
+    // ==========================================
+    // 5. CLEAR HISTORY CONFIRMATION DIALOG
+    // ==========================================
+    if (showClearHistoryDialog) {
+        AlertDialog(
+            onDismissRequest = { showClearHistoryDialog = false },
+            title = {
+                Text(
+                    text = if (isEn) "Clear Calculation History" else "হিস্ট্রি পরিষ্কার করুন",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 17.sp,
+                    color = Color(0xFFDC2626)
+                )
+            },
+            text = {
+                Text(
+                    text = if (isEn) "Are you sure you want to clear all calculation history records? This action cannot be undone."
+                           else "আপনি কি সমস্ত হিসাবের ইতিহাস মুছে ফেলতে নিশ্চিত? এই হিস্ট্রি পুনরায় ফিরে পাওয়া যাবে না।",
+                    fontSize = 13.5.sp,
+                    color = Color(0xFF475569)
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        coroutineScope.launch {
+                            app.historyRepository.clearAllHistory()
+                            Toast.makeText(
+                                context,
+                                if (isEn) "History cleared successfully" else "হিস্ট্রি পরিষ্কার করা হয়েছে",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                        showClearHistoryDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFDC2626))
+                ) {
+                    Text(if (isEn) "Clear All" else "মুছুন", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showClearHistoryDialog = false }) {
+                    Text(if (isEn) "Cancel" else "বাতিল", color = Color(0xFF64748B))
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(18.dp)
+        )
+    }
+
+    // ==========================================
+    // 7. UPDATE PREMIUM VERSION DIALOG
+    // ==========================================
+    if (showPremiumDialog) {
+        AlertDialog(
+            onDismissRequest = { showPremiumDialog = false },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.WorkspacePremium,
+                        contentDescription = null,
+                        tint = Color(0xFF10B981),
+                        modifier = Modifier.size(26.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Premium Edition",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = Color(0xFF082D63)
+                    )
+                }
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        text = "You have full lifetime access to Electrical Calculation All Pro:",
+                        fontSize = 13.sp,
+                        color = Color(0xFF475569)
+                    )
+                    HorizontalDivider(color = Color(0xFFE2E8F0))
+                    val features = listOf(
+                        "⚡ 167+ Electrical Engineering Calculators Unlocked",
+                        "📁 Contract Project Manager & Small Job Tracking",
+                        "📄 Watermark-Free Professional PDF Export",
+                        "💼 Built-in Project Wallet & Expense Tracking",
+                        "☁️ On-Device Offline High-Speed Database",
+                        "🚫 100% Ad-Free Clean Interface"
+                    )
+                    features.forEach { feat ->
+                        Text(
+                            text = feat,
+                            fontSize = 12.5.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = Color(0xFF0F172A)
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        Toast.makeText(context, "All Pro features are fully unlocked for you!", Toast.LENGTH_SHORT).show()
+                        showPremiumDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981))
+                ) {
+                    Text("Enjoying Pro Features", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showPremiumDialog = false }) {
+                    Text("Close", color = Color(0xFF64748B))
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(18.dp)
+        )
+    }
+
+    // ==========================================
+    // 8. APP COMPLAINT BOX / FEEDBACK DIALOG
+    // ==========================================
+    if (showComplaintDialog) {
+        var feedbackText by remember { mutableStateOf("") }
+        var selectedCategory by remember { mutableStateOf("Bug Report") }
+        val categories = listOf("Bug Report", "Calculation Issue", "Feature Request", "Other")
+
+        AlertDialog(
+            onDismissRequest = { showComplaintDialog = false },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Feedback,
+                        contentDescription = null,
+                        tint = Color(0xFFF97316),
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "App Complaint & Feedback",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 17.sp,
+                        color = Color(0xFF082D63)
+                    )
+                }
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(
+                        text = "Report an issue, calculation discrepancy, or request new features directly:",
+                        fontSize = 12.5.sp,
+                        color = Color(0xFF64748B)
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        categories.forEach { cat ->
+                            val isSel = selectedCategory == cat
+                            FilterChip(
+                                selected = isSel,
+                                onClick = { selectedCategory = cat },
+                                label = { Text(cat, fontSize = 10.5.sp) },
+                                colors = FilterChipDefaults.filterChipColors(
+                                    selectedContainerColor = Color(0xFF082D63),
+                                    selectedLabelColor = Color.White,
+                                    containerColor = Color(0xFFF1F5F9),
+                                    labelColor = Color(0xFF475569)
+                                )
+                            )
+                        }
+                    }
+
+                    OutlinedTextField(
+                        value = feedbackText,
+                        onValueChange = { feedbackText = it },
+                        placeholder = { Text("Describe the issue or suggestion...") },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(110.dp),
+                        maxLines = 4
+                    )
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        if (feedbackText.isNotBlank()) {
+                            val intent = Intent(Intent.ACTION_SENDTO).apply {
+                                data = Uri.parse("mailto:tajnoakhali@gmail.com")
+                                putExtra(Intent.EXTRA_SUBJECT, "Electrical Calculation All — $selectedCategory")
+                                putExtra(Intent.EXTRA_TEXT, feedbackText)
+                            }
+                            try {
+                                context.startActivity(Intent.createChooser(intent, "Send Feedback"))
+                            } catch (e: Exception) {
+                                Toast.makeText(context, "Feedback recorded. Thank you!", Toast.LENGTH_SHORT).show()
+                            }
+                            showComplaintDialog = false
+                        } else {
+                            Toast.makeText(context, "Please enter your message first", Toast.LENGTH_SHORT).show()
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF97316))
+                ) {
+                    Text("Send Feedback", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showComplaintDialog = false }) {
+                    Text("Cancel", color = Color(0xFF64748B))
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(18.dp)
+        )
+    }
+
+    // ==========================================
+    // 9. TRANSLATION TOOL DIALOG
+    // ==========================================
+    if (showTranslationDialog) {
+        val dictionary = listOf(
+            "Current" to "বিদ্যুৎ প্রবাহ (Amperes)",
+            "Voltage" to "ভোল্টেজ / বিভব পার্থক্য (Volts)",
+            "Resistance" to "রোধ / রেজিস্ট্যান্স (Ohms)",
+            "Power Factor" to "পাওয়ার ফ্যাক্টর (cos θ)",
+            "Transformer" to "বৈদ্যুতিক ট্রান্সফরমার",
+            "Substation" to "বৈদ্যুতিক সাবস্টেশন",
+            "Circuit Breaker" to "সার্কিট ব্রেকার (MCB / MCCB / ACB)",
+            "Conduit Wiring" to "কনডুইট ওয়্যারিং পাইপ",
+            "Earthing / Grounding" to "আর্থিং ও গ্রাউন্ডিং সিস্টেম",
+            "Short Circuit" to "শর্ট সার্কিট ফল্ট",
+            "Capacitor Bank" to "ক্যাপাসিটর ব্যাংক (PFI)",
+            "Busbar Trunking" to "বাসবার ট্রাংকিং (BBT)"
+        )
+        var searchQuery by remember { mutableStateOf("") }
+        val filteredList = dictionary.filter {
+            it.first.contains(searchQuery, ignoreCase = true) || it.second.contains(searchQuery, ignoreCase = true)
+        }
+
+        AlertDialog(
+            onDismissRequest = { showTranslationDialog = false },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Translate,
+                        contentDescription = null,
+                        tint = Color(0xFF8B5CF6),
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Electrical Translation Tool",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 17.sp,
+                        color = Color(0xFF082D63)
+                    )
+                }
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text(
+                        text = "English ⟷ বাংলা Electrical Engineering Terminology",
+                        fontSize = 12.sp,
+                        color = Color(0xFF64748B)
+                    )
+                    OutlinedTextField(
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        placeholder = { Text("Search term (e.g. Current, Earthing...)") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(180.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        items(filteredList.size) { idx ->
+                            val item = filteredList[idx]
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(Color(0xFFF8FAFC))
+                                    .clickable {
+                                        ShareUtils.copyToClipboard(context, item.first, "${item.first} = ${item.second}")
+                                    }
+                                    .padding(8.dp),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(item.first, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color(0xFF082D63))
+                                    Text(item.second, fontSize = 12.sp, color = Color(0xFF475569))
+                                }
+                                Icon(
+                                    imageVector = Icons.Default.ContentCopy,
+                                    contentDescription = "Copy",
+                                    tint = Color(0xFF94A3B8),
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showTranslationDialog = false }) {
+                    Text("Close", color = Color(0xFF082D63), fontWeight = FontWeight.Bold)
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(18.dp)
+        )
+    }
+
+    // ==========================================
+    // 10. OTHER ALL APPS DIALOG
+    // ==========================================
+    if (showOtherAppsDialog) {
+        val otherApps = listOf(
+            "Solar System Designer Pro" to "Complete Off-Grid & Grid-Tie Solar PV Sizing",
+            "Building Wiring BOQ Estimator" to "Residential & Commercial Conduit, Wire & Board BOQ",
+            "Substation & HT Switchgear" to "Transformer, Breaker & Cable Sizing Guide",
+            "Industrial Motor & Pump Calculator" to "HP, kW, Full-Load Current & Starter Sizing"
+        )
+        AlertDialog(
+            onDismissRequest = { showOtherAppsDialog = false },
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Apps,
+                        contentDescription = null,
+                        tint = Color(0xFF10B981),
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = "Other Useful Apps from Us",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 17.sp,
+                        color = Color(0xFF082D63)
+                    )
+                }
+            },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    otherApps.forEach { (appName, desc) ->
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps"))
+                                    try {
+                                        context.startActivity(intent)
+                                    } catch (e: Exception) {
+                                        Toast.makeText(context, "Opening Google Play Store...", Toast.LENGTH_SHORT).show()
+                                    }
+                                },
+                            colors = CardDefaults.cardColors(containerColor = Color(0xFFF8FAFC)),
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.padding(12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(appName, fontWeight = FontWeight.Bold, fontSize = 13.5.sp, color = Color(0xFF0F172A))
+                                    Text(desc, fontSize = 11.sp, color = Color(0xFF64748B))
+                                }
+                                Icon(Icons.Default.OpenInNew, contentDescription = null, tint = Color(0xFF0284C7), modifier = Modifier.size(18.dp))
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = { showOtherAppsDialog = false }) {
+                    Text("Close", color = Color(0xFF082D63), fontWeight = FontWeight.Bold)
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(18.dp)
+        )
+    }
+
+    // ==========================================
+    // 11. RATE US APP DIALOG
+    // ==========================================
+    if (showRateDialog) {
+        var userRating by remember { mutableIntStateOf(5) }
+        AlertDialog(
+            onDismissRequest = { showRateDialog = false },
+            title = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
+                    Icon(
+                        imageVector = Icons.Default.Star,
+                        contentDescription = null,
+                        tint = Color(0xFFF59E0B),
+                        modifier = Modifier.size(36.dp)
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = "Rate Electrical Calculation All",
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 17.sp,
+                        color = Color(0xFF082D63),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            },
+            text = {
+                Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Your rating helps us keep adding new calculation tools and features for technicians and electrical engineers!",
+                        fontSize = 12.5.sp,
+                        color = Color(0xFF64748B),
+                        textAlign = TextAlign.Center
+                    )
+                    Row(horizontalArrangement = Arrangement.Center) {
+                        for (i in 1..5) {
+                            IconButton(onClick = { userRating = i }) {
+                                Icon(
+                                    imageVector = if (i <= userRating) Icons.Default.Star else Icons.Default.StarBorder,
+                                    contentDescription = "$i Stars",
+                                    tint = Color(0xFFF59E0B),
+                                    modifier = Modifier.size(32.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val packageName = context.packageName
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=$packageName"))
+                        try {
+                            context.startActivity(intent)
+                        } catch (e: Exception) {
+                            val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://play.google.com/store/apps/details?id=$packageName"))
+                            context.startActivity(webIntent)
+                        }
+                        showRateDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF59E0B))
+                ) {
+                    Text("Rate on Play Store", color = Color.White, fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showRateDialog = false }) {
+                    Text("Later", color = Color(0xFF64748B))
+                }
+            },
+            containerColor = Color.White,
+            shape = RoundedCornerShape(18.dp)
+        )
+    }
+
+    // ==========================================
+    // MAIN SETTINGS LIST: 17 VERTICAL WHITE CARDS (MATCHES IMAGE 2)
     // ==========================================
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .background(Color(0xFFF1F6FB))
+            .padding(horizontal = 14.dp, vertical = 10.dp)
             .testTag("settings_screen"),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // ------------------------------------------
-        // SECTION 1: CORE PREFERENCES (REQUESTED)
-        // ------------------------------------------
+        // 1. Technician Report Profile
         item {
-            SettingsCategoryHeader(title = if (isEn) "CORE PREFERENCES" else "মূল পছন্দসমূহ (PREFERENCES)")
-        }
-
-        item {
-            BorderlessSettingItem(
-                icon = Icons.Default.Language,
+            SettingsItemCard(
+                icon = Icons.Default.Engineering,
                 iconTint = Color(0xFF0284C7),
-                iconBg = Color(0xFFE0F2FE),
-                title = if (isEn) "Language" else "ভাষা (Language)",
-                subtitle = if (isEn) "Select app display language" else "অ্যাপের ভাষা পরিবর্তন করুন",
-                valueBadge = if (selectedLanguage == "BN") "বাংলা" else "English",
-                onClick = { showLanguageDialog = true }
-            )
-        }
-
-        item {
-            BorderlessSettingItem(
-                icon = Icons.Default.FormatListNumbered,
-                iconTint = Color(0xFF7C3AED),
-                iconBg = Color(0xFFF5F3FF),
-                title = if (isEn) "Default Standards (IEC, NEC, BNBC)" else "ইলেকট্রিক্যাল স্ট্যান্ডার্ড (Standards)",
-                subtitle = if (isEn) "International & national electrical engineering standards" else "আন্তর্জাতিক ও জাতীয় ইলেকট্রিক্যাল স্ট্যান্ডার্ড",
-                valueBadge = selectedStandard,
-                onClick = { showStandardDialog = true }
-            )
-        }
-
-        item {
-            BorderlessSettingItem(
-                icon = Icons.Default.LightMode,
-                iconTint = Color(0xFFEA580C),
-                iconBg = Color(0xFFFFF7ED),
-                title = if (isEn) "Appearance Theme" else "থিম ও ডিসপ্লে (Appearance Theme)",
-                subtitle = if (isEn) "Choose light, dark, or system theme mode" else "লাইট, ডার্ক বা সিস্টেম থিম মোড নির্বাচন করুন",
-                valueBadge = when (selectedThemeMode) {
-                    "DARK" -> if (isEn) "Dark" else "ডার্ক"
-                    "SYSTEM" -> if (isEn) "System" else "সিস্টেম"
-                    else -> if (isEn) "Light" else "লাইট"
-                },
-                onClick = { showThemeDialog = true }
-            )
-        }
-
-        // ------------------------------------------
-        // SECTION 2: PROFILES & ACCOUNTS
-        // ------------------------------------------
-        item {
-            SettingsCategoryHeader(title = if (isEn) "PROFILES & TECHNICIAN RECORD" else "প্রোফাইল ও রিপোর্ট খতিয়ান")
-        }
-
-        item {
-            BorderlessSettingItem(
-                icon = Icons.Default.Person,
-                iconTint = Color(0xFF0284C7),
-                iconBg = Color(0xFFE0F2FE),
-                title = "Engineer Rubel (Developer Profile)",
-                subtitle = "Industrial Electrical & Power Engineering • mdrubel88652@gmail.com",
-                valueBadge = "Developer",
-                onClick = onNavigateToDeveloper
-            )
-        }
-
-        item {
-            BorderlessSettingItem(
-                icon = Icons.Default.Person,
-                iconTint = Color(0xFF2563EB),
-                iconBg = Color(0xFFEFF6FF),
+                iconBgColor = Color(0xFFE0F2FE),
                 title = if (isEn) "Technician Report Profile" else "টেকনিশিয়ান রিপোর্ট প্রোফাইল",
-                subtitle = if (techProfile.isNotEmpty()) "Technician: ${techProfile.name} • ${techProfile.company}"
-                           else (if (isEn) "Configure technician profile for PDF reports" else "PDF রিপোর্টের জন্য টেকনিশিয়ান প্রোফাইল সেট করুন"),
-                valueBadge = if (techProfile.isNotEmpty()) (if (isEn) "Configured" else "সেট করা") else (if (isEn) "Empty" else "খালি"),
-                onClick = onNavigateToTechnicianProfile
+                subtitle = if (isEn) "Manage technician profile and report information" else "টেকনিশিয়ান প্রোফাইল ও রিপোর্ট তথ্য পরিচালনা করুন",
+                onClick = onNavigateToTechnicianProfile,
+                testTag = "setting_item_technician_profile"
             )
         }
 
-        // ------------------------------------------
-        // SECTION 3: RECORDS & REPORTS
-        // ------------------------------------------
+        // 2. Developer Profile Engineer
         item {
-            SettingsCategoryHeader(title = if (isEn) "CALCULATION HISTORY & REPORTS" else "হিসাবের ইতিহাস ও রিপোর্ট")
+            SettingsItemCard(
+                icon = Icons.Default.ManageAccounts,
+                iconTint = Color(0xFF8B5CF6),
+                iconBgColor = Color(0xFFF3E8FF),
+                title = if (isEn) "Developer Profile Engineer" else "ডেভেলপার প্রোফাইল ইঞ্জিনিয়ার",
+                subtitle = if (isEn) "Manage developer and engineer information" else "ডেভেলপার ও ইঞ্জিনিয়ার তথ্য পরিচালনা করুন",
+                onClick = onNavigateToDeveloper,
+                testTag = "setting_item_developer_profile"
+            )
         }
 
+        // 3. Update Premium Version
         item {
-            BorderlessSettingItem(
-                icon = Icons.Default.History,
+            SettingsItemCard(
+                icon = Icons.Default.WorkspacePremium,
+                iconTint = Color(0xFF10B981),
+                iconBgColor = Color(0xFFD1FAE5),
+                title = if (isEn) "Update Premium Version" else "আপডেট প্রিমিয়াম ভার্সন",
+                subtitle = if (isEn) "Get premium features and benefits" else "প্রিমিয়াম ফিচার ও সুবিধাসমূহ উপভোগ করুন",
+                onClick = { showPremiumDialog = true },
+                testTag = "setting_item_update_premium"
+            )
+        }
+
+        // 4. Report & Project Summary
+        item {
+            SettingsItemCard(
+                icon = Icons.Default.Assessment,
                 iconTint = Color(0xFF0284C7),
-                iconBg = Color(0xFFE0F2FE),
-                title = if (isEn) "Calculation History" else "Calculation History (হিসাবের ইতিহাস)",
-                subtitle = if (isEn) "All saved calculation records and sharing" else "পূর্বে সংরক্ষিত সকল ক্যালকুলেশন রেকর্ড ও শেয়ারিং",
-                onClick = onNavigateToHistory
+                iconBgColor = Color(0xFFE0F2FE),
+                title = if (isEn) "Report & Project Summary" else "রিপোর্ট ও প্রজেক্ট সামারি",
+                subtitle = if (isEn) "View saved reports and project summary" else "সংরক্ষিত রিপোর্ট ও প্রজেক্ট সারসংক্ষেপ দেখুন",
+                onClick = onNavigateToReports,
+                testTag = "setting_item_reports_summary"
             )
         }
 
+        // 5. App Complaint Box
         item {
-            BorderlessSettingItem(
-                icon = Icons.Default.Description,
-                iconTint = Color(0xFF7C3AED),
-                iconBg = Color(0xFFF5F3FF),
-                title = if (isEn) "Reports & Project Summary" else "Reports & Project Summary (রিপোর্ট ও সামারি)",
-                subtitle = if (isEn) "Project reports, material lists & technician PDF sheets" else "প্রজেক্ট রিপোর্ট, ম্যাটেরিয়াল লিস্ট ও টেকনিশিয়ান শিট PDF",
-                onClick = onNavigateToReports
+            SettingsItemCard(
+                icon = Icons.Default.Feedback,
+                iconTint = Color(0xFFF97316),
+                iconBgColor = Color(0xFFFFEDD5),
+                title = if (isEn) "App Complaint Box" else "অ্যাপ অভিযোগ বক্স • ফিডব্যাক",
+                subtitle = if (isEn) "Send feedback or report an issue" else "ফিডব্যাক পাঠান বা যেকোনো সমস্যা রিপোর্ট করুন",
+                onClick = { showComplaintDialog = true },
+                testTag = "setting_item_complaint_box"
             )
         }
 
-        // ------------------------------------------
-        // SECTION 4: APPLICATION INFO
-        // ------------------------------------------
+        // 6. Pdf Report Export Settings
         item {
-            SettingsCategoryHeader(title = if (isEn) "APPLICATION INFO & SECURITY" else "অ্যাপ্লিকেশন তথ্য ও নিরাপত্তা")
-        }
-
-        item {
-            BorderlessSettingItem(
-                icon = Icons.Default.Info,
-                iconTint = Color(0xFF059669),
-                iconBg = Color(0xFFECFDF5),
-                title = if (isEn) "About Application" else "অ্যাপ্লিকেশন তথ্য (About)",
-                subtitle = if (isEn) "Version, 167 calculators scope and details" else "ভার্সন, ১৬৭টি ক্যালকুলেটরের উদ্দেশ্য ও বিবরণ",
-                onClick = onNavigateToAbout
+            SettingsItemCard(
+                icon = Icons.Default.PictureAsPdf,
+                iconTint = Color(0xFFEF4444),
+                iconBgColor = Color(0xFFFEE2E2),
+                title = if (isEn) "Pdf Report Export Settings" else "PDF রিপোর্ট এক্সপোর্ট সেটিংস",
+                subtitle = if (isEn) "Configure PDF export options" else "PDF এক্সপোর্টের উপাদানসমূহ কনফিগার করুন",
+                onClick = { showPdfSettingsDialog = true },
+                testTag = "setting_item_pdf_export_settings"
             )
         }
 
+        // 7. Default Standard Setting
         item {
-            BorderlessSettingItem(
-                icon = Icons.Default.Shield,
-                iconTint = Color(0xFF059669),
-                iconBg = Color(0xFFECFDF5),
-                title = if (isEn) "Privacy Policy" else "প্রাইভেসি পলিসি (Privacy Policy)",
-                subtitle = if (isEn) "Data security, offline usage and privacy policy" else "ডাটা নিরাপত্তা, অফলাইন সুবিধা ও পলিসি",
-                onClick = onNavigateToPrivacy
+            SettingsItemCard(
+                icon = Icons.Default.Tune,
+                iconTint = Color(0xFF8B5CF6),
+                iconBgColor = Color(0xFFF3E8FF),
+                title = if (isEn) "Default Standard Setting" else "ডিফল্ট স্ট্যান্ডার্ড সেটিংস",
+                subtitle = if (isEn) "Select default standard (IEC / NEC / BNBC / etc.)" else "স্ট্যান্ডার্ড নির্বাচন করুন (IEC / NEC / BNBC / ইত্যাদি)",
+                onClick = { showStandardDialog = true },
+                testTag = "setting_item_default_standard"
             )
         }
 
+        // 8. Clear Calculation History
         item {
-            BorderlessSettingItem(
+            SettingsItemCard(
+                icon = Icons.Default.Delete,
+                iconTint = Color(0xFFEF4444),
+                iconBgColor = Color(0xFFFEE2E2),
+                title = if (isEn) "Clear Calculation History" else "ক্যালকুলেশন হিস্ট্রি মুছুন",
+                subtitle = if (isEn) "Remove all calculation history data" else "সকল সংরক্ষিত গণনার হিস্ট্রি ডেটা মুছে ফেলুন",
+                onClick = { showClearHistoryDialog = true },
+                testTag = "setting_item_clear_history"
+            )
+        }
+
+        // 9. Appearance Times (Appearance Theme)
+        item {
+            SettingsItemCard(
+                icon = Icons.Default.LightMode,
+                iconTint = Color(0xFFF59E0B),
+                iconBgColor = Color(0xFFFEF3C7),
+                title = if (isEn) "Appearance Times" else "থিম ও রূপরেখা (Theme)",
+                subtitle = if (isEn) "Light / Dark / System mode" else "লাইট / ডার্ক / সিস্টেম মোড",
+                onClick = { showThemeDialog = true },
+                testTag = "setting_item_appearance_theme"
+            )
+        }
+
+        // 11. Language settings
+        item {
+            SettingsItemCard(
+                icon = Icons.Default.Language,
+                iconTint = Color(0xFF10B981),
+                iconBgColor = Color(0xFFD1FAE5),
+                title = if (isEn) "Language settings" else "ভাষা নির্বাচন (Language)",
+                subtitle = if (isEn) "Choose your preferred language" else "আপনার পছন্দের ভাষা নির্বাচন করুন",
+                onClick = { showLanguageDialog = true },
+                testTag = "setting_item_language"
+            )
+        }
+
+        // 12. Translation Tool
+        item {
+            SettingsItemCard(
+                icon = Icons.Default.Translate,
+                iconTint = Color(0xFF8B5CF6),
+                iconBgColor = Color(0xFFF3E8FF),
+                title = if (isEn) "Translation Tool" else "ইলেকট্রিক্যাল অনুবাদ টুল",
+                subtitle = if (isEn) "Translate text or content" else "ইংরেজি ও বাংলা টেকনিক্যাল পরিভাষা অনুবাদ করুন",
+                onClick = { showTranslationDialog = true },
+                testTag = "setting_item_translation_tool"
+            )
+        }
+
+        // 13. Share Application
+        item {
+            SettingsItemCard(
                 icon = Icons.Default.Share,
-                iconTint = Color(0xFF059669),
-                iconBg = Color(0xFFECFDF5),
-                title = if (isEn) "Share Application" else "অ্যাপ্লিকেশন শেয়ার করুন (Share)",
-                subtitle = if (isEn) "Share with engineers, electricians & students" else "প্রকৌশলী, ইলেকট্রিশিয়ান ও শিক্ষার্থীদের সাথে শেয়ার করুন",
+                iconTint = Color(0xFF0284C7),
+                iconBgColor = Color(0xFFE0F2FE),
+                title = if (isEn) "Share Application" else "অ্যাপ্লিকেশন শেয়ার করুন",
+                subtitle = if (isEn) "Share this app with your friends" else "বন্ধুদের সাথে এই দরকারী অ্যাপটি শেয়ার করুন",
                 onClick = {
                     ShareUtils.shareText(
                         context,
                         "Electrical Calculation All",
                         "Download Electrical Calculation All - The professional electrical engineering calculation & estimation app with 167 calculators!"
                     )
-                }
+                },
+                testTag = "setting_item_share_app"
             )
         }
 
-        // ------------------------------------------
-        // SECTION 5: PDF REPORT CONTROLS
-        // ------------------------------------------
+        // 14. About Application
         item {
-            SettingsCategoryHeader(title = if (isEn) "PDF REPORT EXPORT SETTINGS" else "PDF রিপোর্ট এক্সপোর্ট সেটিংস")
-        }
-
-        item {
-            BorderlessSwitchItem(
-                title = if (isEn) "Show App Logo in Header" else "হেডারে অ্যাপ লোগো দেখান",
-                subtitle = if (isEn) "Display app logo on top header" else "টপ হেডারে অ্যাপের লোগো প্রিন্ট করুন",
-                checked = showLogo,
-                onCheckedChange = {
-                    showLogo = it
-                    coroutineScope.launch {
-                        app.settingsManager.updatePdfPrintSettings(pdfSettings.copy(showLogo = it))
-                    }
-                }
+            SettingsItemCard(
+                icon = Icons.Default.Info,
+                iconTint = Color(0xFF14B8A6),
+                iconBgColor = Color(0xFFCCFBF1),
+                title = if (isEn) "About Application" else "অ্যাপ্লিকেশন তথ্য • About",
+                subtitle = if (isEn) "App version, developer and more" else "অ্যাপ ভার্সন, ডেভেলপার তথ্য ও বিস্তারিত",
+                onClick = onNavigateToAbout,
+                testTag = "setting_item_about_app"
             )
         }
 
+        // 15. Other All Apps
         item {
-            BorderlessSwitchItem(
-                title = if (isEn) "Show Technician Profile in Footer" else "ফুটার এ টেকনিশিয়ান প্রোফাইল দেখান",
-                subtitle = if (isEn) "Show technician profile in footer" else "রিপোর্ট ফুটারে টেকনিশিয়ানের তথ্য প্রদর্শন",
-                checked = showDevInfo,
-                onCheckedChange = {
-                    showDevInfo = it
-                    coroutineScope.launch {
-                        app.settingsManager.updatePdfPrintSettings(pdfSettings.copy(showDeveloperInfo = it))
-                    }
-                }
+            SettingsItemCard(
+                icon = Icons.Default.Apps,
+                iconTint = Color(0xFF10B981),
+                iconBgColor = Color(0xFFD1FAE5),
+                title = if (isEn) "Other All Apps" else "অন্যান্য দরকারী অ্যাপসমূহ",
+                subtitle = if (isEn) "View more useful apps from us" else "আমাদের অন্যান্য ইঞ্জিনিয়ারিং অ্যাপসমূহ দেখুন",
+                onClick = { showOtherAppsDialog = true },
+                testTag = "setting_item_other_apps"
             )
         }
 
+        // 16. Privacy Policy
         item {
-            BorderlessSwitchItem(
-                title = if (isEn) "Show Date & Time" else "তারিখ ও সময় অন্তর্ভুক্ত করুন",
-                subtitle = if (isEn) "Show current date and time on export" else "এক্সপোর্টে বর্তমান তারিখ ও সময় প্রদর্শন",
-                checked = showDateTime,
-                onCheckedChange = {
-                    showDateTime = it
-                    coroutineScope.launch {
-                        app.settingsManager.updatePdfPrintSettings(pdfSettings.copy(showDateTime = it))
-                    }
-                }
+            SettingsItemCard(
+                icon = Icons.Default.Security,
+                iconTint = Color(0xFF6366F1),
+                iconBgColor = Color(0xFFE0E7FF),
+                title = if (isEn) "Privacy Policy" else "প্রাইভেসি পলিসি • Privacy",
+                subtitle = if (isEn) "Read our privacy policy" else "আমাদের গোপনীয়তা নীতি পড়ুন",
+                onClick = onNavigateToPrivacy,
+                testTag = "setting_item_privacy_policy"
             )
         }
 
+        // 17. Rate Us App
         item {
-            BorderlessSwitchItem(
-                title = if (isEn) "Show Formula" else "হিসাবের সূত্র প্রদর্শন",
-                subtitle = if (isEn) "Display calculation formula in report" else "রিপোর্টে ব্যবহৃত সমীকরণ ও সূত্র প্রদর্শন",
-                checked = showFormula,
-                onCheckedChange = {
-                    showFormula = it
-                    coroutineScope.launch {
-                        app.settingsManager.updatePdfPrintSettings(pdfSettings.copy(showFormula = it))
-                    }
-                }
+            SettingsItemCard(
+                icon = Icons.Default.Star,
+                iconTint = Color(0xFFF59E0B),
+                iconBgColor = Color(0xFFFEF3C7),
+                title = if (isEn) "Rate Us App" else "অ্যাপে রেটিং দিন • Rate Us",
+                subtitle = if (isEn) "Give your valuable rating" else "আপনার মূল্যবান রেটিং ও মতামত দিন",
+                onClick = { showRateDialog = true },
+                testTag = "setting_item_rate_us"
             )
         }
 
         item {
-            BorderlessSwitchItem(
-                title = if (isEn) "Show Step-by-Step Solution" else "ধাপে ধাপে সমাধান দেখান",
-                subtitle = if (isEn) "Show detailed step by step solution" else "বিস্তারিত সমীকরণ ও সমাধান ধাপ প্রদর্শন",
-                checked = showSteps,
-                onCheckedChange = {
-                    showSteps = it
-                    coroutineScope.launch {
-                        app.settingsManager.updatePdfPrintSettings(pdfSettings.copy(showSteps = it))
-                    }
-                }
-            )
-        }
-
-        item {
-            BorderlessSwitchItem(
-                title = if (isEn) "Show Notes & Assumptions" else "নোট ও পূর্বানুমান দেখান",
-                subtitle = if (isEn) "Display notes and engineering assumptions" else "ইঞ্জিনিয়ারিং নোট ও স্ট্যান্ডার্ড অনুমান প্রদর্শন",
-                checked = showNotes,
-                onCheckedChange = {
-                    showNotes = it
-                    coroutineScope.launch {
-                        app.settingsManager.updatePdfPrintSettings(pdfSettings.copy(showNotes = it))
-                    }
-                }
-            )
-        }
-
-        item {
-            Spacer(modifier = Modifier.height(30.dp))
+            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }
 
 @Composable
-private fun SettingsCategoryHeader(title: String) {
-    Text(
-        text = title,
-        fontSize = 11.5.sp,
-        fontWeight = FontWeight.Bold,
-        color = Color(0xFF0284C7),
-        letterSpacing = 0.5.sp,
-        modifier = Modifier.padding(start = 4.dp, top = 16.dp, bottom = 6.dp)
-    )
-}
-
-@Composable
-private fun BorderlessSettingItem(
+fun SettingsItemCard(
     icon: ImageVector,
     iconTint: Color,
-    iconBg: Color,
+    iconBgColor: Color,
     title: String,
     subtitle: String,
-    valueBadge: String? = null,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    testTag: String
 ) {
-    Surface(
-        onClick = onClick,
-        color = Color.Transparent,
-        modifier = Modifier.fillMaxWidth()
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .testTag(testTag),
+        colors = CardDefaults.cardColors(containerColor = Color.White),
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(1.dp, Color(0xFFE2E8F0)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.5.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 10.dp, horizontal = 4.dp),
+                .padding(horizontal = 14.dp, vertical = 11.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // Circular Icon
             Box(
                 modifier = Modifier
-                    .size(38.dp)
+                    .size(44.dp)
                     .clip(CircleShape)
-                    .background(iconBg),
+                    .background(iconBgColor),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = icon,
                     contentDescription = null,
                     tint = iconTint,
-                    modifier = Modifier.size(19.dp)
+                    modifier = Modifier.size(24.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(14.dp))
 
-            Column(modifier = Modifier.weight(1f)) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.Center
+            ) {
                 Text(
                     text = title,
-                    fontSize = 13.5.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = Color(0xFF0F172A)
+                    fontSize = 14.5.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color(0xFF082D63),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = subtitle,
-                    fontSize = 11.sp,
-                    color = Color(0xFF64748B)
+                    fontSize = 11.5.sp,
+                    fontWeight = FontWeight.Normal,
+                    color = Color(0xFF64748B),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
             }
 
-            if (valueBadge != null) {
-                Surface(
-                    color = Color(0xFFE0F2FE),
-                    shape = RoundedCornerShape(6.dp)
-                ) {
-                    Text(
-                        text = valueBadge,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color(0xFF0284C7),
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.width(6.dp))
-            }
+            Spacer(modifier = Modifier.width(8.dp))
 
             Icon(
-                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                imageVector = Icons.Default.ChevronRight,
                 contentDescription = null,
-                tint = Color(0xFF94A3B8),
-                modifier = Modifier.size(18.dp)
+                tint = Color(0xFF082D63),
+                modifier = Modifier.size(20.dp)
             )
         }
     }
 }
 
 @Composable
-private fun BorderlessSwitchItem(
+private fun SettingsSwitchRow(
     title: String,
     subtitle: String,
     checked: Boolean,
@@ -718,7 +1242,7 @@ private fun BorderlessSwitchItem(
             onCheckedChange = onCheckedChange,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = Color.White,
-                checkedTrackColor = Color(0xFF0284C7),
+                checkedTrackColor = Color(0xFF082D63),
                 uncheckedThumbColor = Color.White,
                 uncheckedTrackColor = Color(0xFFCBD5E1)
             )

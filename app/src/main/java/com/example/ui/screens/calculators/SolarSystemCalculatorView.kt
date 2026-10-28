@@ -224,17 +224,18 @@ fun SolarSystemCalculatorView(
                         Text(
                             text = "Solar System Size Calculation All In",
                             style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                            color = Color.White,
                             maxLines = 1
                         )
                         Text(
                             text = "Solar PV System Design & Backup Calculation",
-                            style = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            style = MaterialTheme.typography.bodySmall.copy(color = Color(0xFFB9E8FF))
                         )
                     }
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = Color.White)
                     }
                 },
                 actions = {
@@ -263,10 +264,15 @@ fun SolarSystemCalculatorView(
                         runCalculation()
                         Toast.makeText(context, "Reset to standard engineering values", Toast.LENGTH_SHORT).show()
                     }) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Reset Inputs")
+                        Icon(Icons.Default.Refresh, contentDescription = "Reset Inputs", tint = Color.White)
                     }
                 },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface)
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = Color(0xFF082D63),
+                    titleContentColor = Color.White,
+                    navigationIconContentColor = Color.White,
+                    actionIconContentColor = Color.White
+                )
             )
         }
     ) { innerPadding ->

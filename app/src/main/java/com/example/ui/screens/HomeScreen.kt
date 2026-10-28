@@ -3,6 +3,7 @@ package com.example.ui.screens
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.border
@@ -10,10 +11,12 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -37,6 +40,11 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.ElectricBolt
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material3.ripple
 import androidx.compose.material.icons.filled.Engineering
 import androidx.compose.material.icons.filled.Factory
 import androidx.compose.material.icons.filled.History
@@ -78,6 +86,17 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import kotlinx.coroutines.delay
+import com.example.R
 import com.example.ElectricalApp
 import com.example.data.calculator.CalculatorRegistry
 import com.example.data.model.CalculatorCategory
@@ -98,7 +117,10 @@ fun HomeScreen(
     onNavigateToNotification: () -> Unit = {},
     onNavigateToAdvance: () -> Unit = {},
     onNavigateToBasic: () -> Unit = {},
-    onNavigateToLower: () -> Unit = {}
+    onNavigateToLower: () -> Unit = {},
+    onNavigateToPrepaidMeter: () -> Unit = {},
+    onNavigateToTools: () -> Unit = {},
+    onOpenMenu: () -> Unit = {}
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -148,13 +170,147 @@ fun HomeScreen(
         }
     }
 
-    LazyColumn(
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .testTag("home_screen_column"),
-        contentPadding = PaddingValues(bottom = 36.dp)
+            .background(
+                Brush.horizontalGradient(
+                    listOf(
+                        Color(0xFF0260C1), // Matches banner's bottom-left edge color
+                        Color(0xFF024CBB), // Matches banner's bottom-center blueprint color
+                        Color(0xFF056ABE)  // Matches banner's bottom-right edge color
+                    )
+                )
+            )
     ) {
+        val cornerRadius = 24.dp
+        // Banner image aspect ratio is 2172 x 724 = 3 : 1
+        val bannerHeight = maxWidth * (724f / 2172f)
+
+        // 1. Full-width electrical calculation dashboard header banner
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(bannerHeight)
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.electrical_header_bg),
+                contentDescription = "Electrical Calculation All Banner",
+                modifier = Modifier.fillMaxSize(),
+                contentScale = ContentScale.FillWidth
+            )
+
+            // Clickable logo area on top-left (preserves existing click to Information & testTag)
+            Box(
+                modifier = Modifier
+                    .align(Alignment.TopStart)
+                    .statusBarsPadding()
+                    .padding(start = 12.dp, top = 6.dp)
+                    .size(42.dp)
+                    .clip(CircleShape)
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = ripple(bounded = true),
+                        onClick = onNavigateToInformation
+                    )
+                    .testTag("top_bar_user_picture")
+            )
+
+            // Top action buttons: Information, Notification, Hamburger Menu
+            // Solid electric blue border, solid electrical navy background, no glass/translucent effect
+            Surface(
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .statusBarsPadding()
+                    .padding(top = 6.dp, end = 12.dp),
+                shape = RoundedCornerShape(16.dp),
+                color = Color(0xFF063B82),
+                border = BorderStroke(1.5.dp, Color(0xFF00BFFF)),
+                tonalElevation = 0.dp,
+                shadowElevation = 0.dp
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(horizontal = 2.dp, vertical = 2.dp)
+                ) {
+                    IconButton(
+                        onClick = onNavigateToInformation,
+                        modifier = Modifier
+                            .size(36.dp)
+                            .testTag("top_bar_information_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.Info,
+                            contentDescription = "Information",
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .width(1.dp)
+                            .height(18.dp)
+                            .background(Color(0xFF00BFFF).copy(alpha = 0.35f))
+                    )
+
+                    IconButton(
+                        onClick = onNavigateToNotification,
+                        modifier = Modifier
+                            .size(36.dp)
+                            .testTag("top_bar_notification_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Notifications,
+                            contentDescription = "Notification",
+                            tint = Color.White,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .width(1.dp)
+                            .height(18.dp)
+                            .background(Color(0xFF00BFFF).copy(alpha = 0.35f))
+                    )
+
+                    IconButton(
+                        onClick = onOpenMenu,
+                        modifier = Modifier
+                            .size(36.dp)
+                            .testTag("top_bar_menu_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Menu,
+                            contentDescription = "Technician Hub & Wallet Menu",
+                            tint = Color.White,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                }
+            }
+        }
+
+        // 2. Main White Dashboard Content Panel with rounded top corners
+        // Sits directly over the bottom of the banner by cornerRadius (24.dp)
+        // so the rounded corners reveal the exact banner background underneath
+        Surface(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = (bannerHeight - cornerRadius).coerceAtLeast(0.dp))
+                .fillMaxHeight(),
+            shape = RoundedCornerShape(topStart = cornerRadius, topEnd = cornerRadius),
+            color = MaterialTheme.colorScheme.background,
+            tonalElevation = 0.dp,
+            shadowElevation = 0.dp
+        ) {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .testTag("home_screen_column"),
+                    contentPadding = PaddingValues(bottom = 36.dp)
+                ) {
         // ==========================================
         // 1. FLOATING MODERN SEARCH & METRICS DOCK
         // ==========================================
@@ -171,7 +327,8 @@ fun HomeScreen(
                         .fillMaxWidth()
                         .height(48.dp),
                     shape = RoundedCornerShape(24.dp),
-                    color = Color(0xFFEFF4F9)
+                    color = MaterialTheme.colorScheme.surface,
+                    border = BorderStroke(1.2.dp, Color(0xFFCBD5E1))
                 ) {
                     Row(
                         modifier = Modifier
@@ -409,12 +566,20 @@ fun HomeScreen(
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFF0F172A)
                     )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Box(
+                        modifier = Modifier
+                            .width(36.dp)
+                            .height(3.dp)
+                            .clip(RoundedCornerShape(2.dp))
+                            .background(Color(0xFFEAB308))
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // Row 1: Advance, Basic, Lower
+                    // Row 1: Advance, Basic, Lower, Prepaid Meter
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         ModernDockButton(
                             modifier = Modifier.weight(1f),
@@ -451,14 +616,26 @@ fun HomeScreen(
                             border = Color(0xFFFDE68A),
                             onClick = onNavigateToLower
                         )
+
+                        ModernDockButton(
+                            modifier = Modifier.weight(1f),
+                            title = if (isEn) "Prepaid Meter" else "প্রিপেইড মিটার",
+                            count = if (isEn) "All Codes" else "মিটার কোড",
+                            badge = if (isEn) "BD Meters" else "বিডি মিটার",
+                            icon = Icons.Default.Bolt,
+                            iconBg = Color(0xFF0D9488),
+                            cardBg = Color(0xFFF0FDFA),
+                            border = Color(0xFF99F6E4),
+                            onClick = onNavigateToPrepaidMeter
+                        )
                     }
 
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // Row 2: Building BOQ, Project Hub, Engineering Guides
+                    // Row 2: Building BOQ, Project Hub, History, Tools (Empty as requested)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         ModernDockButton(
                             modifier = Modifier.weight(1f),
@@ -495,8 +672,64 @@ fun HomeScreen(
                             border = Color(0xFFCBD5E1),
                             onClick = onNavigateToHistory
                         )
+
+                        // 4th slot: 50 Electrical Tools Guide
+                        ModernDockButton(
+                            modifier = Modifier.weight(1f),
+                            title = if (isEn) "Tools" else "টুলস",
+                            count = if (isEn) "50 Tools" else "৫০ টি টুলস",
+                            badge = if (isEn) "Guide" else "সহায়িকা",
+                            icon = Icons.Default.Engineering,
+                            iconBg = Color(0xFF0284C7),
+                            cardBg = Color(0xFFF0F9FF),
+                            border = Color(0xFFBAE6FD),
+                            onClick = onNavigateToTools
+                        )
                     }
                 }
+            }
+
+            // ==========================================
+            // 3.5. ANIMATED AUTO-SLIDING BANNER CAROUSEL (600x180)
+            // ==========================================
+            item {
+                HomeBannerCarousel(
+                    banners = listOf(
+                        HomeBannerItem(
+                            imageRes = R.drawable.banner_all_calculators,
+                            contentDescription = if (isEn) "All 167+ Calculators" else "সকল ১৬৭+ ক্যালকুলেটর",
+                            onClick = onNavigateToCalculatorsList
+                        ),
+                        HomeBannerItem(
+                            imageRes = R.drawable.banner_advance,
+                            contentDescription = if (isEn) "Advance Calculators" else "অ্যাডভান্স ক্যালকুলেটর",
+                            onClick = onNavigateToAdvance
+                        ),
+                        HomeBannerItem(
+                            imageRes = R.drawable.banner_basic,
+                            contentDescription = if (isEn) "Basic Calculators" else "বেসিক ক্যালকুলেটর",
+                            onClick = onNavigateToBasic
+                        ),
+                        HomeBannerItem(
+                            imageRes = R.drawable.banner_lower,
+                            contentDescription = if (isEn) "Lower Calculators" else "লোয়ার ক্যালকুলেটর",
+                            onClick = onNavigateToLower
+                        ),
+                        HomeBannerItem(
+                            imageRes = R.drawable.banner_project,
+                            contentDescription = if (isEn) "Project Management System" else "প্রজেক্ট ম্যানেজমেন্ট",
+                            onClick = onNavigateToProject
+                        ),
+                        HomeBannerItem(
+                            imageRes = R.drawable.banner_settings,
+                            contentDescription = if (isEn) "Settings & Customization" else "সেটিংস",
+                            onClick = onNavigateToSettings
+                        )
+                    ),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 14.dp, vertical = 6.dp)
+                )
             }
 
             // ==========================================
@@ -779,6 +1012,8 @@ fun HomeScreen(
         }
     }
 }
+}
+}
 
 // ========================================================
 // REUSABLE MODERN COMPONENTS FOR HOMESCREEN
@@ -798,20 +1033,20 @@ private fun ModernDockButton(
 ) {
     Surface(
         modifier = modifier
-            .clip(RoundedCornerShape(14.dp))
+            .clip(RoundedCornerShape(12.dp))
             .clickable(onClick = onClick),
-        shape = RoundedCornerShape(14.dp),
+        shape = RoundedCornerShape(12.dp),
         color = Color(0xFFEFF4F9)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 12.dp, horizontal = 8.dp),
+                .padding(vertical = 10.dp, horizontal = 4.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Box(
                 modifier = Modifier
-                    .size(38.dp)
+                    .size(36.dp)
                     .clip(RoundedCornerShape(10.dp))
                     .background(iconBg),
                 contentAlignment = Alignment.Center
@@ -820,15 +1055,15 @@ private fun ModernDockButton(
                     imageVector = icon,
                     contentDescription = title,
                     tint = Color.White,
-                    modifier = Modifier.size(20.dp)
+                    modifier = Modifier.size(19.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
             Text(
                 text = title,
-                fontSize = 12.5.sp,
+                fontSize = 11.5.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color(0xFF0F172A),
                 maxLines = 1,
@@ -837,7 +1072,7 @@ private fun ModernDockButton(
 
             Text(
                 text = count,
-                fontSize = 10.5.sp,
+                fontSize = 10.sp,
                 fontWeight = FontWeight.Medium,
                 color = Color(0xFF64748B),
                 maxLines = 1,
@@ -1124,3 +1359,83 @@ private fun ModernCalculatorRowCard(
         }
     }
 }
+
+data class HomeBannerItem(
+    val imageRes: Int,
+    val contentDescription: String,
+    val onClick: () -> Unit
+)
+
+@Composable
+fun HomeBannerCarousel(
+    banners: List<HomeBannerItem>,
+    modifier: Modifier = Modifier
+) {
+    if (banners.isEmpty()) return
+    val pagerState = rememberPagerState(pageCount = { banners.size })
+
+    // Auto-scroll banner smoothly
+    LaunchedEffect(pagerState) {
+        while (true) {
+            delay(5000L)
+            val nextPage = (pagerState.currentPage + 1) % banners.size
+            pagerState.animateScrollToPage(
+                page = nextPage,
+                animationSpec = tween(durationMillis = 350, easing = FastOutSlowInEasing)
+            )
+        }
+    }
+
+    Column(
+        modifier = modifier,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Card(
+            shape = RoundedCornerShape(12.dp),
+            elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(600f / 130f)
+                .testTag("dashboard_banner_carousel")
+        ) {
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize()
+            ) { page ->
+                val banner = banners[page]
+                Image(
+                    painter = painterResource(id = banner.imageRes),
+                    contentDescription = banner.contentDescription,
+                    contentScale = ContentScale.FillBounds,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clickable(onClick = banner.onClick)
+                )
+            }
+        }
+
+        // Animated Page Indicator Dots
+        Spacer(modifier = Modifier.height(6.dp))
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            banners.indices.forEach { index ->
+                val isSelected = pagerState.currentPage == index
+                Box(
+                    modifier = Modifier
+                        .padding(horizontal = 3.dp)
+                        .height(4.dp)
+                        .width(if (isSelected) 16.dp else 5.dp)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(
+                            if (isSelected) Color(0xFF0284C7)
+                            else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+                        )
+                )
+            }
+        }
+    }
+}
+

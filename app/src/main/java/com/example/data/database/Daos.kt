@@ -101,3 +101,21 @@ interface QuickTaskDao {
     @Query("DELETE FROM quick_tasks")
     suspend fun clearAll()
 }
+
+@Dao
+interface ExpenseDao {
+    @Query("SELECT * FROM wallet_expenses ORDER BY timestamp DESC")
+    fun getAllExpenses(): Flow<List<ExpenseEntity>>
+
+    @Query("SELECT * FROM wallet_expenses WHERE linkedProjectId = :projectId ORDER BY timestamp DESC")
+    fun getExpensesForProject(projectId: Long): Flow<List<ExpenseEntity>>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertExpense(expense: ExpenseEntity): Long
+
+    @Query("DELETE FROM wallet_expenses WHERE id = :id")
+    suspend fun deleteExpense(id: Long)
+
+    @Query("DELETE FROM wallet_expenses")
+    suspend fun clearAll()
+}

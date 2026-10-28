@@ -25,6 +25,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ElectricBolt
 import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.BookmarkBorder
 import androidx.compose.material.icons.filled.Calculate
 import androidx.compose.material.icons.filled.Check
@@ -39,6 +40,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -201,6 +203,7 @@ fun CalculatorScreen(
     var result by remember { mutableStateOf<CalculationResult?>(null) }
     var isSaved by remember { mutableStateOf(false) }
     var showFormulaSolution by remember { mutableStateOf(false) }
+    var activeDropdownFieldId by remember { mutableStateOf<String?>(null) }
 
     fun runRecalculation(phaseToUse: String = selectedPhase) {
         try {
@@ -448,22 +451,72 @@ fun CalculatorScreen(
 
                 if (inputConfig.unitOptions.isNotEmpty()) {
                     Spacer(modifier = Modifier.width(8.dp))
-                    Surface(
-                        modifier = Modifier
-                            .height(56.dp)
-                            .clip(RoundedCornerShape(10.dp)),
-                        color = MaterialTheme.colorScheme.surfaceVariant
-                    ) {
-                        Box(
-                            contentAlignment = Alignment.Center,
-                            modifier = Modifier.padding(horizontal = 14.dp)
+                    val isMultiOption = inputConfig.unitOptions.size > 1
+                    val isExpanded = activeDropdownFieldId == inputConfig.id
+                    val currentUnit = unitSelections[inputConfig.id] ?: inputConfig.defaultUnit
+
+                    Box {
+                        Surface(
+                            modifier = Modifier
+                                .height(56.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .then(
+                                    if (isMultiOption) {
+                                        Modifier.clickable {
+                                            activeDropdownFieldId = if (isExpanded) null else inputConfig.id
+                                        }
+                                    } else Modifier
+                                )
+                                .testTag("unit_selector_${inputConfig.id}"),
+                            shape = RoundedCornerShape(10.dp),
+                            color = MaterialTheme.colorScheme.surface,
+                            border = BorderStroke(1.2.dp, Color(0xFFCBD5E1))
                         ) {
-                            Text(
-                                text = unitSelections[inputConfig.id] ?: inputConfig.defaultUnit,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontSize = 13.sp
-                            )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Center,
+                                modifier = Modifier.padding(horizontal = 12.dp)
+                            ) {
+                                Text(
+                                    text = currentUnit,
+                                    fontWeight = FontWeight.Bold,
+                                    color = if (isMultiOption) Color(0xFF0284C7) else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontSize = 13.sp
+                                )
+                                if (isMultiOption) {
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Icon(
+                                        imageVector = Icons.Default.ArrowDropDown,
+                                        contentDescription = "Select Unit",
+                                        tint = Color(0xFF0284C7),
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            }
+                        }
+
+                        if (isMultiOption) {
+                            DropdownMenu(
+                                expanded = isExpanded,
+                                onDismissRequest = { activeDropdownFieldId = null }
+                            ) {
+                                inputConfig.unitOptions.forEach { opt ->
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                text = opt,
+                                                fontWeight = if (opt == currentUnit) FontWeight.Bold else FontWeight.Normal,
+                                                color = if (opt == currentUnit) Color(0xFF0284C7) else MaterialTheme.colorScheme.onSurface
+                                            )
+                                        },
+                                        onClick = {
+                                            unitSelections[inputConfig.id] = opt
+                                            activeDropdownFieldId = null
+                                            runRecalculation()
+                                        }
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -683,14 +736,29 @@ fun CalculatorScreen(
                                 }
                             }
                         }
-                    }
-                }
-            }
 
-            if (res.notes.isNotEmpty()) {
-                Column(modifier = Modifier.padding(top = 4.dp)) {
-                    res.notes.forEach { note ->
-                        Text(text = "• $note", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        if (res.notes.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Card(
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(10.dp),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+                                border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                            ) {
+                                Column(modifier = Modifier.padding(12.dp)) {
+                                    Text(
+                                        text = "Important Notes & Standards (গুরুত্বপূর্ণ নোট)",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                    Spacer(modifier = Modifier.height(4.dp))
+                                    res.notes.forEach { note ->
+                                        Text(text = "• $note", fontSize = 11.5.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }

@@ -111,7 +111,8 @@ fun FavoritesScreen(
                     .padding(horizontal = 14.dp, vertical = 6.dp)
                     .height(46.dp),
                 shape = RoundedCornerShape(23.dp),
-                color = Color(0xFFEFF4F9)
+                color = MaterialTheme.colorScheme.surface,
+                border = BorderStroke(1.2.dp, Color(0xFFCBD5E1))
             ) {
                 Row(
                     modifier = Modifier

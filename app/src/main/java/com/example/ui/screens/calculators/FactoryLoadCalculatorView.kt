@@ -1177,24 +1177,30 @@ fun FactoryLoadCalculatorView(
                                         }
                                     }
                                 }
+
+                                if (res.standardBasis.isNotBlank() || res.notes.isNotEmpty()) {
+                                    Spacer(modifier = Modifier.height(10.dp))
+                                    HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                    if (res.standardBasis.isNotBlank()) {
+                                        Text(
+                                            text = "Standard / Basis: ${res.standardBasis}",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.primary
+                                        )
+                                    }
+                                    res.notes.forEach { note ->
+                                        Text(
+                                            text = "• $note",
+                                            fontSize = 11.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            modifier = Modifier.padding(vertical = 1.dp)
+                                        )
+                                    }
+                                }
                             }
                         }
-                    }
-
-                    // Standard & Notes
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = "Standard / Basis: ${res.standardBasis}",
-                        fontSize = 10.5.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    res.notes.forEach { note ->
-                        Text(
-                            text = "• $note",
-                            fontSize = 10.5.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
                     }
                 }
             }
@@ -1259,6 +1265,32 @@ fun FactoryLoadCalculatorView(
                         ShareUtils.sharePdf(context, pdf, "${calculator.name} Report")
                     } catch (e: Exception) {
                         Toast.makeText(context, "PDF error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                onPrint = {
+                    try {
+                        val inputsMap = mutableMapOf<String, String>()
+                        inputsMap["Total Connected Load"] = "%.2f kW".format(loads.sumOf { it.totalKw })
+                        inputsMap["Demand Factor"] = demandFactorStr
+                        inputsMap["Diversity Factor"] = diversityFactorStr
+                        inputsMap["Power Factor"] = avgPfStr
+                        inputsMap["Plant Efficiency"] = plantEffStr
+                        inputsMap["Supply Voltage"] = "$systemVoltageStr V (3 Phase)"
+                        loads.take(8).forEachIndexed { i, it ->
+                            inputsMap["Load #${i + 1}"] = "${it.name}: ${it.displayOriginal} × ${it.quantity} = %.2f kW".format(it.totalKw)
+                        }
+                        val pdf = PdfReportGenerator.generateCalculationPdf(
+                            context,
+                            calculator,
+                            inputsMap,
+                            res,
+                            devSettings,
+                            pdfSettings,
+                            techProfile
+                        )
+                        PrintManagerHelper.printPdfFile(context, pdf, calculator.name)
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "Print error: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
             )

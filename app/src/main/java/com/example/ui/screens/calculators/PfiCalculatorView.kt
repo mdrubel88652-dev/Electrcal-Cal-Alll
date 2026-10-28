@@ -337,7 +337,8 @@ fun PfiCalculatorView(
                 // Load value & unit row
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.Bottom
                 ) {
                     OutlinedTextField(
                         value = loadValueStr,
@@ -350,33 +351,31 @@ fun PfiCalculatorView(
                     )
 
                     // Unit selector (kW / kVA)
-                    Column(modifier = Modifier.width(100.dp)) {
-                        Text("Unit", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(56.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(MaterialTheme.colorScheme.surfaceVariant),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            listOf("kW", "kVA").forEach { u ->
-                                val isSel = loadUnit.equals(u, ignoreCase = true)
-                                Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .fillMaxHeight()
-                                        .background(if (isSel) ElectricBluePrimary else Color.Transparent)
-                                        .clickable { loadUnit = u },
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = u,
-                                        fontWeight = FontWeight.Bold,
-                                        fontSize = 12.sp,
-                                        color = if (isSel) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
+                    Row(
+                        modifier = Modifier
+                            .width(108.dp)
+                            .height(56.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        listOf("kW", "kVA").forEach { u ->
+                            val isSel = loadUnit.equals(u, ignoreCase = true)
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight()
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(if (isSel) ElectricBluePrimary else Color.Transparent)
+                                    .clickable { loadUnit = u },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = u,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 12.sp,
+                                    color = if (isSel) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
                         }
                     }
@@ -412,10 +411,36 @@ fun PfiCalculatorView(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                // Voltage & Frequency & Phase
+                // System Phase Selection (Full width, no squeezed controls)
+                Text(
+                    text = "System Phase / ফেজ নির্বাচন",
+                    fontSize = 11.5.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                com.example.ui.components.ModernPhaseSelector(
+                    selectedPhase = if (phaseSelection == "3 Phase") "3-Phase" else "1-Phase",
+                    onPhaseSelected = { ph ->
+                        phaseSelection = if (ph.contains("3")) "3 Phase" else "1 Phase"
+                        if (ph.contains("3")) {
+                            if (systemVoltageStr == "230" || systemVoltageStr == "220") systemVoltageStr = "400"
+                        } else {
+                            if (systemVoltageStr == "400" || systemVoltageStr == "415") systemVoltageStr = "230"
+                        }
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(bottom = 6.dp)
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                // Voltage & Frequency in 2 clean columns
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    verticalAlignment = Alignment.Bottom
                 ) {
                     OutlinedTextField(
                         value = systemVoltageStr,
@@ -427,46 +452,32 @@ fun PfiCalculatorView(
                         shape = RoundedCornerShape(8.dp)
                     )
 
-                    // Phase selector
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text("Phase", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Spacer(modifier = Modifier.height(2.dp))
-                        com.example.ui.components.ModernPhaseSelector(
-                            selectedPhase = if (phaseSelection == "3 Phase") "3-Phase" else "1-Phase",
-                            onPhaseSelected = { ph ->
-                                phaseSelection = if (ph.contains("3")) "3 Phase" else "1 Phase"
-                            }
-                        )
-                    }
-
                     // Frequency selector
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text("Frequency", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(56.dp)
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(MaterialTheme.colorScheme.surfaceVariant),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            listOf("50 Hz", "60 Hz").forEach { f ->
-                                val isSel = frequencySelection == f
-                                Box(
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .fillMaxHeight()
-                                        .background(if (isSel) ElectricBluePrimary else Color.Transparent)
-                                        .clickable { frequencySelection = f },
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Text(
-                                        text = f,
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.SemiBold,
-                                        color = if (isSel) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
+                    Row(
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(56.dp)
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        listOf("50 Hz", "60 Hz").forEach { f ->
+                            val isSel = frequencySelection == f
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .fillMaxHeight()
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .background(if (isSel) ElectricBluePrimary else Color.Transparent)
+                                    .clickable { frequencySelection = f },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = f,
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = if (isSel) Color.White else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
                         }
                     }
@@ -569,22 +580,54 @@ fun PfiCalculatorView(
                     )
                     Spacer(modifier = Modifier.height(10.dp))
 
-                    // Summary comparison row
+                    // Summary comparison row (Responsive, robust layout)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Column {
-                            Text("Existing PF:", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text("%.2f".format(res.existingPf), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFFC62828))
+                        Surface(
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(8.dp),
+                            color = Color(0xFFEF4444).copy(alpha = 0.08f)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(vertical = 8.dp, horizontal = 6.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text("Existing PF", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text("%.2f".format(res.existingPf), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFFC62828))
+                            }
                         }
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text("Target PF:", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text("%.2f".format(res.targetPf), fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2E7D32))
+
+                        Surface(
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(8.dp),
+                            color = Color(0xFF22C55E).copy(alpha = 0.08f)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(vertical = 8.dp, horizontal = 6.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text("Target PF", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text("%.2f".format(res.targetPf), fontSize = 16.sp, fontWeight = FontWeight.Bold, color = Color(0xFF2E7D32))
+                            }
                         }
-                        Column(horizontalAlignment = Alignment.End) {
-                            Text("Required Compensation:", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text("${fmt(res.requiredKvar)} kVAR", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+
+                        Surface(
+                            modifier = Modifier.weight(1.2f),
+                            shape = RoundedCornerShape(8.dp),
+                            color = ElectricBluePrimary.copy(alpha = 0.08f)
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(vertical = 8.dp, horizontal = 6.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text("Required kVAR", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text("${fmt(res.requiredKvar)}", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                            }
                         }
                     }
 
@@ -812,17 +855,21 @@ fun PfiCalculatorView(
                                     }
                                 }
                             }
+
+                            // Standard Basis inside Formula Steps
+                            if (res.standardBasis.isNotBlank()) {
+                                Spacer(modifier = Modifier.height(10.dp))
+                                androidx.compose.material3.HorizontalDivider(color = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f))
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Text(
+                                    text = "Standard / Basis: ${res.standardBasis}",
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            }
                         }
                     }
-
-                    // Standard Basis
-                    Spacer(modifier = Modifier.height(10.dp))
-                    Text(
-                        text = "Standard / Basis: ${res.standardBasis}",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = MaterialTheme.colorScheme.primary
-                    )
                 }
             }
 
@@ -892,6 +939,36 @@ fun PfiCalculatorView(
                         ShareUtils.sharePdf(context, pdf, "${calculator.name} Report")
                     } catch (e: Exception) {
                         Toast.makeText(context, "PDF error: ${e.message}", Toast.LENGTH_SHORT).show()
+                    }
+                },
+                onPrint = {
+                    try {
+                        val inputsMap = mutableMapOf<String, String>()
+                        inputsMap["Existing Load"] = "${loadValueStr} $loadUnit"
+                        inputsMap["Existing PF"] = existingPfStr
+                        inputsMap["Target PF"] = targetPfStr
+                        inputsMap["System Voltage"] = "${systemVoltageStr} V (${phaseSelection})"
+                        inputsMap["Frequency"] = frequencySelection
+                        inputsMap["Required kVAR"] = "${fmt(res.requiredKvar)} kVAR"
+                        inputsMap["Recommended Bank"] = "${fmt(res.recommendedBankKvar)} kVAR"
+                        inputsMap["Capacitor Steps"] = res.steps.joinToString(", ") { "S${it.stepNumber}: ${it.kvar.roundToInt()}kVAR" }
+                        inputsMap["APFC Controller"] = "${res.recommendedControllerSteps}-Step Controller"
+                        inputsMap["Capacitor Units"] = "${res.totalCapacitorUnits} Units (${res.capacitorUnitBreakdown})"
+                        inputsMap["Capacitor Voltage"] = res.recommendedCapacitorVoltageRating
+
+                        val cRes = calculationResult ?: return@CalculatorActionButtons
+                        val pdf = PdfReportGenerator.generateCalculationPdf(
+                            context,
+                            calculator,
+                            inputsMap,
+                            cRes,
+                            devSettings,
+                            pdfSettings,
+                            techProfile
+                        )
+                        PrintManagerHelper.printPdfFile(context, pdf, calculator.name)
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "Print error: ${e.message}", Toast.LENGTH_SHORT).show()
                     }
                 }
             )

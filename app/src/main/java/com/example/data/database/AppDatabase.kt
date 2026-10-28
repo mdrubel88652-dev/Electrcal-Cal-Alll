@@ -11,9 +11,10 @@ import androidx.room.RoomDatabase
         BuildingProjectEntity::class,
         ContractProjectEntity::class,
         ProjectPaymentEntity::class,
-        QuickTaskEntity::class
+        QuickTaskEntity::class,
+        ExpenseEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -23,6 +24,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun contractProjectDao(): ContractProjectDao
     abstract fun projectPaymentDao(): ProjectPaymentDao
     abstract fun quickTaskDao(): QuickTaskDao
+    abstract fun expenseDao(): ExpenseDao
 
     companion object {
         @Volatile

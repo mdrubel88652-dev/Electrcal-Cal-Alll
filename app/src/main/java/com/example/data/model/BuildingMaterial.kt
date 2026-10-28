@@ -10,6 +10,14 @@ data class MaterialItem(
     val remarks: String = ""
 )
 
+data class MaterialEstimateRow(
+    val sl: Int = 1,
+    var name: String = "",
+    var spec: String = "-",
+    var qty: Double = 1.0,
+    var unit: String = "PCS"
+)
+
 data class ElectricalPointCounter(
     val id: String,
     val name: String,

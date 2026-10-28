@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -53,6 +54,24 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.filled.AddAPhoto
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
+import java.io.File
 import com.example.ElectricalApp
 import com.example.data.datastore.TechnicianReportProfile
 import com.example.ui.theme.ElectricBluePrimary
@@ -70,87 +89,167 @@ fun TechnicianProfileScreen(
     val savedProfile by app.settingsManager.technicianProfileFlow.collectAsState(initial = TechnicianReportProfile())
 
     var name by remember(savedProfile) { mutableStateOf(savedProfile.name) }
-    var company by remember(savedProfile) { mutableStateOf(savedProfile.company) }
+    var designation by remember(savedProfile) { mutableStateOf(savedProfile.designation) }
+    var licenseName by remember(savedProfile) { mutableStateOf(savedProfile.licenseName) }
+    var licenseNumber by remember(savedProfile) { mutableStateOf(savedProfile.licenseNumber) }
     var contactPhone by remember(savedProfile) { mutableStateOf(savedProfile.contactPhone) }
     var email by remember(savedProfile) { mutableStateOf(savedProfile.email) }
     var officialAddress by remember(savedProfile) { mutableStateOf(savedProfile.officialAddress) }
+    var photoUri by remember(savedProfile) { mutableStateOf(savedProfile.photoUri) }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                modifier = Modifier.shadow(2.dp),
-                title = {
-                    Text(
-                        text = "Technician Report Profile",
-                        style = MaterialTheme.typography.titleMedium.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 17.sp
-                        ),
-                        color = Color(0xFF0F172A)
-                    )
-                },
-                navigationIcon = {
-                    IconButton(
-                        onClick = onNavigateBack,
-                        modifier = Modifier.testTag("tech_profile_back_btn")
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                            tint = MaterialTheme.colorScheme.onSurface
-                        )
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri: Uri? ->
+        if (uri != null) {
+            try {
+                val inputStream = context.contentResolver.openInputStream(uri)
+                val file = File(context.filesDir, "technician_photo_${System.currentTimeMillis()}.jpg")
+                inputStream?.use { input ->
+                    file.outputStream().use { output ->
+                        input.copyTo(output)
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.surface,
-                    titleContentColor = MaterialTheme.colorScheme.onSurface
-                )
-            )
-        }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .padding(innerPadding)
-                .verticalScroll(rememberScrollState())
-                .padding(16.dp)
-                .testTag("technician_profile_screen")
-        ) {
-            // Header Card
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(6.dp),
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                elevation = CardDefaults.cardElevation(defaultElevation = 1.5.dp)
-            ) {
-                Column(modifier = Modifier.padding(16.dp)) {
-                    Text(
-                        text = "Technician Report Profile",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = ElectricBluePrimary
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Save technician information for calculation and engineering reports. This information will appear near the top of printed and PDF reports.",
-                        fontSize = 12.sp,
-                        color = Color(0xFF64748B),
-                        lineHeight = 16.sp
-                    )
                 }
+                photoUri = file.absolutePath
+                Toast.makeText(context, "Photo selected successfully", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                photoUri = uri.toString()
             }
+        }
+    }
 
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // Form Fields
-            Card(
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .imePadding()
+            .verticalScroll(rememberScrollState())
+            .padding(16.dp)
+            .testTag("technician_profile_screen")
+    ) {
+        // Form Fields
+        Card(
                 modifier = Modifier.fillMaxWidth(),
                 shape = RoundedCornerShape(6.dp),
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(defaultElevation = 1.5.dp)
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
+                    // Technician Photo Upload Section
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(92.dp)
+                                    .clip(CircleShape)
+                                    .background(Color(0xFFF1F5F9))
+                                    .border(2.dp, ElectricBluePrimary, CircleShape)
+                                    .clickable {
+                                        photoPickerLauncher.launch(
+                                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                        )
+                                    },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                if (photoUri.isNotBlank()) {
+                                    AsyncImage(
+                                        model = photoUri,
+                                        contentDescription = "Technician Photo",
+                                        modifier = Modifier
+                                            .fillMaxSize()
+                                            .clip(CircleShape),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                } else {
+                                    Column(
+                                        horizontalAlignment = Alignment.CenterHorizontally,
+                                        verticalArrangement = Arrangement.Center
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.AddAPhoto,
+                                            contentDescription = "Upload Photo",
+                                            tint = ElectricBluePrimary,
+                                            modifier = Modifier.size(30.dp)
+                                        )
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text(
+                                            text = "ছবি যোগ করুন",
+                                            fontSize = 9.5.sp,
+                                            color = ElectricBluePrimary,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(6.dp))
+
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                TextButton(
+                                    onClick = {
+                                        photoPickerLauncher.launch(
+                                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                        )
+                                    }
+                                ) {
+                                    Icon(
+                                        imageVector = if (photoUri.isNotBlank()) Icons.Default.Edit else Icons.Default.AddAPhoto,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(16.dp),
+                                        tint = ElectricBluePrimary
+                                    )
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = if (photoUri.isNotBlank()) "Change Photo" else "Upload Photo",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = ElectricBluePrimary
+                                    )
+                                }
+
+                                if (photoUri.isNotBlank()) {
+                                    TextButton(
+                                        onClick = {
+                                            photoUri = ""
+                                            Toast.makeText(context, "Photo removed", Toast.LENGTH_SHORT).show()
+                                        }
+                                    ) {
+                                        Icon(
+                                            imageVector = Icons.Default.Delete,
+                                            contentDescription = null,
+                                            modifier = Modifier.size(16.dp),
+                                            tint = Color(0xFFDC2626)
+                                        )
+                                        Spacer(modifier = Modifier.width(4.dp))
+                                        Text(
+                                            text = "Remove",
+                                            fontSize = 12.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color(0xFFDC2626)
+                                        )
+                                    }
+                                }
+                            }
+
+                            Text(
+                                text = "এই ছবি প্রিন্ট রিপোর্টে টেকনিশিয়ান বিবরণের পাশে প্রদর্শিত হবে।",
+                                fontSize = 11.sp,
+                                color = Color(0xFF64748B)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
                     // 1. Name
                     OutlinedTextField(
                         value = name,
@@ -171,16 +270,56 @@ fun TechnicianProfileScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // 2. Company
+                    // 2. Designation / Position
                     OutlinedTextField(
-                        value = company,
-                        onValueChange = { company = it },
-                        label = { Text("Company") },
-                        placeholder = { Text("Company / Organisation") },
-                        leadingIcon = { Icon(Icons.Default.Business, contentDescription = null, tint = ElectricBluePrimary) },
+                        value = designation,
+                        onValueChange = { designation = it },
+                        label = { Text("Designation / Position") },
+                        placeholder = { Text("e.g. Lead Electrical Technician / Engineer") },
+                        leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = ElectricBluePrimary) },
                         modifier = Modifier
                             .fillMaxWidth()
-                            .testTag("tech_input_company"),
+                            .testTag("tech_input_designation"),
+                        shape = RoundedCornerShape(6.dp),
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = ElectricBluePrimary,
+                            unfocusedBorderColor = Color(0xFFCBD5E1)
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // 2b. Government License Name (Optional)
+                    OutlinedTextField(
+                        value = licenseName,
+                        onValueChange = { licenseName = it },
+                        label = { Text("Govt License Name (Optional)") },
+                        placeholder = { Text("e.g. Electrical Licensing Board") },
+                        leadingIcon = { Icon(Icons.Default.Save, contentDescription = null, tint = ElectricBluePrimary) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("tech_input_license_name"),
+                        shape = RoundedCornerShape(6.dp),
+                        singleLine = true,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = ElectricBluePrimary,
+                            unfocusedBorderColor = Color(0xFFCBD5E1)
+                        )
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // 2c. Government License Number (Optional)
+                    OutlinedTextField(
+                        value = licenseNumber,
+                        onValueChange = { licenseNumber = it },
+                        label = { Text("License Number (Optional)") },
+                        placeholder = { Text("e.g. ELEC-987654") },
+                        leadingIcon = { Icon(Icons.Default.Save, contentDescription = null, tint = ElectricBluePrimary) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .testTag("tech_input_license_num"),
                         shape = RoundedCornerShape(6.dp),
                         singleLine = true,
                         colors = OutlinedTextFieldDefaults.colors(
@@ -264,10 +403,13 @@ fun TechnicianProfileScreen(
                     onClick = {
                         coroutineScope.launch {
                             name = ""
-                            company = ""
+                            designation = ""
+                            licenseName = ""
+                            licenseNumber = ""
                             contactPhone = ""
                             email = ""
                             officialAddress = ""
+                            photoUri = ""
                             app.settingsManager.resetTechnicianProfile()
                             Toast.makeText(context, "Technician profile reset", Toast.LENGTH_SHORT).show()
                         }
@@ -290,10 +432,13 @@ fun TechnicianProfileScreen(
                         coroutineScope.launch {
                             val newProfile = TechnicianReportProfile(
                                 name = name.trim(),
-                                company = company.trim(),
+                                designation = designation.trim(),
+                                licenseName = licenseName.trim(),
+                                licenseNumber = licenseNumber.trim(),
                                 contactPhone = contactPhone.trim(),
                                 email = email.trim(),
-                                officialAddress = officialAddress.trim()
+                                officialAddress = officialAddress.trim(),
+                                photoUri = photoUri.trim()
                             )
                             app.settingsManager.updateTechnicianProfile(newProfile)
                             Toast.makeText(context, "Technician profile saved successfully", Toast.LENGTH_SHORT).show()
@@ -312,7 +457,6 @@ fun TechnicianProfileScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(30.dp))
+            Spacer(modifier = Modifier.height(60.dp))
         }
-    }
 }

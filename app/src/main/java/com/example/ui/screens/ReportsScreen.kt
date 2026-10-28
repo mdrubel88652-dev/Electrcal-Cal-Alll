@@ -4,6 +4,7 @@ import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.border
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -108,8 +109,9 @@ fun ReportsScreen(
                             .height(38.dp)
                             .clip(RoundedCornerShape(8.dp))
                             .clickable { selectedTab = index },
-                        color = if (isSelected) Color(0xFF0284C7) else Color(0xFFF1F5F9),
-                        shape = RoundedCornerShape(8.dp)
+                        color = if (isSelected) Color(0xFF0284C7) else MaterialTheme.colorScheme.surface,
+                        shape = RoundedCornerShape(8.dp),
+                        border = BorderStroke(1.2.dp, if (isSelected) Color(0xFF0284C7) else Color(0xFFCBD5E1))
                     ) {
                         Box(contentAlignment = Alignment.Center) {
                             Text(
@@ -132,8 +134,8 @@ fun ReportsScreen(
                 .padding(horizontal = 14.dp, vertical = 8.dp)
                 .height(42.dp)
                 .clip(RoundedCornerShape(21.dp))
-                .background(Color.White)
-                .border(1.dp, Color(0xFFCBD5E1), RoundedCornerShape(21.dp))
+                .background(MaterialTheme.colorScheme.surface)
+                .border(1.2.dp, Color(0xFFCBD5E1), RoundedCornerShape(21.dp))
                 .padding(horizontal = 12.dp),
             contentAlignment = Alignment.CenterStart
         ) {

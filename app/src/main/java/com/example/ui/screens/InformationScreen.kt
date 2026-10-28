@@ -156,82 +156,7 @@ fun InformationScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
             // ==========================================
-            // 1. SCROLLABLE CLEAN HEADER BANNER (NO DARK BLUE)
-            // ==========================================
-            item {
-                Surface(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(14.dp),
-                    color = Color(0xFFEFF4F9)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(14.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Box(
-                                    modifier = Modifier
-                                        .size(36.dp)
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(Color(0xFFE0F2FE)),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Info,
-                                        contentDescription = null,
-                                        tint = Color(0xFF0284C7),
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
-
-                                Spacer(modifier = Modifier.width(10.dp))
-
-                                Column {
-                                    Text(
-                                        text = if (isEn) "Information Guide" else "Information • প্রকৌশল সহায়িকা",
-                                        fontSize = 15.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF0F172A)
-                                    )
-                                    Text(
-                                        text = if (isEn) "Engineering calculation rules & operations for 167 tools" else "১৬৭টি ক্যালকুলেটরের হিসাব ও কাজের নিয়মাবলী",
-                                        fontSize = 11.sp,
-                                        fontWeight = FontWeight.Medium,
-                                        color = Color(0xFF64748B)
-                                    )
-                                }
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        // Stats Metrics Row (Light, readable, unified)
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(8.dp))
-                                .background(Color(0xFFF8FAFC))
-                                .padding(vertical = 8.dp, horizontal = 4.dp),
-                            horizontalArrangement = Arrangement.SpaceAround,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            MetricBadge(label = if (isEn) "Total Tools" else "মোট ক্যালকুলেটর", value = if (isEn) "167 Tools" else "১৬৭টি", color = Color(0xFF0284C7))
-                            MetricBadge(label = if (isEn) "1φ & 3φ" else "১φ ও ৩φ মোড", value = if (isEn) "60 Modes" else "৬০টি", color = Color(0xFFD97706))
-                            MetricBadge(label = if (isEn) "Standards" else "মানক স্ট্যান্ডার্ড", value = "IEC / IEEE", color = Color(0xFF059669))
-                            MetricBadge(label = if (isEn) "Offline Ready" else "অফলাইন রেডি", value = "100%", color = Color(0xFF7C3AED))
-                        }
-                    }
-                }
-            }
-
-            // ==========================================
-            // 2. SCROLLABLE SEARCH BAR
+            // 1. SCROLLABLE SEARCH BAR
             // ==========================================
             item {
                 Surface(
@@ -239,7 +164,8 @@ fun InformationScreen(
                         .fillMaxWidth()
                         .height(46.dp),
                     shape = RoundedCornerShape(23.dp),
-                    color = Color(0xFFEFF4F9)
+                    color = MaterialTheme.colorScheme.surface,
+                    border = BorderStroke(1.2.dp, Color(0xFFCBD5E1))
                 ) {
                     Row(
                         modifier = Modifier

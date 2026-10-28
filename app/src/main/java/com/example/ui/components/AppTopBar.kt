@@ -2,39 +2,21 @@ package com.example.ui.components
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.outlined.Info
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.ripple
+import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
@@ -60,11 +42,11 @@ fun AppTopBar(
         title = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 if (!canNavigateBack) {
-                    // User Picture Avatar - Tapping opens Information Screen
                     Box(
                         modifier = Modifier
                             .size(36.dp)
                             .clip(CircleShape)
+                            .border(1.dp, Color(0xFFF4B400).copy(alpha = 0.6f), CircleShape)
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
                                 indication = ripple(bounded = true),
@@ -75,15 +57,15 @@ fun AppTopBar(
                     ) {
                         Image(
                             painter = painterResource(id = R.drawable.ic_app_logo),
-                            contentDescription = "User Picture • Information",
+                            contentDescription = "App Logo • Information",
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop
                         )
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(10.dp))
                 }
                 Column(
-                    verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(0.dp),
+                    verticalArrangement = Arrangement.spacedBy(1.dp),
                     modifier = Modifier.padding(start = 2.dp)
                 ) {
                     Text(
@@ -92,20 +74,20 @@ fun AppTopBar(
                             fontWeight = FontWeight.Bold,
                             letterSpacing = 0.1.sp,
                             fontSize = 15.sp,
-                            lineHeight = 17.sp
+                            lineHeight = 18.sp
                         ),
-                        color = MaterialTheme.colorScheme.onSurface,
+                        color = Color.White,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
                     Text(
                         text = subtitle,
                         style = MaterialTheme.typography.bodySmall.copy(
-                            fontSize = 10.5.sp,
+                            fontSize = 11.sp,
                             fontWeight = FontWeight.Medium,
-                            lineHeight = 12.sp
+                            lineHeight = 13.sp
                         ),
-                        color = Color(0xFF0284C7),
+                        color = Color(0xFFB9E8FF),
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -123,7 +105,7 @@ fun AppTopBar(
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Navigate back",
-                        tint = MaterialTheme.colorScheme.onSurface,
+                        tint = Color.White,
                         modifier = Modifier.size(22.dp)
                     )
                 }
@@ -132,9 +114,9 @@ fun AppTopBar(
         actions = {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(0.dp)
+                horizontalArrangement = Arrangement.spacedBy(0.dp)
             ) {
-                // Information Icon (moved further left)
+                // Information Icon with subtle electric yellow accent
                 IconButton(
                     onClick = onNavigateToInformation,
                     modifier = Modifier
@@ -144,7 +126,7 @@ fun AppTopBar(
                     Icon(
                         imageVector = Icons.Outlined.Info,
                         contentDescription = "Information",
-                        tint = Color(0xFF0284C7),
+                        tint = Color(0xFFF4B400),
                         modifier = Modifier.size(23.dp)
                     )
                 }
@@ -158,11 +140,11 @@ fun AppTopBar(
                     Icon(
                         imageVector = Icons.Default.Notifications,
                         contentDescription = "Notification",
-                        tint = MaterialTheme.colorScheme.onSurface,
+                        tint = Color.White,
                         modifier = Modifier.size(23.dp)
                     )
                 }
-                // Three Lines Menu Icon (to the right of Notification)
+                // Three Lines Menu Icon
                 IconButton(
                     onClick = onOpenMenu,
                     modifier = Modifier
@@ -173,18 +155,18 @@ fun AppTopBar(
                     Icon(
                         imageVector = Icons.Default.Menu,
                         contentDescription = "Technician Hub & Wallet Menu",
-                        tint = MaterialTheme.colorScheme.onSurface,
+                        tint = Color.White,
                         modifier = Modifier.size(26.dp)
                     )
                 }
             }
         },
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = MaterialTheme.colorScheme.background,
-            scrolledContainerColor = MaterialTheme.colorScheme.background,
-            titleContentColor = MaterialTheme.colorScheme.onBackground,
-            navigationIconContentColor = MaterialTheme.colorScheme.onBackground,
-            actionIconContentColor = MaterialTheme.colorScheme.onBackground
+            containerColor = Color(0xFF082D63),
+            scrolledContainerColor = Color(0xFF082D63),
+            titleContentColor = Color.White,
+            navigationIconContentColor = Color.White,
+            actionIconContentColor = Color.White
         )
     )
 }

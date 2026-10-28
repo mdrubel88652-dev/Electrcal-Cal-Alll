@@ -2,6 +2,7 @@ package com.example.ui.screens
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -152,7 +153,8 @@ fun CalculatorsScreen(
                         .padding(horizontal = 14.dp, vertical = 6.dp)
                         .height(46.dp),
                     shape = RoundedCornerShape(23.dp),
-                    color = Color(0xFFEFF4F9)
+                    color = MaterialTheme.colorScheme.surface,
+                    border = BorderStroke(1.2.dp, Color(0xFFCBD5E1))
                 ) {
                     Row(
                         modifier = Modifier
