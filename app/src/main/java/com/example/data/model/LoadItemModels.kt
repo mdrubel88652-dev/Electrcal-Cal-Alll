@@ -101,6 +101,7 @@ data class HouseholdLoadItem(
     val power: Double,
     val unit: String = "W", // "W" or "kW"
     val quantity: Int = 1,
+    val phase: String = "1 Phase", // "1 Phase" or "3 Phase"
     val category: String = "General"
 ) {
     // Always convert to kW internally
@@ -127,45 +128,92 @@ data class HouseholdLoadItem(
 data class PredefinedAppliance(
     val name: String,
     val defaultWattage: Double,
-    val category: String
+    val category: String,
+    val defaultPhase: String = "1 Phase"
 )
 
 object PredefinedHouseholdLoadsCatalog {
     val items: List<PredefinedAppliance> = listOf(
+        // Lighting
         PredefinedAppliance("LED Light", 15.0, "Lighting"),
+        PredefinedAppliance("LED Bulb 9W", 9.0, "Lighting"),
+        PredefinedAppliance("LED Bulb 12W", 12.0, "Lighting"),
+        PredefinedAppliance("LED Bulb 15W", 15.0, "Lighting"),
+        PredefinedAppliance("LED Bulb 18W", 18.0, "Lighting"),
         PredefinedAppliance("Tube Light", 36.0, "Lighting"),
+        PredefinedAppliance("Tube Light 20W LED", 20.0, "Lighting"),
+        PredefinedAppliance("Tube Light 40W Fluo", 40.0, "Lighting"),
+        PredefinedAppliance("Ceiling Light / Panel", 24.0, "Lighting"),
+        PredefinedAppliance("Decorative Chandelier", 120.0, "Lighting"),
+        PredefinedAppliance("Spot Light / COB", 12.0, "Lighting"),
+        PredefinedAppliance("Outdoor / Security Light", 50.0, "Lighting"),
+
+        // Fans & Ventilation
         PredefinedAppliance("Ceiling Fan", 80.0, "Fans"),
         PredefinedAppliance("Exhaust Fan", 45.0, "Fans"),
+        PredefinedAppliance("Exhaust Fan (Kitchen/Bath)", 45.0, "Fans"),
         PredefinedAppliance("Wall Fan", 55.0, "Fans"),
         PredefinedAppliance("Table Fan", 45.0, "Fans"),
-        PredefinedAppliance("Power Socket", 1000.0, "Sockets"),
-        PredefinedAppliance("Normal Socket", 100.0, "Sockets"),
+        PredefinedAppliance("Stand / Pedestal Fan", 65.0, "Fans"),
+        PredefinedAppliance("Exhaust System (Central)", 150.0, "Fans"),
+
+        // Entertainment & IT
         PredefinedAppliance("TV", 120.0, "Entertainment"),
+        PredefinedAppliance("LED Television 43\"", 75.0, "Entertainment"),
+        PredefinedAppliance("Smart Television 55\"-65\"", 120.0, "Entertainment"),
+        PredefinedAppliance("Home Theater / Soundbar", 100.0, "Entertainment"),
+        PredefinedAppliance("Desktop Computer (PC)", 250.0, "IT & Electronics"),
+        PredefinedAppliance("Laptop Computer", 65.0, "IT & Electronics"),
+        PredefinedAppliance("Printer / Scanner", 300.0, "IT & Electronics"),
+        PredefinedAppliance("Wi-Fi Router & ONU", 15.0, "IT & Electronics"),
+        PredefinedAppliance("CCTV System & DVR (4-8 Ch)", 60.0, "IT & Electronics"),
+        PredefinedAppliance("Mobile / Tablet Charger", 20.0, "IT & Electronics"),
+        PredefinedAppliance("Gaming Console", 180.0, "IT & Electronics"),
+
+        // Refrigeration & Kitchen
         PredefinedAppliance("Refrigerator", 200.0, "Refrigeration"),
+        PredefinedAppliance("Refrigerator (Direct Cool)", 150.0, "Refrigeration"),
+        PredefinedAppliance("Refrigerator (Frost-Free)", 250.0, "Refrigeration"),
         PredefinedAppliance("Freezer", 300.0, "Refrigeration"),
-        PredefinedAppliance("Iron", 1000.0, "Heating"),
-        PredefinedAppliance("Electric Heater", 1500.0, "Heating"),
-        PredefinedAppliance("Water Heater", 2000.0, "Heating"),
-        PredefinedAppliance("Geyser", 2000.0, "Heating"),
+        PredefinedAppliance("Deep Freezer", 250.0, "Refrigeration"),
         PredefinedAppliance("Microwave Oven", 1200.0, "Kitchen"),
-        PredefinedAppliance("Electric Oven", 2000.0, "Kitchen"),
+        PredefinedAppliance("Electric Oven (OTG)", 2000.0, "Kitchen"),
         PredefinedAppliance("Rice Cooker", 700.0, "Kitchen"),
+        PredefinedAppliance("Induction Cooker", 1800.0, "Kitchen"),
+        PredefinedAppliance("Infrared Cooker", 2000.0, "Kitchen"),
         PredefinedAppliance("Electric Kettle", 1500.0, "Kitchen"),
-        PredefinedAppliance("Washing Machine", 500.0, "Motors & Laundry"),
-        PredefinedAppliance("Water Pump", 750.0, "Motors"),
-        PredefinedAppliance("Air Conditioner", 1500.0, "HVAC"),
-        PredefinedAppliance("Computer", 250.0, "IT & Electronics"),
-        PredefinedAppliance("Laptop", 65.0, "IT & Electronics"),
-        PredefinedAppliance("Printer", 100.0, "IT & Electronics"),
-        PredefinedAppliance("Router", 15.0, "IT & Electronics"),
-        PredefinedAppliance("UPS", 500.0, "Power Backup"),
-        PredefinedAppliance("IPS", 800.0, "Power Backup"),
-        PredefinedAppliance("Kitchen Hood", 150.0, "Kitchen"),
-        PredefinedAppliance("Blender", 500.0, "Kitchen"),
-        PredefinedAppliance("Mixer Grinder", 750.0, "Kitchen"),
-        PredefinedAppliance("Electric Stove", 1500.0, "Kitchen"),
-        PredefinedAppliance("Induction Cooker", 2000.0, "Kitchen"),
-        PredefinedAppliance("Other Load", 100.0, "General")
+        PredefinedAppliance("Blender / Grinder", 600.0, "Kitchen"),
+        PredefinedAppliance("Kitchen Exhaust Chimney", 180.0, "Kitchen"),
+        PredefinedAppliance("Toaster / Sandwich Maker", 800.0, "Kitchen"),
+        PredefinedAppliance("Air Fryer", 1500.0, "Kitchen"),
+        PredefinedAppliance("Water Purifier / Filter", 40.0, "Kitchen"),
+        PredefinedAppliance("Dishwasher", 1500.0, "Kitchen"),
+
+        // Heating, Cooling & Motors
+        PredefinedAppliance("Air Conditioner 1.0 Ton", 1200.0, "Cooling"),
+        PredefinedAppliance("Air Conditioner 1.5 Ton", 1800.0, "Cooling"),
+        PredefinedAppliance("Air Conditioner 2.0 Ton", 2400.0, "Cooling"),
+        PredefinedAppliance("3-Phase Air Conditioner 3.0 Ton", 3600.0, "Cooling", "3 Phase"),
+        PredefinedAppliance("Water Heater / Geyser", 2000.0, "Heating"),
+        PredefinedAppliance("Instant Water Heater", 3000.0, "Heating"),
+        PredefinedAppliance("Room Heater (Convector/Halogen)", 1500.0, "Heating"),
+        PredefinedAppliance("Electric Iron", 1000.0, "Laundry"),
+        PredefinedAppliance("Washing Machine (Semi-Auto)", 400.0, "Laundry"),
+        PredefinedAppliance("Washing Machine (Front Load)", 1800.0, "Laundry"),
+        PredefinedAppliance("Clothes Dryer", 2000.0, "Laundry"),
+        PredefinedAppliance("Water Pump 0.5 HP", 375.0, "Motors"),
+        PredefinedAppliance("Water Pump 1.0 HP", 750.0, "Motors"),
+        PredefinedAppliance("Water Pump 1.5 HP", 1120.0, "Motors"),
+        PredefinedAppliance("Submersible Pump 2.0 HP (3-Phase)", 1500.0, "Motors", "3 Phase"),
+
+        // Sockets & Power Backup
+        PredefinedAppliance("Normal Socket Point (5A/6A)", 100.0, "Sockets"),
+        PredefinedAppliance("Power Socket Point (15A/16A)", 1000.0, "Sockets"),
+        PredefinedAppliance("IPS / Inverter Charger", 800.0, "Power Backup"),
+        PredefinedAppliance("Online UPS 1kVA", 800.0, "Power Backup"),
+        PredefinedAppliance("Hair Dryer", 1200.0, "Personal Care"),
+        PredefinedAppliance("Vacuum Cleaner", 1200.0, "Cleaning"),
+        PredefinedAppliance("Other Custom Appliance", 100.0, "General")
     )
 }
 

@@ -19,8 +19,8 @@ data class TechnicianReportProfile(
 }
 
 data class EngineerReportProfile(
-    val name: String = "Rubel Electrical Engineer & Developer",
-    val designation: String = "Lead Electrical Engineer & Developer",
+    val name: String = "Engineer Rubel",
+    val designation: String = "Engineer & Developer",
     val email: String = "mdrubel88652@gmail.com",
     val officialAddress: String = "Power Systems Engineering Division"
 ) {

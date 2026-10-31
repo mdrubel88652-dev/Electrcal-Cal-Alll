@@ -173,15 +173,7 @@ fun HomeScreen(
     BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
-            .background(
-                Brush.horizontalGradient(
-                    listOf(
-                        Color(0xFF0260C1), // Matches banner's bottom-left edge color
-                        Color(0xFF024CBB), // Matches banner's bottom-center blueprint color
-                        Color(0xFF056ABE)  // Matches banner's bottom-right edge color
-                    )
-                )
-            )
+            .background(Color(0xFF082D63))
     ) {
         val cornerRadius = 24.dp
         // Banner image aspect ratio is 2172 x 724 = 3 : 1
@@ -192,6 +184,7 @@ fun HomeScreen(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(bannerHeight)
+                .background(Color(0xFF082D63))
         ) {
             Image(
                 painter = painterResource(id = R.drawable.electrical_header_bg),
@@ -639,10 +632,10 @@ fun HomeScreen(
                     ) {
                         ModernDockButton(
                             modifier = Modifier.weight(1f),
-                            title = if (isEn) "Building BOQ" else "বিল্ডিং BOQ",
-                            count = if (isEn) "Estimation" else "এস্টিমেশন",
-                            badge = if (isEn) "Materials" else "ম্যাটেরিয়াল",
-                            icon = Icons.Default.Home,
+                            title = if (isEn) "House Wiring Cable Sizing" else "হাউস ওয়্যারিং ক্যাবল সাইজিং",
+                            count = if (isEn) "Cable & Coil" else "ক্যাবল ও কয়েল হিসাব",
+                            badge = if (isEn) "Cable Sizing" else "ক্যাবল সাইজিং",
+                            icon = Icons.Default.Cable,
                             iconBg = Color(0xFF059669),
                             cardBg = Color(0xFFECFDF5),
                             border = Color(0xFFA7F3D0),
@@ -1393,15 +1386,18 @@ fun HomeBannerCarousel(
         Card(
             shape = RoundedCornerShape(12.dp),
             elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+            colors = CardDefaults.cardColors(containerColor = Color(0xFF082D63)),
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(600f / 130f)
+                .background(Color(0xFF082D63), RoundedCornerShape(12.dp))
                 .testTag("dashboard_banner_carousel")
         ) {
             HorizontalPager(
                 state = pagerState,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color(0xFF082D63))
             ) { page ->
                 val banner = banners[page]
                 Image(
@@ -1410,6 +1406,7 @@ fun HomeBannerCarousel(
                     contentScale = ContentScale.FillBounds,
                     modifier = Modifier
                         .fillMaxSize()
+                        .background(Color(0xFF082D63))
                         .clickable(onClick = banner.onClick)
                 )
             }

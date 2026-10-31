@@ -13,9 +13,10 @@ import kotlinx.coroutines.flow.map
 private val Context.dataStore by preferencesDataStore(name = "electrical_settings")
 
 data class DeveloperReportSettings(
-    val developerName: String = "Rubel Electrical Engineer & Developer",
+    val developerName: String = "Engineer Rubel",
+    val designation: String = "Engineer & Developer",
     val companyName: String = "Industrial Electrical & Power Engineering",
-    val contactNumber: String = "+880 16094-92193",
+    val department: String = "Power Systems Engineering Division",
     val email: String = "mdrubel88652@gmail.com",
     val address: String = "Power Systems Engineering Division",
     val website: String = "www.electricalcalculationall.com"
@@ -59,8 +60,9 @@ class SettingsManager(private val context: Context) {
         
         // Developer
         val DEV_NAME = stringPreferencesKey("dev_name")
+        val DEV_DESIGNATION = stringPreferencesKey("dev_designation")
         val DEV_COMPANY = stringPreferencesKey("dev_company")
-        val DEV_PHONE = stringPreferencesKey("dev_phone")
+        val DEV_DEPARTMENT = stringPreferencesKey("dev_department")
         val DEV_EMAIL = stringPreferencesKey("dev_email")
         val DEV_ADDRESS = stringPreferencesKey("dev_address")
         val DEV_WEBSITE = stringPreferencesKey("dev_website")
@@ -115,11 +117,31 @@ class SettingsManager(private val context: Context) {
     }
 
     val developerSettingsFlow: Flow<DeveloperReportSettings> = context.dataStore.data.map { prefs ->
+        val rawName = prefs[Keys.DEV_NAME]
+        val resolvedName = if (rawName.isNullOrBlank() || rawName == "Lead Electrical Engineer" || rawName == "Rubel Electrical Engineer & Developer") {
+            "Engineer Rubel"
+        } else {
+            rawName
+        }
+        val rawEmail = prefs[Keys.DEV_EMAIL]
+        val resolvedEmail = if (rawEmail.isNullOrBlank() || rawEmail == "electrical.engineer@domain.com") {
+            "mdrubel88652@gmail.com"
+        } else {
+            rawEmail
+        }
+        val rawCompany = prefs[Keys.DEV_COMPANY]
+        val resolvedCompany = if (rawCompany.isNullOrBlank() || rawCompany.contains("rower", ignoreCase = true)) {
+            "Industrial Electrical & Power Engineering"
+        } else {
+            rawCompany
+        }
+
         DeveloperReportSettings(
-            developerName = prefs[Keys.DEV_NAME] ?: "Lead Electrical Engineer",
-            companyName = prefs[Keys.DEV_COMPANY] ?: "Industrial Electrical & Power Engineering",
-            contactNumber = prefs[Keys.DEV_PHONE] ?: "+880 1700-123456",
-            email = prefs[Keys.DEV_EMAIL] ?: "electrical.engineer@domain.com",
+            developerName = resolvedName,
+            designation = prefs[Keys.DEV_DESIGNATION] ?: "Engineer & Developer",
+            companyName = resolvedCompany,
+            department = prefs[Keys.DEV_DEPARTMENT] ?: "Power Systems Engineering Division",
+            email = resolvedEmail,
             address = prefs[Keys.DEV_ADDRESS] ?: "Power Systems Engineering Division",
             website = prefs[Keys.DEV_WEBSITE] ?: "www.electricalcalculationall.com"
         )
@@ -183,8 +205,9 @@ class SettingsManager(private val context: Context) {
     suspend fun updateDeveloperSettings(settings: DeveloperReportSettings) {
         context.dataStore.edit { prefs ->
             prefs[Keys.DEV_NAME] = settings.developerName
+            prefs[Keys.DEV_DESIGNATION] = settings.designation
             prefs[Keys.DEV_COMPANY] = settings.companyName
-            prefs[Keys.DEV_PHONE] = settings.contactNumber
+            prefs[Keys.DEV_DEPARTMENT] = settings.department
             prefs[Keys.DEV_EMAIL] = settings.email
             prefs[Keys.DEV_ADDRESS] = settings.address
             prefs[Keys.DEV_WEBSITE] = settings.website
@@ -232,13 +255,13 @@ class SettingsManager(private val context: Context) {
         context.dataStore.edit { prefs ->
             prefs[Keys.TECH_NAME] = profile.name.trim()
             prefs[Keys.TECH_DESIGNATION] = profile.designation.trim()
-            prefs[Keys.TECH_COMPANY] = profile.designation.trim()
             prefs[Keys.TECH_PHONE] = profile.contactPhone.trim()
             prefs[Keys.TECH_EMAIL] = profile.email.trim()
             prefs[Keys.TECH_ADDRESS] = profile.officialAddress.trim()
             prefs[Keys.TECH_PHOTO_URI] = profile.photoUri.trim()
             prefs[Keys.TECH_LICENSE_NAME] = profile.licenseName.trim()
             prefs[Keys.TECH_LICENSE_NUMBER] = profile.licenseNumber.trim()
+            prefs.remove(Keys.TECH_COMPANY)
         }
     }
 

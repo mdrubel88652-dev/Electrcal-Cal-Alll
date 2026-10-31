@@ -33,9 +33,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
+import com.example.ElectricalApp
 import com.example.data.database.ContractProjectEntity
 import com.example.data.database.ExpenseEntity
 import com.example.data.database.ProjectPaymentEntity
+import com.example.data.datastore.DeveloperReportSettings
+import com.example.data.datastore.TechnicianReportProfile
 import com.example.pdf.PdfReportGenerator
 
 // --- 1. Big Project List Screen (Matches Screen 5) ---
@@ -632,13 +635,16 @@ fun AddBigProjectScreen(
 fun BigProjectDetailScreen(
     project: ContractProjectEntity,
     payments: List<ProjectPaymentEntity>,
-    expenses: List<ExpenseEntity>,
+    expenses: List<ExpenseEntity> = emptyList(),
     onBackClick: () -> Unit,
     onNavigateToPayments: () -> Unit,
-    onAddExpenseClick: () -> Unit,
+    onAddExpenseClick: () -> Unit = {},
     onDeleteProject: () -> Unit
 ) {
     val context = LocalContext.current
+    val app = remember(context) { ElectricalApp.getApp(context) }
+    val techProfile by app.settingsManager.technicianProfileFlow.collectAsState(initial = TechnicianReportProfile())
+    val devSettings by app.settingsManager.developerSettingsFlow.collectAsState(initial = DeveloperReportSettings())
     var showDeleteConfirm by remember { mutableStateOf(false) }
 
     val totalReceived = payments.sumOf { it.amount }
@@ -876,44 +882,71 @@ fun BigProjectDetailScreen(
                 }
             }
 
-            // Bottom 3 Action Buttons (Payments, Expenses, Reports)
+            // Bottom Action Buttons (Payments, Print, PDF & Share)
+            // Removed Expenses button as per contract project manager requirements
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .background(Color.White)
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    .padding(horizontal = 14.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
+                // 1. Keep Payments Button
                 OutlinedButton(
                     onClick = onNavigateToPayments,
                     shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF0F3E7A))
+                    modifier = Modifier
+                        .weight(1f)
+                        .testTag("contract_payments_btn"),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF0F3E7A)),
+                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 10.dp)
                 ) {
-                    Icon(Icons.Default.Payments, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("Payments", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Icon(Icons.Default.Payments, contentDescription = null, modifier = Modifier.size(17.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Payments", fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1)
                 }
 
+                // 2. Print Button (Opens Android printing interface)
                 OutlinedButton(
-                    onClick = onAddExpenseClick,
+                    onClick = {
+                        try {
+                            val pdfFile = PdfReportGenerator.generateProjectContractPdf(
+                                context = context,
+                                project = project,
+                                payments = payments,
+                                techProfile = techProfile,
+                                devSettings = devSettings
+                            )
+                            PdfReportGenerator.printPdfFile(context, pdfFile, "Project_Contract_${project.id}")
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "Error printing report: ${e.message}", Toast.LENGTH_SHORT).show()
+                        }
+                    },
                     shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.weight(1f),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFFDC2626))
+                    modifier = Modifier
+                        .weight(1f)
+                        .testTag("contract_print_btn"),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = Color(0xFF0284C7)),
+                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 10.dp)
                 ) {
-                    Icon(Icons.Default.Receipt, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("Expenses", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Icon(Icons.Default.Print, contentDescription = null, modifier = Modifier.size(17.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Print", fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1)
                 }
 
+                // 3. PDF & Share Button (Generates PDF, saves, and opens Android system share sheet)
                 Button(
                     onClick = {
                         try {
                             val pdfFile = PdfReportGenerator.generateProjectContractPdf(
                                 context = context,
                                 project = project,
-                                payments = payments
+                                payments = payments,
+                                techProfile = techProfile,
+                                devSettings = devSettings
                             )
+                            Toast.makeText(context, "PDF saved: ${pdfFile.name}", Toast.LENGTH_SHORT).show()
                             val uri: Uri = FileProvider.getUriForFile(
                                 context,
                                 "${context.packageName}.fileprovider",
@@ -922,20 +955,24 @@ fun BigProjectDetailScreen(
                             val intent = Intent(Intent.ACTION_SEND).apply {
                                 type = "application/pdf"
                                 putExtra(Intent.EXTRA_STREAM, uri)
+                                putExtra(Intent.EXTRA_SUBJECT, "Electrical Contract Statement - ${project.projectName}")
                                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                             }
-                            context.startActivity(Intent.createChooser(intent, "Share Project Summary PDF"))
+                            context.startActivity(Intent.createChooser(intent, "Share Project Report PDF"))
                         } catch (e: Exception) {
-                            Toast.makeText(context, "Error generating PDF: ${e.message}", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(context, "Error sharing PDF: ${e.message}", Toast.LENGTH_SHORT).show()
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF0F3E7A)),
                     shape = RoundedCornerShape(12.dp),
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .weight(1.1f)
+                        .testTag("contract_pdf_share_btn"),
+                    contentPadding = PaddingValues(horizontal = 6.dp, vertical = 10.dp)
                 ) {
-                    Icon(Icons.Default.Assessment, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("Reports", fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Icon(Icons.Default.Share, contentDescription = null, modifier = Modifier.size(17.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("PDF & Share", fontSize = 12.sp, fontWeight = FontWeight.Bold, maxLines = 1)
                 }
             }
         }

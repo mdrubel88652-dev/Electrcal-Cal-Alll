@@ -204,7 +204,6 @@ fun ProjectScreen() {
                         onNavigateToPayments = {
                             navigateTo(ProjectSubScreen.ProjectPayments(project.id))
                         },
-                        onAddExpenseClick = { showAddExpenseDialog = true },
                         onDeleteProject = {
                             coroutineScope.launch {
                                 app.projectRepository.deleteProject(project.id)

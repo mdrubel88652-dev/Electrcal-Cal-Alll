@@ -270,11 +270,11 @@ fun TechnicianProfileScreen(
 
                     Spacer(modifier = Modifier.height(12.dp))
 
-                    // 2. Designation / Position
+                    // 2. Designation (Job Title)
                     OutlinedTextField(
                         value = designation,
                         onValueChange = { designation = it },
-                        label = { Text("Designation / Position") },
+                        label = { Text("Designation (Job Title)") },
                         placeholder = { Text("e.g. Lead Electrical Technician / Engineer") },
                         leadingIcon = { Icon(Icons.Default.Person, contentDescription = null, tint = ElectricBluePrimary) },
                         modifier = Modifier
